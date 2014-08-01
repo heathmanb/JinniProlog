@@ -1,12 +1,17 @@
 package prolog.core;
 
 // TODO: use MutableBigIntegers ??
+import static java.lang.Math.sqrt;
 import prolog.kernel.*;
 import prolog.logic.*;
 
 import java.math.*;
+import static java.math.BigInteger.valueOf;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import static java.util.logging.Logger.getLogger;
+import static prolog.kernel.Machine.unQuote;
+import static prolog.logic.Prolog.dump;
 
 //import java.util.BitSet;
 /**
@@ -14,9 +19,15 @@ import java.util.logging.Logger;
  */
 public class BigMath implements Stateful {
 
-    public static final BigInteger zero = BigInteger.valueOf(0);
+    /**
+     *
+     */
+    public static final BigInteger zero = valueOf(0);
 
-    public static final BigInteger one = BigInteger.valueOf(1);
+    /**
+     *
+     */
+    public static final BigInteger one = valueOf(1);
 
     /**
      * G[i]=B[i+1] xor B[i]
@@ -76,14 +87,31 @@ public class BigMath implements Stateful {
         return new BigInteger(SB, 2);
     }
 
+    /**
+     *
+     * @param nbits
+     * @return
+     */
     public static BigInteger bigones(int nbits) {
         return one.shiftLeft(nbits).subtract(one);
     }
 
+    /**
+     *
+     * @param nbits
+     * @param B
+     * @return
+     */
     public static BigInteger bignot(int nbits, BigInteger B) {
         return bigones(nbits).andNot(B);
     }
 
+    /**
+     *
+     * @param maxvar
+     * @param nvar
+     * @return
+     */
     public static BigInteger lvar2bigint(int maxvar, int nvar) {
         BigInteger mask = bigones(1 << maxvar);
         int nk = maxvar - (nvar + 1);
@@ -92,6 +120,12 @@ public class BigMath implements Stateful {
         return (R);
     }
 
+    /**
+     *
+     * @param maxvar
+     * @param nvar
+     * @return
+     */
     public static BigInteger rvar2bigint(int maxvar, int nvar) {
         if (nvar >= maxvar) {
             return null;
@@ -103,6 +137,12 @@ public class BigMath implements Stateful {
         return (R);
     }
 
+    /**
+     *
+     * @param arity
+     * @param max
+     * @return
+     */
     public static Cat ints2cat(int arity, int max) {
         Cat C = new Cat();
         BigInteger Max = new BigInteger("" + max);
@@ -114,22 +154,35 @@ public class BigMath implements Stateful {
         C.setHyper(Max, 3);
         try {
             for (int i = 0; i <= max; i++) {
-                BigInteger I = BigInteger.valueOf(i);
+                BigInteger I = valueOf(i);
                 // C.setMorphism("*",I,"x","i");
                 addTuplesToCat(C, one.add(one), arity, I);
             }
         } catch (Exception e) {
-            Logger.getLogger("BigMath").log(
+            getLogger("BigMath").log(
                     Level.SEVERE, "ints2cat", e.fillInStackTrace());
         }
         // Prolog.dump("$$$ints2cat:\n"+C);
         return C;
     }
 
+    /**
+     *
+     * @param arity
+     * @param N
+     * @return
+     */
     public static Cat bigint2cat(int arity, BigInteger N) {
         return bigint2cat(2, arity, N);
     }
 
+    /**
+     *
+     * @param maxur
+     * @param arity
+     * @param N
+     * @return
+     */
     public static Cat bigint2cat(int maxur, int arity, BigInteger N) {
         Cat C = new Cat();
         /*
@@ -137,17 +190,17 @@ public class BigMath implements Stateful {
          C.setHyper(zero,1);
          */
         for (int i = 0; i < maxur; i++) {
-            BigInteger I = BigInteger.valueOf(i);
+            BigInteger I = valueOf(i);
             C.setProp(I, "v", "l");
             C.setHyper(I, 1);
         }
         C.setProp(N, "v", "r");
         C.setHyper(N, 3);
-        BigInteger MaxUr = BigInteger.valueOf(maxur);
+        BigInteger MaxUr = valueOf(maxur);
         try {
             addTuplesToCat(C, MaxUr, arity, N);
         } catch (Exception e) {
-            Logger.getLogger("BigMath").log(
+            getLogger("BigMath").log(
                     Level.SEVERE, "bigint2cat", e.fillInStackTrace());
         }
 
@@ -257,7 +310,7 @@ public class BigMath implements Stateful {
             if (bit != selectOnes) {
                 continue;
             }
-            BigInteger K = BigInteger.valueOf(k);
+            BigInteger K = valueOf(k);
             V.push(K);
         }
         int n = V.size();
@@ -315,6 +368,13 @@ public class BigMath implements Stateful {
      * a=Xs[0].intValue(); int b=Xs[1].intValue(); is[2*i]=a; is[2*i+1]=b; }
      * return is; }
      */
+
+    /**
+     *
+     * @param B
+     * @return
+     */
+    
     public static Cat bigint2igraph(BigInteger B) {
         BigInteger[] Bs = bigint2exps(B);
         int l = Bs.length;
@@ -344,6 +404,11 @@ public class BigMath implements Stateful {
         return C;
     }
 
+    /**
+     *
+     * @param C
+     * @return
+     */
     public static BigInteger igraph2bigint(Cat C) {
         ObjectIterator Vs = C.vertexIterator();
         ObjectStack Es = new ObjectStack();
@@ -369,20 +434,36 @@ public class BigMath implements Stateful {
         return exps2bigint(Exps);
     }
 
+    /**
+     *
+     * @param x
+     * @param y
+     * @return
+     */
     public static BigInteger pair2bigint(int x, int y) {
         BigInteger[] tuple = new BigInteger[2];
-        tuple[0] = BigInteger.valueOf(x);
-        tuple[1] = BigInteger.valueOf(y);
+        tuple[0] = valueOf(x);
+        tuple[1] = valueOf(y);
         return tuple2bigint(tuple);
     }
 
+    /**
+     *
+     * @param B
+     * @return
+     */
     public static int bigint2n(BigInteger B) {
         int l = B.bitLength();
-        int r = (int) Math.sqrt((double) l) + 1;
+        int r = (int) sqrt((double) l) + 1;
         // BigInteger R=new BigInteger.valueOf(r);return R;
         return r;
     }
 
+    /**
+     *
+     * @param C
+     * @return
+     */
     public static BigInteger maxBigOf(Cat C) {
         BigInteger Max = zero;
         ObjectIterator Vs = C.vertexIterator();
@@ -393,7 +474,7 @@ public class BigMath implements Stateful {
                 B = (BigInteger) V;
             } else {
                 String S = (String) V;
-                S = Machine.unQuote(S);
+                S = unQuote(S);
                 B = new BigInteger(S);
             }
             if (Max.compareTo(B) < 0) {
@@ -403,6 +484,11 @@ public class BigMath implements Stateful {
         return Max;
     }
 
+    /**
+     *
+     * @param Tuple
+     * @return
+     */
     public static String tupleToString(BigInteger[] Tuple) {
         StringBuilder buf = new StringBuilder("[");
         for (int i = 0; i < Tuple.length; i++) {
@@ -415,6 +501,9 @@ public class BigMath implements Stateful {
         return buf.toString();
     }
 
+    /**
+     *
+     */
     public static void test() {
         try {
             BigInteger N = new BigInteger("12345678901234567890");
@@ -430,9 +519,9 @@ public class BigMath implements Stateful {
              */
 
             Cat C = bigint2igraph(N);
-            Prolog.dump(N + "=>" + C);
+            dump(N + "=>" + C);
         } catch (Exception e) {
-            Logger.getLogger("BigMath").log(
+            getLogger("BigMath").log(
                     Level.SEVERE, "test", e.fillInStackTrace());
         }
     }

@@ -7,11 +7,20 @@ import prolog.logic.Interact;
 
 import java.io.*;
 import java.util.*;
+import static java.util.Locale.getDefault;
 
+/**
+ *
+ * @author Brad
+ */
 public class VWriter extends PWriter {
 	private Formatter formatter;
 
-	public VWriter(TextSink textSink) {
+    /**
+     *
+     * @param textSink
+     */
+    public VWriter(TextSink textSink) {
 	   super(textSink);
 	}
 
@@ -25,24 +34,27 @@ public class VWriter extends PWriter {
 	}
 
 	public VWriter format(String format, Object... args) {
-		if ((formatter == null) || (formatter.locale() != Locale.getDefault()))
-			formatter = new Formatter(this);
-		formatter.format(Locale.getDefault(), format, args);
+		if ((formatter == null) || (formatter.locale() != getDefault())) {
+                    formatter = new Formatter(this);
+        }
+		formatter.format(getDefault(), format, args);
 		return this;
 	}
 
 	public VWriter format(Locale l, String format, Object... args) {
-		if ((formatter == null) || (formatter.locale() != l))
-			formatter = new Formatter(this, l);
+		if ((formatter == null) || (formatter.locale() != l)) {
+                    formatter = new Formatter(this, l);
+        }
 		formatter.format(l, format, args);
 		return this;
 	}
 
 	public VWriter append(CharSequence csq) {
-		if (csq == null)
-			write("null");
-		else
-			write(csq.toString());
+		if (csq == null) {
+                    write("null");
+        } else {
+                    write(csq.toString());
+        }
 		return this;
 	}
 

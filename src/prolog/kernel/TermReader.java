@@ -1,12 +1,28 @@
 package prolog.kernel;
 
+import static java.lang.Character.isDigit;
+import static java.lang.Character.isLetterOrDigit;
+import static java.lang.Character.isLowerCase;
+import static java.lang.Character.isUpperCase;
+import static java.lang.Character.isWhitespace;
+import static java.lang.Integer.parseInt;
+import static java.lang.Math.max;
+import static java.lang.Math.min;
+import static prolog.kernel.Top.get_verbosity;
 import prolog.logic.*;
+import static prolog.logic.Interact.warnmes;
+import static prolog.logic.Prolog.dump;
 
 /**
  * Prolog DCG-style parser and tokenizer in Java
  */
 public class TermReader extends TermConverter {
 
+    /**
+     *
+     * @param prolog
+     * @param heap
+     */
     public TermReader(Prolog prolog, HeapStack heap) {
         super(prolog, heap);
     }
@@ -23,20 +39,20 @@ public class TermReader extends TermConverter {
 
     int parse(String s, boolean warnSingletons, boolean verbose) {
         try {
-            return parse1(s, warnSingletons && Top.get_verbosity() >= 2);
+            return parse1(s, warnSingletons && get_verbosity() >= 2);
         } catch (PrologException e) {
-            if (verbose && Top.get_verbosity() >= 1) {
+            if (verbose && get_verbosity() >= 1) {
                 int l = s.length();
                 int a = this.cursor - 20;
-                a = Math.min(a, l);
-                a = Math.max(0, a);
+                a = min(a, l);
+                a = max(0, a);
                 int z = this.cursor + 20;
-                z = Math.min(z, l);
-                int i = Math.min(a, 40);
-                i = Math.min(i, a);
+                z = min(z, l);
+                int i = min(a, 40);
+                i = min(i, a);
                 String si = "*** " + s.substring(0, i) + " ... " + JavaIO.NL;
                 String sf = ">>>" + JavaIO.NL + s.substring(a, z) + JavaIO.NL + "<<<";
-                JavaIO.warnmes(JavaIO.NL + si + sf + JavaIO.NL + e.toString() + JavaIO.NL);
+                warnmes(JavaIO.NL + si + sf + JavaIO.NL + e.toString() + JavaIO.NL);
             }
             return 0;
         }
@@ -126,7 +142,7 @@ public class TermReader extends TermConverter {
                 }
             }
             if (ctr > 0) {
-                Prolog.dump(b + " *** warning: singleton variables in: "
+                dump(b + " *** warning: singleton variables in: "
                         + heap.termToString(clause) + JavaIO.NL);
             }
         }
@@ -169,8 +185,8 @@ public class TermReader extends TermConverter {
         for (;;) {
             if (eof()) {
                 break;
-            } else if (Character.isWhitespace(curChar)) {
-                while (Character.isWhitespace(curChar) && !eof()) {
+            } else if (isWhitespace(curChar)) {
+                while (isWhitespace(curChar) && !eof()) {
                     advChar();
                 }
             } /*
@@ -196,7 +212,7 @@ public class TermReader extends TermConverter {
     }
 
     private boolean ALNUM() {
-        boolean b = (Character.isLetterOrDigit(curChar) || curChar == '_') && !eof();
+        boolean b = (isLetterOrDigit(curChar) || curChar == '_') && !eof();
         if (b) {
             advChar();
         }
@@ -204,7 +220,7 @@ public class TermReader extends TermConverter {
     }
 
     private boolean LOWER() {
-        boolean b = Character.isLowerCase(curChar) && !eof();
+        boolean b = isLowerCase(curChar) && !eof();
         if (b) {
             advChar();
         }
@@ -212,7 +228,7 @@ public class TermReader extends TermConverter {
     }
 
     private boolean UPPER() {
-        boolean b = (Character.isUpperCase(curChar) || curChar == '_') && !eof();
+        boolean b = (isUpperCase(curChar) || curChar == '_') && !eof();
         if (b) {
             advChar();
         }
@@ -220,7 +236,7 @@ public class TermReader extends TermConverter {
     }
 
     private boolean DIGIT() {
-        boolean b = Character.isDigit(curChar) && !eof();
+        boolean b = isDigit(curChar) && !eof();
         if (b) {
             advChar();
         }
@@ -239,14 +255,29 @@ public class TermReader extends TermConverter {
         return b;
     }
 
+    /**
+     *
+     * @param c
+     * @return
+     */
     public static final boolean isALNUM(char c) {
-        return (Character.isLetterOrDigit(c) || c == '_');
+        return (isLetterOrDigit(c) || c == '_');
     }
 
+    /**
+     *
+     * @param c
+     * @return
+     */
     public static final boolean isPUNCT(char c) {
         return punctuation.indexOf(c) != -1;
     }
 
+    /**
+     *
+     * @param c
+     * @return
+     */
     public static final boolean isSPECIAL(char c) {
         return specials.indexOf(c) != -1;
     }
@@ -321,7 +352,7 @@ public class TermReader extends TermConverter {
                 //Prolog.dump(from+"POS OF NEXT QUOTE"+pos+":"+charIn.charAt(pos));
                 if (-1 == pos) {
                     curChar = charIn.charAt(cursor);
-                    Prolog.dump("closing quote not found stopping at" + charIn.charAt(pos));
+                    dump("closing quote not found stopping at" + charIn.charAt(pos));
                     return null;
                 }
                 s.append(charIn.substring(cursor, pos));
@@ -457,6 +488,9 @@ public class TermReader extends TermConverter {
         "^"
     };
 
+    /**
+     *
+     */
     static public ObjectDict opTable = new ObjectDict();
 
     static {
@@ -502,7 +536,11 @@ public class TermReader extends TermConverter {
     }
 
     // $$ possible bug
-    public static String[] prefixops = {"\\+"};
+
+    /**
+     *
+     */
+        public static String[] prefixops = {"\\+"};
 
     private int match_top_term() throws PrologException {
 
@@ -534,6 +572,14 @@ public class TermReader extends TermConverter {
         }
     }
 
+    /**
+     *
+     * @param f
+     * @param t1
+     * @param t2
+     * @return
+     * @throws PrologException
+     */
     public final int make_fun2(String f, int t1, int t2) throws PrologException {
         int[] args = {t1, t2};
         return putFun(f, args);
@@ -613,7 +659,7 @@ public class TermReader extends TermConverter {
             try {
                 return putFloat(fval);
             } catch (NumberFormatException e) {
-                JavaIO.warnmes("unparsable matched DECIMAL: <" + fval + ">");
+                warnmes("unparsable matched DECIMAL: <" + fval + ">");
             }
         }
 
@@ -621,12 +667,12 @@ public class TermReader extends TermConverter {
         int ival;
         if (val != null) {
             try {
-                ival = Integer.parseInt(val);
+                ival = parseInt(val);
                 if ((ival >= Defs.MAXINT) || (ival < -Defs.MAXINT)) {
                     return putConst(val);
                 }
             } catch (NumberFormatException e) {
-                JavaIO.warnmes("unconvertible matched INT left as string: <'" + val + "'>");
+                warnmes("unconvertible matched INT left as string: <'" + val + "'>");
                 return putConst(val);
             }
             return putInt(ival);
@@ -732,7 +778,7 @@ public class TermReader extends TermConverter {
      * error handler: tries to return text right after culprit
      */
     private void readError(String message) throws SyntaxException {
-        int to = Math.min(cursor + 40, charIn.length() - 1);
+        int to = min(cursor + 40, charIn.length() - 1);
         throw new SyntaxException(message + "=>" + JavaIO.NL + "... " + charIn.substring(cursor, to) + " ...");
     }
 }

@@ -1,5 +1,9 @@
 package prolog3d;
 
+/**
+ *
+ * @author Brad
+ */
 public class DataPoint {
   DataPoint() {
   }

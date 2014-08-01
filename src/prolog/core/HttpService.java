@@ -6,6 +6,12 @@ import prolog.logic.*;
 import java.util.*;
 import java.net.*;
 import java.io.*;
+import static java.lang.Integer.parseInt;
+import static prolog.core.Transport.bwrite_to;
+import static prolog.core.Transport.file2bytes;
+import static prolog.core.Zipper.zip2stream;
+import static prolog.kernel.Top.new_machine;
+import static prolog.logic.Interact.errmes;
 
 /**
  * Implements basic HTTP protocol allowing Prolog to act like a a self contained
@@ -19,6 +25,11 @@ public class HttpService implements Runnable, Stateful {
     transient private Socket serviceSocket;
     private String www_root;
 
+    /**
+     *
+     * @param serviceSocket
+     * @param www_root
+     */
     public HttpService(Socket serviceSocket, String www_root) {
         this.serviceSocket = serviceSocket;
         this.www_root = www_root;
@@ -27,13 +38,13 @@ public class HttpService implements Runnable, Stateful {
     byte[] fileORjarfile2bytes(String fname) throws IOException {
         //Prolog.dump("trying: "+fname);
         try {
-            return Transport.file2bytes(fname);
+            return file2bytes(fname);
         } catch (IOException e) {
             //throw e;
             if (fname.startsWith("./")) {
                 fname = fname.substring(2);
             }
-            InputStream in = Zipper.zip2stream(Top.ZIPSTORE, fname, true);
+            InputStream in = zip2stream(Top.ZIPSTORE, fname, true);
             if (null == in) {
                 throw e;
             }
@@ -47,6 +58,12 @@ public class HttpService implements Runnable, Stateful {
         }
     }
 
+    /**
+     *
+     * @param in
+     * @return
+     * @throws ExistenceException
+     */
     public static byte[] streamToBytes(InputStream in) throws ExistenceException {
         if (null == in) {
             return null;
@@ -58,7 +75,7 @@ public class HttpService implements Runnable, Stateful {
                 if (c == -1) {
                     break;
                 }
-                is.push((byte) c);
+                is.push(c);
             }
             in.close();
             return is.toByteArray();
@@ -67,6 +84,9 @@ public class HttpService implements Runnable, Stateful {
         }
     }
 
+    /**
+     *
+     */
     public static String content_header = "HTTP/1.0 200 OK\nContent-Length: ";
 
     private String fix_file_name(String f) {
@@ -100,20 +120,20 @@ public class HttpService implements Runnable, Stateful {
                             f = fix_file_name(f);
                             byte[] bs = fileORjarfile2bytes(f);
                             out.writeBytes(content_header + bs.length + "\n\n");
-                            Transport.bwrite_to(out, bs);
+                            bwrite_to(out, bs);
                         } else if (s.startsWith("POST")) {
                             String f = nextToken(s);
                             f = fix_file_name(f);
                             String line = "?";
                             String contentLength = null;
-                            while (!line.equals("")) {
+                            while (!line.isEmpty()) {
                                 line = in.readLine().toLowerCase();
                                 if (line.startsWith("content-length:")) {
                                     contentLength = nextToken(line);
                                 }
                             }
 
-                            int content_length = Integer.parseInt(contentLength);
+                            int content_length = parseInt(contentLength);
 
                             byte[] is = new byte[content_length];
 //                            in.readFully(is);
@@ -129,7 +149,7 @@ public class HttpService implements Runnable, Stateful {
                                 os = result.getBytes();
                             }
                             out.writeBytes(content_header + os.length + "\n\n");
-                            Transport.bwrite_to(out, os);
+                            bwrite_to(out, os);
                         } else /* ignore other headers */ {
                             // Prolog.dump(s);
                         }
@@ -141,7 +161,7 @@ public class HttpService implements Runnable, Stateful {
     }
 
     private String call_jinni_post_handler(String is, String os) {
-        Machine M = Top.new_machine(null, null);
+        Machine M = new_machine(null, null);
         if (null == M) {
             return null;
         }
@@ -181,7 +201,7 @@ public class HttpService implements Runnable, Stateful {
                 T.start();
             }
         } catch (IOException e) {
-            JavaIO.errmes("http_server_error", e);
+            errmes("http_server_error", e);
         }
     }
 }

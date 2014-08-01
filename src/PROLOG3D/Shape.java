@@ -6,7 +6,16 @@ import javax.vecmath.*;
 import java.awt.Font;
 import java.util.*;
 import com.sun.j3d.utils.picking.*;
+import static prolog3d.Convert.file2bgroup;
+import static prolog3d.Convert.xml2shape;
+import static prolog3d.FrozenGraph.random;
+import static prolog3d.Prolog3D.pp;
+import static prolog3d.Simple.makeApp;
 
+/**
+ *
+ * @author Brad
+ */
 public class Shape {
   
   private Appearance app;
@@ -18,35 +27,102 @@ public class Shape {
   }
   
   Shape(Color3f col,float trans) {
-    if(null==col) col=Simple.defCol;
+    if(null==col) {
+        col=Simple.defCol;
+        }
     this.col=col;
     this.trans=trans;
-    this.app=Simple.makeApp(col,trans);
+    this.app=makeApp(col,trans);
   }
   
   Shape(Color3f col) {
     this(col,Simple.transparency);
   }
 
-  public static final int SPHERE=0;
-  public static final int POINT=1;
-  public static final int LINE=2;
-  public static final int TETRA=3;
-  public static final int CUBE=4;
-  public static final int CCUBE=5;
-  public static final int PYRAM=6;
-  public static final int GRAPH=7;
+    /**
+     *
+     */
+    public static final int SPHERE=0;
 
-  public static final int maxSimple=8;
+    /**
+     *
+     */
+    public static final int POINT=1;
 
-  public static final int CONE=maxSimple+0;
-  public static final int CYLINDER=maxSimple+1;
-  public static final int TEXT2D=maxSimple+2;
-  public static final int TEXT3D=maxSimple+3;
-  public static final int TEXT2Dno=maxSimple+4;
-  public static final int TEXT3Dno=maxSimple+5;
-  public static final int MODEL=maxSimple+6;
-  public static final int XMODEL=maxSimple+7;
+    /**
+     *
+     */
+    public static final int LINE=2;
+
+    /**
+     *
+     */
+    public static final int TETRA=3;
+
+    /**
+     *
+     */
+    public static final int CUBE=4;
+
+    /**
+     *
+     */
+    public static final int CCUBE=5;
+
+    /**
+     *
+     */
+    public static final int PYRAM=6;
+
+    /**
+     *
+     */
+    public static final int GRAPH=7;
+
+    /**
+     *
+     */
+    public static final int maxSimple=8;
+
+    /**
+     *
+     */
+    public static final int CONE=maxSimple+0;
+
+    /**
+     *
+     */
+    public static final int CYLINDER=maxSimple+1;
+
+    /**
+     *
+     */
+    public static final int TEXT2D=maxSimple+2;
+
+    /**
+     *
+     */
+    public static final int TEXT3D=maxSimple+3;
+
+    /**
+     *
+     */
+    public static final int TEXT2Dno=maxSimple+4;
+
+    /**
+     *
+     */
+    public static final int TEXT3Dno=maxSimple+5;
+
+    /**
+     *
+     */
+    public static final int MODEL=maxSimple+6;
+
+    /**
+     *
+     */
+    public static final int XMODEL=maxSimple+7;
   
 
   private Simple toSim(int shape) {
@@ -77,19 +153,23 @@ public class Shape {
         break;
       case GRAPH: 
         //Prolog3D.pp("!!!!here");   
-        ob=FrozenGraph.random();
+        ob=random();
         break;
       default:
         ob=null;
-        Prolog3D.pp("unknown shape: "+shape+",color="+col);      
+        pp("unknown shape: "+shape+",color="+col);      
     }
     return ob;
   }
   
   Node toNode(int shape,Object data) {
     Node ob=null;  
-    if(shape<maxSimple) return toSim(shape);
-    if(null==data) data="?";
+    if(shape<maxSimple) {
+        return toSim(shape);
+        }
+    if(null==data) {
+        data="?";
+        }
     String info=data.toString();
     float r=0.1f;
     float h=0.4f;
@@ -115,24 +195,26 @@ public class Shape {
       case MODEL: //14 
         // handles formats like *.j3f *.xml *.wrl and their *.<form>.gz variants
         // as well as *.obj (which should not be gzipped as Sun's loader assumes a plain file)
-        ob=Convert.file2bgroup(info); //12
+        ob=file2bgroup(info); //12
         break;
       case XMODEL: //15
         // handles formats like *.xml exported from Blender and *.xml.gz variants
-        ob=Convert.xml2shape(info); //13
+        ob=xml2shape(info); //13
         break;  
       /*case maxSimple+6:
         ob=Prolog3D.addMorph((Fun)data,"morph"); //14
         break;   
       */
       default:
-        Prolog3D.pp("unknown node: "+shape+",data="+data);      
+        pp("unknown node: "+shape+",data="+data);      
     }
     return ob;
   }
   
   static String trimText(String text) {
-    if(Params.maxText>0 && Params.maxText<text.length()) text=text.substring(0,Params.maxText)+"...";
+    if(Params.maxText>0 && Params.maxText<text.length()) {
+        text=text.substring(0,Params.maxText)+"...";
+        }
     return text;
   }
 

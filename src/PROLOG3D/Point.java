@@ -3,6 +3,10 @@ package prolog3d;
 import javax.media.j3d.*;
 import javax.vecmath.*;
 
+/**
+ *
+ * @author Brad
+ */
 public class Point extends Simple {
   Point() {
     super(new PointShape(defCol),Simple.defApp);
@@ -33,7 +37,9 @@ class PointGeom extends PointArray {
     Color3f colors[] = new Color3f[1];
     
     verts[0] = new Point3f(0.0f,0.0f,0.0f);
-    if(null==c) c=Simple.defCol;
+    if(null==c) {
+        c=Simple.defCol;
+        }
     colors[0] = c;
    
     setCoordinates(0, verts);

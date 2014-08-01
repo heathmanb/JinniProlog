@@ -1,5 +1,11 @@
 package prolog.logic;
 
+import static java.lang.System.arraycopy;
+import static prolog.logic.Entry.indexFor;
+import static prolog.logic.Entry.o2hash;
+import static prolog.logic.Interact.errmes;
+import static prolog.logic.Prolog.dump;
+
 /**
  * Fast and portable hash table implementation that provides implicit symbol
  * table functionality by associating a unique integer to each key. This
@@ -7,18 +13,29 @@ package prolog.logic;
  */
 public class ObjectDict implements Stateful {
 
+    /**
+     *
+     */
     public static final int MINSIZE = 4;
 
+    /**
+     *
+     * @param size
+     */
     public ObjectDict(int size) {
         init(size);
     }
 
+    /**
+     *
+     */
     public ObjectDict() {
         this(0);
     }
 
     /**
      * Replaces all fields with the other ObjectDoct's fields
+     * @param OD
      */
     public void cloneFrom(ObjectDict OD) {
         entries = OD.entries;
@@ -36,6 +53,9 @@ public class ObjectDict implements Stateful {
         removeCount = OD.removeCount;
     }
 
+    /**
+     *
+     */
     public void clear() {
         init(0);
     }
@@ -54,7 +74,7 @@ public class ObjectDict implements Stateful {
     transient private int updateCount;
     transient private int removeCount;
 
-    private final void init(int size) {
+    private void init(int size) {
         if (size <= 0) {
             size = MINSIZE;
         } else if (!((size & -size) == size)) {
@@ -80,22 +100,31 @@ public class ObjectDict implements Stateful {
         removeCount = 0;
     }
 
+    /**
+     *
+     * @return
+     */
     public int[] getCounts() {
         int[] counts = {addCount, getCount, updateCount, removeCount};
         return counts;
     }
 
+    /**
+     *
+     * @param k
+     * @return
+     */
     public final Entry getEntry(Object k) {
         getCount++;
         if (null == k) {
             return null;
         }
-        int h = Entry.o2hash(k);
-        int i = Entry.indexFor(h, entries.length);
+        int h = o2hash(k);
+        int i = indexFor(h, entries.length);
         return getEntry(i, h, k);
     }
 
-    private final Entry getEntry(int i, int h, Object k) {
+    private Entry getEntry(int i, int h, Object k) {
         Entry e = entries[i];
         while (null != e) {
             if (e.eq(h, k)) {
@@ -107,7 +136,9 @@ public class ObjectDict implements Stateful {
     }
 
     /**
-     * Gets the object associayed to a key.
+     * Gets the object associated to a key.
+     * @param key
+     * @return 
      */
     public Object get(Object key) {
         Entry e = getEntry(key);
@@ -117,6 +148,11 @@ public class ObjectDict implements Stateful {
         return e.value;
     }
 
+    /**
+     *
+     * @param key
+     * @return
+     */
     public final int getOrdinal(Object key) {
         Entry e = getEntry(key);
         if (null == e) {
@@ -127,13 +163,16 @@ public class ObjectDict implements Stateful {
 
     /**
      * Associates an object to a key.
+     * @param k
+     * @param v
+     * @return 
      */
     public Object put(Object k, Object v) {
         if (null == k || null == v) {
             return null;
         }
-        int h = Entry.o2hash(k);
-        int i = Entry.indexFor(h, entries.length);
+        int h = o2hash(k);
+        int i = indexFor(h, entries.length);
         Entry e = getEntry(i, h, k);
         if (null != e) {
             updateCount++;
@@ -149,6 +188,8 @@ public class ObjectDict implements Stateful {
      * Allows to use ObjectDict as a Tree data structure. This operation can be
      * seen as adding, unless it already exists, a subtree named by a key to
      * this ObjectDict. This simple idea ports easily to all Maps.
+     * @param k
+     * @return 
      */
     public ObjectDict child(Object k) {
         ObjectDict child = (ObjectDict) get(k);
@@ -159,10 +200,12 @@ public class ObjectDict implements Stateful {
         return child;
     }
 
+    /**
+     *
+     */
     public void removeAll() {
         Object Ks[] = toKeys();
-        for (int i = 0; i < Ks.length; i++) {
-            Object K = Ks[i];
+        for (Object K : Ks) {
             Object V = remove(K);
             if (V instanceof ObjectDict) {
                 ((ObjectDict) V).removeAll();
@@ -183,13 +226,21 @@ public class ObjectDict implements Stateful {
      }
      }
      */
+
+    /**
+     *
+     * @param k
+     * @param v
+     * @return
+     */
+    
     public final Entry addNewEntry(Object k, Object v) {
-        int h = Entry.o2hash(k);
-        int i = Entry.indexFor(h, entries.length);
+        int h = o2hash(k);
+        int i = indexFor(h, entries.length);
         return makeEntry(i, k, v);
     }
 
-    private final Entry makeEntry(int i, Object k, Object v) {
+    private Entry makeEntry(int i, Object k, Object v) {
         Entry e = new Entry(k, v, entries[i]);
         e.ordinal = addSym(e);
         entries[i] = e;
@@ -201,14 +252,16 @@ public class ObjectDict implements Stateful {
 
     /**
      * Removes the association between a key and a value from this ObjectDict.
+     * @param k
+     * @return 
      */
     public Object remove(Object k) {
         removeCount++;
         if (null == k) {
             return null;
         }
-        int h = Entry.o2hash(k);
-        int i = Entry.indexFor(h, entries.length);
+        int h = o2hash(k);
+        int i = indexFor(h, entries.length);
 
         Entry prev = entries[i];
         Entry e = prev;
@@ -240,6 +293,7 @@ public class ObjectDict implements Stateful {
      * combined with add, this can be used safely as a stack - this allows
      * chronological undo of latest additions - it should be useful for
      * recovering syms on backtracking
+     * @return 
      */
     public Object pop() {
         if (isEmpty() || count != top + 1) {
@@ -248,7 +302,7 @@ public class ObjectDict implements Stateful {
         return remove(syms[top]);
     }
 
-    private final int addSym(Entry e) {
+    private int addSym(Entry e) {
         while (ftop >= 0) {
             int i = frees[ftop--];
             if (i <= top) {
@@ -260,7 +314,7 @@ public class ObjectDict implements Stateful {
         return top;
     }
 
-    private final void delSym(Entry e) {
+    private void delSym(Entry e) {
         syms[e.ordinal] = null;
         while (top > -1 && null == syms[top]) {
             --top;
@@ -271,17 +325,22 @@ public class ObjectDict implements Stateful {
         e.clear();
     }
 
+    /**
+     *
+     * @param i
+     * @return
+     */
     public final Entry at(int i) {
         return syms[i];
     }
 
-    private final void resize(int newCapacity) {
+    private void resize(int newCapacity) {
         Entry[] newsyms = new Entry[newCapacity];
-        System.arraycopy(syms, 0, newsyms, 0, top + 1);
+        arraycopy(syms, 0, newsyms, 0, top + 1);
         syms = newsyms;
 
         int[] newfrees = new int[newCapacity];
-        System.arraycopy(frees, 0, newfrees, 0, ftop + 1);
+        arraycopy(frees, 0, newfrees, 0, ftop + 1);
         frees = newfrees;
 
         entries = new Entry[newCapacity];
@@ -295,34 +354,54 @@ public class ObjectDict implements Stateful {
         }
     }
 
-    private final void expandHash() {
+    private void expandHash() {
         if (top + 1 >= entries.length) {
             resize(entries.length << 1);
         }
     }
 
-    private final void shrinkHash() {
+    private void shrinkHash() {
         if (entries.length > MINSIZE && top + 1 < entries.length >> 2) {
             resize(entries.length >> 1);
         }
     }
 
+    /**
+     *
+     * @return
+     */
     public final int size() {
         return count;
     }
 
+    /**
+     *
+     * @return
+     */
     public final boolean isEmpty() {
         return size() > 0;
     }
 
+    /**
+     *
+     * @return
+     */
     public final int capacity() {
         return entries.length;
     }
 
+    /**
+     *
+     * @return
+     */
     public final int getTop() {
         return top;
     }
 
+    /**
+     *
+     * @return
+     */
     public Object[] toKeys() {
         Object[] es = new Object[top + 1];
         for (int i = 0; i <= top; i++) {
@@ -334,6 +413,10 @@ public class ObjectDict implements Stateful {
         return es;
     }
 
+    /**
+     *
+     * @return
+     */
     public Object[] toValues() {
         Object[] es = new Object[top + 1];
         for (int i = 0; i <= top; i++) {
@@ -345,21 +428,28 @@ public class ObjectDict implements Stateful {
         return es;
     }
 
+    /**
+     *
+     */
     public void compact() {
         while (ftop >= 0) {
             int i = frees[ftop--];
             Entry e = syms[i];
             if (null != e) {
-                Interact.errmes("error compacting dict at:" + ftop, new SystemException());
+                errmes("error compacting dict at:" + ftop, new SystemException());
             }
             e = syms[top];
             syms[top--] = null;
             e.ordinal = i;
             syms[i] = e;
         }
-        Prolog.dump("info after compact\n" + info());
+        dump("info after compact\n" + info());
     }
 
+    /**
+     *
+     * @param seed
+     */
     public void shuffle(int seed) {
         compact();
 
@@ -379,16 +469,25 @@ public class ObjectDict implements Stateful {
          */
         for (int i = 0; i < top + 1; i++) {
             Entry e = syms[i];
-            Prolog.dump(e + "=e,i=" + i);
+            dump(e + "=e,i=" + i);
             e.ordinal = i;
         }
 
     }
 
+    /**
+     *
+     * @return
+     */
     public ObjectIterator getKeys() {
         return new ObjectIterator(syms, top);
     }
 
+    /**
+     *
+     * @param other
+     * @return
+     */
     public ObjectDict intersect_with(ObjectDict other) {
         ObjectIterator I = getKeys();
         ObjectDict D = new ObjectDict();
@@ -404,10 +503,21 @@ public class ObjectDict implements Stateful {
         return D;
     }
 
+    /**
+     *
+     * @param other
+     * @return
+     */
     public ObjectDict difference_with(ObjectDict other) {
         return difference_with(other, new ObjectDict());
     }
 
+    /**
+     *
+     * @param other
+     * @param D
+     * @return
+     */
     public ObjectDict difference_with(ObjectDict other, ObjectDict D) {
         ObjectIterator I = getKeys();
         while (I.hasNext()) {
@@ -422,11 +532,21 @@ public class ObjectDict implements Stateful {
         return D;
     }
 
+    /**
+     *
+     * @param other
+     * @return
+     */
     public ObjectDict simdif_with(ObjectDict other) {
         ObjectDict D = difference_with(other);
         return other.difference_with(this, D);
     }
 
+    /**
+     *
+     * @param other
+     * @return
+     */
     public int intersect_count(ObjectDict other) {
         ObjectIterator I = getKeys();
         int ctr = 0;
@@ -440,18 +560,37 @@ public class ObjectDict implements Stateful {
         return ctr;
     }
 
+    /**
+     *
+     * @param other
+     * @return
+     */
     public int simdif_count(ObjectDict other) {
         return this.size() + other.size() - 2 * intersect_count(other);
     }
 
+    /**
+     *
+     * @param other
+     * @return
+     */
     public int dif_count(ObjectDict other) {
         return this.size() - intersect_count(other);
     }
 
+    /**
+     *
+     * @param other
+     * @return
+     */
     public int union_count(ObjectDict other) {
         return this.size() + other.size() - intersect_count(other);
     }
 
+    /**
+     *
+     * @return
+     */
     public String info() {
         return "{count=" + count
                 + ", entries=" + entries.length
@@ -464,8 +603,9 @@ public class ObjectDict implements Stateful {
                 + "}";
     }
 
+    @Override
     public String toString() {
-        StringBuffer buf = new StringBuffer("[");
+        StringBuilder buf = new StringBuilder("[");
         int i = -1;
         boolean first = true;
         while (i < top) {
@@ -475,7 +615,7 @@ public class ObjectDict implements Stateful {
             }
             if (null != e) {
                 first = false;
-                buf.append("[" + (i) + "]:");
+                buf.append("[").append(i).append("]:");
                 buf.append(e);
             }
         }
@@ -501,9 +641,9 @@ public class ObjectDict implements Stateful {
     private void readObject(java.io.ObjectInputStream s)
             throws java.io.IOException, ClassNotFoundException {
         s.defaultReadObject();
-        int count = s.readInt();
-        init(count);
-        for (int i = 0; i < count; i++) {
+        int _count = s.readInt();
+        init(_count);
+        for (int i = 0; i < _count; i++) {
             Object key = s.readObject();
             Object value = s.readObject();
             addNewEntry(key, value);

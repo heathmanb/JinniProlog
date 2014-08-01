@@ -40,9 +40,10 @@ final class TrailStack extends IntStack {
   * @param hRef The heap index of the variable.
   */
   final void trailVarIf(int hRef) {
-    if (hRef <= choice.SAVED_H())
-      //trail[++trailTop] = hRef;	
-      push(hRef);
+    if (hRef <= choice.SAVED_H()) {
+        //trail[++trailTop] = hRef;
+        push(hRef);
+    }
   }
 
   /** Unbind variables bound since a specified offset into the trail stack.
@@ -62,7 +63,9 @@ final class TrailStack extends IntStack {
   }
 
   void tidy() {
-    if (null != choice) compact(choice.SAVED_TR(), choice.SAVED_H());
+    if (null != choice) {
+        compact(choice.SAVED_TR(), choice.SAVED_H());
+    }
   }
 
   void dump() {

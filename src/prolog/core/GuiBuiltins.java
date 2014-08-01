@@ -6,27 +6,69 @@ import prolog.logic.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.applet.*;
+import static java.awt.Toolkit.getDefaultToolkit;
 import java.net.URL;
-import java.io.FilenameFilter;
-import java.io.File;
-import java.util.Arrays;
+import static java.util.Arrays.stream;
+import static prolog.logic.Interact.warnmes;
 
 /**
  * Provides built-ins for GUI programs. Called though Reflection from Prolog.
  */
 public class GuiBuiltins implements Stateful {
 
+    /**
+     *
+     */
     public static int defX = 240;
+
+    /**
+     *
+     */
     public static int defY = 300;
+
+    /**
+     *
+     */
     public static int defRows = 16;
+
+    /**
+     *
+     */
     public static int defCols = 24;
+
+    /**
+     *
+     */
     public static int gapX = 2;
+
+    /**
+     *
+     */
     public static int gapY = 2;
 
+    /**
+     *
+     */
     public static String defaultFontName = "Default";
+
+    /**
+     *
+     */
     public static int defaultFontSize = 12;
+
+    /**
+     *
+     */
     public static int defaultFontStyle = Font.PLAIN;
+
+    /**
+     *
+     */
     public static Color defaultFgColor = null;
+
+    /**
+     *
+     */
     public static Color defaultBgColor = null;
 
     private static Font defaultFont = defaultFont();
@@ -35,23 +77,42 @@ public class GuiBuiltins implements Stateful {
         return new Font(defaultFontName, defaultFontSize, defaultFontSize);
     }
 
+    /**
+     *
+     * @param C
+     */
     public static void setColors(Component C) {
         to_default_fg(C);
         to_default_bg(C);
     }
 
+    /**
+     *
+     * @param C
+     */
     public static void setFonts(Component C) {
         to_default_font(C);
     }
 
+    /**
+     *
+     * @param C
+     */
     public static void setLooks(Component C) {
         setFonts(C);
         setColors(C);
     }
 
+    /**
+     *
+     */
     public GuiBuiltins() {
     }
 
+    /**
+     *
+     * @param C
+     */
     public static void stopComponent(Component C) {
         if (C instanceof JinniButton) {
             JinniButton B = (JinniButton) C;
@@ -65,6 +126,10 @@ public class GuiBuiltins implements Stateful {
      return defaultFont;
      }
      */
+    /**
+     *
+     * @param name
+     */
     public static void set_font_name(String name) {
         if (!name.equals(defaultFontName)) {
             defaultFontName = name;
@@ -72,16 +137,28 @@ public class GuiBuiltins implements Stateful {
         }
     }
 
+    /**
+     *
+     * @param size
+     */
     public static void set_font_size(int size) {
         defaultFontSize = size;
         defaultFont = new Font(defaultFontName, defaultFontStyle, size);
     }
 
+    /**
+     *
+     * @param size
+     */
     public static void inc_font_size(int size) {
         size += defaultFontSize;
         set_font_size(size);
     }
 
+    /**
+     *
+     * @param s
+     */
     public static void set_font_style(String s) {
         int style = defaultFontStyle;
         if (null != s) {
@@ -103,10 +180,18 @@ public class GuiBuiltins implements Stateful {
         }
     }
 
+    /**
+     *
+     * @param C
+     */
     public static void to_default_font(Component C) {
         C.setFont(defaultFont);
     }
 
+    /**
+     *
+     * @param C
+     */
     public static void to_default_fg(Component C) {
         if (null == defaultFgColor) {
             return;
@@ -114,6 +199,10 @@ public class GuiBuiltins implements Stateful {
         C.setForeground(defaultFgColor);
     }
 
+    /**
+     *
+     * @param C
+     */
     public static void to_default_bg(Component C) {
         if (null == defaultBgColor) {
             return;
@@ -130,14 +219,33 @@ public class GuiBuiltins implements Stateful {
      return defaultBgColor;
      }
      */
+    /**
+     *
+     * @param r
+     * @param g
+     * @param b
+     */
     public static void set_fg_color(double r, double g, double b) {
         defaultFgColor = new_color(r, g, b);
     }
 
+    /**
+     *
+     * @param r
+     * @param g
+     * @param b
+     */
     public static void set_bg_color(double r, double g, double b) {
         defaultBgColor = new_color(r, g, b);
     }
 
+    /**
+     *
+     * @param name
+     * @param x
+     * @param y
+     * @return
+     */
     public static LayoutManager to_layout(String name, int x, int y) {
         LayoutManager M;
 
@@ -155,16 +263,25 @@ public class GuiBuiltins implements Stateful {
                 M = new FlowLayout();
                 break;
             default:
-                JavaIO.warnmes("unknown layout: " + name);
+                warnmes("unknown layout: " + name);
                 M = new FlowLayout();
                 break;
         }
         return M;
     }
 
+    /**
+     *
+     * @param title
+     * @param layout
+     * @param x
+     * @param y
+     * @param kind
+     * @return
+     */
     public static JinniFrame new_frame(String title, String layout,
             int x, int y, int kind) {
-        LayoutManager L = GuiBuiltins.to_layout(layout, x, y); // more work to decode grid - etc.
+        LayoutManager L = to_layout(layout, x, y); // more work to decode grid - etc.
         return new JinniFrame(title, L, kind);
     }
 
@@ -201,10 +318,21 @@ public class GuiBuiltins implements Stateful {
     /*
      set_label: directly through Reflection
      */
+    /**
+     *
+     * @param mode
+     * @return
+     */
     public static String new_file_dialog(int mode) {
         return new_file_dialog(mode, "pl");
     }
 
+    /**
+     *
+     * @param mode
+     * @param filter
+     * @return
+     */
     public static String new_file_dialog(int mode, String filter) {
         JinniFrame C = new JinniFrame("File Dialog");
 
@@ -214,7 +342,7 @@ public class GuiBuiltins implements Stateful {
         } else {
             D = new JinniFileDialog(C, "Save", FileDialog.SAVE, filter);
         }
-        GuiBuiltins.setLooks(D);
+        setLooks(D);
         //D.show();
         D.setVisible(true);
         String fname = D.getFile();
@@ -231,8 +359,16 @@ public class GuiBuiltins implements Stateful {
         return result;
     }
 
+    /**
+     *
+     * @param C
+     * @param layout
+     * @param x
+     * @param y
+     * @return
+     */
     public static JinniPanel new_panel(Container C, String layout, int x, int y) {
-        LayoutManager L = GuiBuiltins.to_layout(layout, x, y);
+        LayoutManager L = to_layout(layout, x, y);
         JinniPanel P = new JinniPanel(L);
         C.add(P);
         return P;
@@ -269,15 +405,22 @@ public class GuiBuiltins implements Stateful {
      get_text
      clear_text
      */
+    /**
+     *
+     * @param r
+     * @param g
+     * @param b
+     * @return
+     */
     public static Color new_color(double r, double g, double b) {
         if (r > 1 || r < 0) {
-            JavaIO.warnmes("new_color arg 1 should be in 0..1->" + r);
+            warnmes("new_color arg 1 should be in 0..1->" + r);
         }
         if (g > 1 || g < 0) {
-            JavaIO.warnmes("new_color arg 2 should be in 0..1->" + g);
+            warnmes("new_color arg 2 should be in 0..1->" + g);
         }
         if (b > 1 || b < 0) {
-            JavaIO.warnmes("new_color arg 3 should be in 0..1->" + b);
+            warnmes("new_color arg 3 should be in 0..1->" + b);
         }
         int R = (int) (r * 255.0);
         int G = (int) (g * 255.0);
@@ -287,6 +430,11 @@ public class GuiBuiltins implements Stateful {
     }
 
     //  set_fg,set_bg,set_color : in Prolog 
+    /**
+     *
+     * @param C
+     * @param direction
+     */
     public static void set_direction(Container C, String direction) {
         if (C instanceof JinniFrame) {
             ((JinniFrame) C).setDirection(direction);
@@ -295,6 +443,10 @@ public class GuiBuiltins implements Stateful {
         }
     }
 
+    /**
+     *
+     * @param C
+     */
     public static void destroy(Component C) {
         //C.dispose();
         if (C instanceof Container) {
@@ -303,21 +455,44 @@ public class GuiBuiltins implements Stateful {
         C.removeNotify();
     }
 
+    /**
+     *
+     * @param C
+     * @param layoutName
+     * @param x
+     * @param y
+     */
     public static void set_layout(Container C, String layoutName, int x, int y) {
         //C.removeAll();
         LayoutManager L = to_layout(layoutName, x, y);
         C.setLayout(L);
     }
 
+    /**
+     *
+     * @param C
+     */
     public static void show(Container C) {
         C.validate();
         C.setVisible(true);
     }
 
+    /**
+     *
+     * @param C
+     * @param h
+     * @param v
+     */
     public static void resize(Component C, int h, int v) {
         C.setSize(h, v);
     }
 
+    /**
+     *
+     * @param C
+     * @param hpos
+     * @param vpos
+     */
     public static void move(Component C, int hpos, int vpos) {
         C.setLocation(hpos, vpos);
     }
@@ -328,13 +503,25 @@ public class GuiBuiltins implements Stateful {
      * @return
      */
     public static Applet get_applet() {
-        return (Applet) PrologApplet.applet;
+        return PrologApplet.applet;
     }
 
+    /**
+     *
+     * @return
+     */
     public static String get_applet_host() {
         return get_applet().getCodeBase().getHost();
     }
 
+    /**
+     *
+     * @param C
+     * @param src
+     * @param width
+     * @param height
+     * @return
+     */
     public static JinniImagePanel new_image(Container C, String src,
             int width, int height) {
         JinniImagePanel P = new JinniImagePanel(src, width, height);
@@ -342,6 +529,9 @@ public class GuiBuiltins implements Stateful {
         return P;
     }
 
+    /**
+     *
+     */
     public static class JinniFrame extends Frame {
 
         private int kind;
@@ -368,6 +558,10 @@ public class GuiBuiltins implements Stateful {
             throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
         }
 
+        /**
+         *
+         * @param direction
+         */
         public void setDirection(String direction) {
             this.direction = direction;
         }
@@ -377,12 +571,17 @@ public class GuiBuiltins implements Stateful {
             return handleRunnable(evt);
         }
 
+        /**
+         *
+         * @param evt
+         * @return
+         */
         public boolean handleRunnable(Event evt) {
             //$$ Interact.warnmes("handleRunnable TARGET: "+evt.target);
             if (evt.target instanceof Runnable) {
                 ((Runnable) evt.target).run();
             } else {
-                Interact.warnmes("UNEXPECTED  TARGET: " + evt.target);
+                warnmes("UNEXPECTED  TARGET: " + evt.target);
                 return false;
             }
             return true;
@@ -399,7 +598,7 @@ public class GuiBuiltins implements Stateful {
         }
 
         private void cleanUp() {
-            Arrays.stream(getComponents()).parallel()
+            stream(getComponents()).parallel()
                     .forEach(C -> {
                         if (C instanceof JinniButton) {
                             ((JinniButton) C).stop();
@@ -460,10 +659,13 @@ public class GuiBuiltins implements Stateful {
                 // ok, handled in ask.
             }
             if (0 == answer) {
-                JavaIO.warnmes("the engine attached to a Prolog Button died");
+                warnmes("the engine attached to a Prolog Button died");
             }
         }
 
+        /**
+         *
+         */
         synchronized public void stop() {
             if (null != M) {
                 M.removeObject(this);
@@ -479,6 +681,9 @@ public class GuiBuiltins implements Stateful {
         }
     }
 
+    /**
+     *
+     */
     public static class JinniPanel extends Panel {
 
         private String direction;
@@ -493,6 +698,10 @@ public class GuiBuiltins implements Stateful {
             GuiBuiltins.setLooks(this);
         }
 
+        /**
+         *
+         * @param direction
+         */
         public void setDirection(String direction) {
             this.direction = direction;
         }
@@ -510,6 +719,9 @@ public class GuiBuiltins implements Stateful {
 
     }
 
+    /**
+     *
+     */
     public static class JinniText extends TextArea implements TextSink {
 
         JinniText() {
@@ -530,22 +742,33 @@ public class GuiBuiltins implements Stateful {
          append_text(s);
          }
          */
+        /**
+         *
+         * @param s
+         */
         @Override
         public void append_text(String s) {
             super.append(s);
         }
 
+        /**
+         *
+         */
         public void appendNL() {
             append_text("\n");
         }
 
+        /**
+         *
+         * @param c
+         */
         public void appendCode(int c) {
             append_text("" + (char) c);
         }
 
         @Override
         public void processKeyEvent(KeyEvent e) {
-            GuiBuiltins.setColors(this);
+            setColors(this);
         }
 
         @Override
@@ -554,6 +777,9 @@ public class GuiBuiltins implements Stateful {
         }
     }
 
+    /**
+     *
+     */
     public static class JinniImagePanel extends Canvas {
 
         private Image image;
@@ -565,11 +791,11 @@ public class GuiBuiltins implements Stateful {
             this.width = width;
             this.height = height;
             if (null != PrologApplet.applet) {
-                Applet applet = (Applet) PrologApplet.applet;
+                Applet applet = PrologApplet.applet;
                 URL url = applet.getCodeBase();
                 image = applet.getImage(url, sourceName);
             } else {
-                image = Toolkit.getDefaultToolkit().getImage(sourceName);
+                image = getDefaultToolkit().getImage(sourceName);
             }
             setLooks();
         }

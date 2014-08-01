@@ -3,19 +3,31 @@ package jgp;
 import java.math.*;
 import prolog.core.BigMath;
 
+/**
+ *
+ * @author Brad
+ */
 public class EvalHorn extends Eval {
  
-  public EvalHorn(int nvars){
+    /**
+     *
+     * @param nvars
+     */
+    public EvalHorn(int nvars){
     super("ifand",nvars);
   }
   
-  
-  public int getArity() {
+    /**
+     *
+     * @return
+     */
+    public int getArity() {
     return 3;
   }
   
   /**
    * applies the primitive operation during synthesis
+     * @return 
    */
   public BigInteger applyOp(BigInteger[] Bs) { 
      BigInteger A=Bs[0];

@@ -1,6 +1,12 @@
 package prolog.logic;
 
+import static java.lang.Math.abs;
+import static java.lang.System.currentTimeMillis;
 import java.util.Random;
+import static prolog.logic.Interact.errmes;
+import static prolog.logic.Interact.println;
+import static prolog.logic.Interact.warnmes;
+import static prolog.logic.Tools.newRandom;
 
 /**
  * Implements a Prolog code space associated to byte code file loaded in a
@@ -20,10 +26,20 @@ public final class Prolog implements Stateful {
      in a Machine sets the machine's id to this
      can be called on classes or engines
      */
+
+    /**
+     *
+     * @return
+     */
+    
     public int new_instance_id() {
         return ++instance_id;
     }
 
+    /**
+     *
+     * @return
+     */
     public String get_class_name() {
         return className;
     }
@@ -37,7 +53,7 @@ public final class Prolog implements Stateful {
         try {
             newprolog = prolog.cloneFor(className);
         } catch (PrologException e) {
-            Interact.errmes("error in cloning prolog", e);
+            errmes("error in cloning prolog", e);
             newprolog = prolog; //// attempting next best
         }
         return newprolog;
@@ -57,6 +73,10 @@ public final class Prolog implements Stateful {
         return cloneProlog(origProlog, className);
     }
 
+    /**
+     *
+     * @return
+     */
     public static final Prolog getDefaultProlog() {
         if (null == defaultProlog) {
             defaultProlog = getProlog(null);
@@ -74,6 +94,10 @@ public final class Prolog implements Stateful {
         return defaultProlog;
     }
 
+    /**
+     *
+     * @param prolog
+     */
     public static final void setDefaultProlog(Prolog prolog) {
         defaultProlog = prolog;
     }
@@ -89,7 +113,7 @@ public final class Prolog implements Stateful {
         try {
             return new Prolog(fname);
         } catch (PrologException e) {
-            Interact.errmes("failing to construct Prolog instance from bytecode file: " + fname, e);
+            errmes("failing to construct Prolog instance from bytecode file: " + fname, e);
             return null;
         }
     }
@@ -103,13 +127,32 @@ public final class Prolog implements Stateful {
     static int TRACE_STOP = 0;
 
     // timeStamp values.
-    public static final byte LOADTIME = 0;
+
+    /**
+     *
+     */
+        public static final byte LOADTIME = 0;
+
+    /**
+     *
+     */
     public static final byte RUNTIME = 1;
+
+    /**
+     *
+     */
     public static final byte BBOARDTIME = 2;
 
+    /**
+     *
+     */
     public final static Integer[] stamps = {
         (int) LOADTIME, (int) RUNTIME, (int) BBOARDTIME};
 
+    /**
+     *
+     * @return
+     */
     public Integer getMark() {
         if (timeStamp < stamps.length) {
             return stamps[timeStamp];
@@ -117,24 +160,41 @@ public final class Prolog implements Stateful {
         return (int) timeStamp;
     }
 
+    /**
+     *
+     */
     public byte timeStamp = LOADTIME;
 
     private static int codeMax = 1 << 15, MAXDICT = 1, MAXATOM = 1;
 
     private static ObjectDict classTable = new ObjectDict();
 
+    /**
+     *
+     * @param name
+     * @param prolog
+     */
     synchronized public static final void addPrologClass(String name, Prolog prolog) {
         if (null != classTable.get(name)) {
-            Interact.warnmes("Prolog class already exists: " + name);
+            warnmes("Prolog class already exists: " + name);
         } else {
             classTable.put(name, prolog);
         }
     }
 
+    /**
+     *
+     * @param name
+     * @return
+     */
     synchronized public static final Prolog getPrologClass(String name) {
         return (Prolog) classTable.get(name);
     }
 
+    /**
+     *
+     * @param name
+     */
     synchronized public static final void removePrologClass(String name) {
         Prolog prolog = getPrologClass(name);
         if (null != prolog) {
@@ -146,6 +206,11 @@ public final class Prolog implements Stateful {
     /*
      fixes possible initialization problems after serialization
      */
+
+    /**
+     *
+     */
+    
     public void refresh() {
         //codeStore.initInstructionLengths();
     }
@@ -170,34 +235,55 @@ public final class Prolog implements Stateful {
 
             clear_instance_id();
         } catch (Exception e) {
-            Interact.errmes("Fatal system error in initDataAreas", e);
+            errmes("Fatal system error in initDataAreas", e);
             throw new SystemException("Prolog Initalization Error");
         }
     }
 
     /* props API  - these props survive compile operations that reset Dict data */
+
+    /**
+     *
+     * @param K1
+     * @param K2
+     * @param V
+     */
+    
     public void setProp(Object K1, Object K2, Object V) {
         if (null == K1 || null == K2 || null == V) {
-            Interact.warnmes(
+            warnmes(
                     "null in Prolog.setProp(" + K1 + "," + K2 + "," + V + ")");
         }
         Term K = new Term(new Fun("x", K1, K2));
         propDict.put(K, V);
     }
 
+    /**
+     *
+     * @param K1
+     * @param K2
+     * @return
+     */
     public Object getProp(Object K1, Object K2) {
         if (null == K1 || null == K2) {
-            Interact.warnmes(
+            warnmes(
                     "null in Prolog.getProp(" + K1 + "," + K2 + ")");
         }
         Term K = new Term(new Fun("x", K1, K2));
         return propDict.get(K);
     }
 
+    /**
+     *
+     */
     public void clearProps() {
         propDict = new ObjectDict();
     }
 
+    /**
+     *
+     * @return
+     */
     public ObjectIterator propIterator() {
         return propDict.getKeys();
     }
@@ -244,7 +330,7 @@ public final class Prolog implements Stateful {
             other.dict = source.dict.cloneWith(other);
             other.codeStore = source.codeStore.cloneWith(other);
         } catch (CloneNotSupportedException e) {
-            Interact.errmes("error cloning: " + this, e);
+            errmes("error cloning: " + this, e);
             //never happens - they all do support it...
         }
         if (null == other) {
@@ -266,6 +352,10 @@ public final class Prolog implements Stateful {
     String className;
 
     Dict dict;
+
+    /**
+     *
+     */
     public AtomTable atomTable;
     CodeStore codeStore;
     ObjectDict propDict;
@@ -274,33 +364,125 @@ public final class Prolog implements Stateful {
     long startTime;
     private Random random;
 
+    /**
+     *
+     */
     public int G_true;
+
+    /**
+     *
+     */
     public int G_fail;
+
+    /**
+     *
+     */
     public static String S_null = "$null";
+
+    /**
+     *
+     */
     public int G_null; /* representation for Java's null */
 
+    /**
+     *
+     */
     public int G_empty;
+
+    /**
+     *
+     */
     public int G_ref;
 
+    /**
+     *
+     */
     public int G_predmark;
+
+    /**
+     *
+     */
     public int G_addrmark;
+
+    /**
+     *
+     */
     public int G_undefined;
+
+    /**
+     *
+     */
     public int G_metacall;
+
+    /**
+     *
+     */
     public int G_prolog_main;
 
+    /**
+     *
+     */
     public int G_NIL;
+
+    /**
+     *
+     */
     public int G_DOT;
+
+    /**
+     *
+     */
     public int G_DIF;
+
+    /**
+     *
+     */
     public int G_FLOAT;
+
+    /**
+     *
+     */
     public int G_STRING_CS2S;
+
+    /**
+     *
+     */
     public static String G_STRING_S2CS = "$STRING_S2CS";
+
+    /**
+     *
+     */
     public int G_OBJECT;
+
+    /**
+     *
+     */
     public int G_ENCODED;
+
+    /**
+     *
+     */
     public int G_PORTABLE;
+
+    /**
+     *
+     */
     public int G_VAR;
+
+    /**
+     *
+     */
     public int G_user;
+
+    /**
+     *
+     */
     public int[] compare_vals;
 
+    /**
+     *
+     * @throws PrologException
+     */
     public void init_constants() throws PrologException {
         G_true = atomTable.newFunctor("true", 0); // should be the first
         G_fail = atomTable.newFunctor("fail", 0);
@@ -334,14 +516,28 @@ public final class Prolog implements Stateful {
         compare_vals[2] = atomTable.newFunctor(">", 0);
     }
 
+    /**
+     *
+     * @return
+     */
     public int getRandom() {
-        return Math.abs(random.nextInt() >> 2);
+        return abs(random.nextInt() >> 2);
     }
 
+    /**
+     *
+     * @param seed
+     */
     public void setRandom(int seed) {
-        random = Tools.newRandom(seed);
+        random = newRandom(seed);
     }
 
+    /**
+     *
+     * @param fName
+     * @return
+     * @throws LoadException
+     */
     public final boolean load(String fName) throws LoadException {
         boolean ok = false;
         try {
@@ -350,11 +546,14 @@ public final class Prolog implements Stateful {
             throw new LoadException("Error in loading: " + fName + "=>" + e);
         }
         timeStamp = RUNTIME;
-        startTime = System.currentTimeMillis();
+        startTime = currentTimeMillis();
         rtime = 0;
         return ok;
     }
 
+    /**
+     *
+     */
     public final void stop() {
         atomTable.removeObject(this);
     //Prolog other=getPrologClass(className);
@@ -368,10 +567,18 @@ public final class Prolog implements Stateful {
     }
 
     // needs more work
-    public final void advance_code_top() {
+
+    /**
+     *
+     */
+        public final void advance_code_top() {
         codeStore.setTopBack();
     }
 
+    /**
+     *
+     * @throws PrologException
+     */
     public final void rollback() throws PrologException {
         // not needed as commit is not implemented
         codeStore.resetTopBak(); // as it was at LOADTIME - for sure
@@ -379,15 +586,28 @@ public final class Prolog implements Stateful {
         dict.rollback(LOADTIME);
     }
 
+    /**
+     *
+     * @throws PrologException
+     */
     public final void hard_rollback() throws PrologException {
         rollback();
         atomTable.rollback(LOADTIME);
     }
 
+    /**
+     *
+     * @param s
+     */
     public static void dump(Object s) {
-        Interact.println("!!!" + s);
+        println("!!!" + s);
     }
 
+    /**
+     *
+     * @param i
+     * @return
+     */
     public String handle2string(int i) {
         Object o = atomTable.i2o(i);
         String s;

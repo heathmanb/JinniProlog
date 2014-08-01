@@ -4,6 +4,7 @@ import javax.media.j3d.*;
 import javax.vecmath.*;
 import com.sun.j3d.utils.geometry.*;
 import prolog.logic.Fun; //?
+import static prolog3d.Convert.xml2shapes;
 
 /**
   Imports Morphs created with Blender and exported to XML
@@ -12,7 +13,13 @@ import prolog.logic.Fun; //?
  */
 public class Morph3D extends Agent3D { 
   
-  public Morph3D(World world,Shape3D[] shapes,Object data) {
+    /**
+     *
+     * @param world
+     * @param shapes
+     * @param data
+     */
+    public Morph3D(World world,Shape3D[] shapes,Object data) {
     super(world,data);
     this.data=data;
     this.t=0;
@@ -24,11 +31,22 @@ public class Morph3D extends Agent3D {
     scaleTo(3.0);
   }
   
-  public Morph3D(World world,Fun fnames,Object data) {
-    this(world,Convert.xml2shapes(fnames),data);
+    /**
+     *
+     * @param world
+     * @param fnames
+     * @param data
+     */
+    public Morph3D(World world,Fun fnames,Object data) {
+    this(world,xml2shapes(fnames),data);
   }
     
-  public static Morph shapes2morph(Shape3D[] shapes) {
+    /**
+     *
+     * @param shapes
+     * @return
+     */
+    public static Morph shapes2morph(Shape3D[] shapes) {
     int l=shapes.length;
     GeometryArray[] gs=new GeometryArray[l];
     for(int i=0;i<l;i++) {
@@ -52,8 +70,11 @@ public class Morph3D extends Agent3D {
   float delta=0.05f;
   
   float dt() {
-    if(t<1) t+=delta;
-    else t=0;
+    if(t<1) {
+        t+=delta;
+        } else {
+        t=0;
+        }
     return t;
   }
    
@@ -65,7 +86,9 @@ public class Morph3D extends Agent3D {
       weights[i]=0.0f;
     }
     float a=dt();
-    if(a==0) k=(k+1) % l;
+    if(a==0) {
+        k=(k+1) % l;
+        }
   
     int m=k;
     int n=(k+1) % l;
@@ -77,7 +100,10 @@ public class Morph3D extends Agent3D {
     //return false;
   }
    
-  public void onLeftClick() {
+    /**
+     *
+     */
+    public void onLeftClick() {
     print(data);
   }
   

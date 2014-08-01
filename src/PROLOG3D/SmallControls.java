@@ -7,16 +7,28 @@ import java.awt.*;
 import java.awt.event.*;
 import prolog.logic.*;
 import prolog.kernel.*; //?!
+import static prolog.kernel.Top.new_machine;
+import static prolog3d.Prolog3D.pp;
+import static prolog3d.Prolog3D.toFrozen;
 
 /**
    Adds a control Panel to the 3D display
  */
 public class SmallControls extends Controls {
-  public SmallControls(Prolog3D M,LayoutEngine LG) {
+
+    /**
+     *
+     * @param M
+     * @param LG
+     */
+    public SmallControls(Prolog3D M,LayoutEngine LG) {
     super(M,LG);
   }
   
-  public void makeControls() {
+    /**
+     *
+     */
+    public void makeControls() {
     setBackground(new Color(50,50,100));
     setForeground(new Color(255,255,255));
     makeOutput("Center",this);
@@ -36,7 +48,9 @@ public class SmallControls extends Controls {
   
   private void makeButtons(String where,Panel P) {
     int bcount=3;
-    if(null!=LG) bcount++;
+    if(null!=LG) {
+        bcount++;
+        }
     
     Panel B=new Panel(new GridLayout(bcount,1));
     B.setBackground(new Color(50,50,100));
@@ -65,31 +79,44 @@ public class SmallControls extends Controls {
   
   public void actionPerformed(ActionEvent e) {
     String c=e.getActionCommand();
-    Prolog3D.pp("M="+M+" cmd="+c);
+        pp("M="+M+" cmd="+c);
     if("Run".equals(c)) {
       callIDE();
     }
-    else if("Print".equals(c)) M.printWorld(Params.printH,Params.printW);
-    else if(null!=LG && "Freeze".equals(c)) Prolog3D.toFrozen(LG,400,400);
-    else if("Quit".equals(c)) {
-      if(null!=LG) LG.stop();
+    else if("Print".equals(c)) {
+        M.printWorld(Params.printH,Params.printW);
+        } else if(null!=LG && "Freeze".equals(c)) {
+            toFrozen(LG, 400, 400);
+        } else if("Quit".equals(c)) {
+      if(null!=LG) {
+          LG.stop();
+            }
       if(null!=M) {
         M.stopWorld();
         M.exit();
       }  
     }
-    else Prolog3D.pp("unknown event="+e);
+    else {
+            pp("unknown event="+e);
+        }
   }
 
-  public void callIDE() {
-    Machine E=Top.new_machine();
+    /**
+     *
+     */
+    public void callIDE() {
+    Machine E=new_machine();
     Fun goal=new Fun("call","ide");
     E.load_engine(goal);
     E.get_answer();
     //JinniButton new_button(Container C,String name,Engine M)
   }
 
-  public void print(Object O) {
+    /**
+     *
+     * @param O
+     */
+    public void print(Object O) {
     output.setText(O.toString());
   }
 }

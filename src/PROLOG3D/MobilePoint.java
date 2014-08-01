@@ -1,7 +1,10 @@
 package prolog3d;
+import static java.lang.Math.min;
+import static java.lang.Math.pow;
 import prolog.core.RankedData;
 
 import java.text.NumberFormat;
+import static java.text.NumberFormat.getInstance;
 import javax.vecmath.*;
 
 class MobilePoint {
@@ -13,8 +16,11 @@ class MobilePoint {
   MobilePoint(Object RS,RankedData RD,Vertex3D V,double r,double n) {
     this.r=r;
     if(null!=RD) {
-      if(null!=RD.data && null!=RS) this.lbl=RS.toString();
-      else this.lbl="";
+      if(null!=RD.data && null!=RS) {
+          this.lbl=RS.toString();
+            } else {
+          this.lbl="";
+            }
       this.rank=RD.rank;
       this.component=RD.component;
     }
@@ -24,12 +30,15 @@ class MobilePoint {
       this.component=0;
     }
     this.V=V;
-    double idealSize=Math.pow(rank,1/3f);
+    double idealSize=pow(rank,1/3f);
     idealSize=0.01*idealSize*(r/n);
     //Prolog3D.pp("idealSize="+idealSize);
     double max=0.5; double min=0.1;
-    if(idealSize>max) idealSize=max;
-    else if(idealSize<min) idealSize=min;
+    if(idealSize>max) {
+        idealSize=max;
+        } else if(idealSize<min) {
+            idealSize=min;
+        }
     V.scaleTo(idealSize);
     initZ();
   }
@@ -83,7 +92,7 @@ class MobilePoint {
   
   final void initZ() {
     double rz;
-    double t=Math.min(component,10)/10.0;
+    double t=min(component,10)/10.0;
     rz=-t*r;
     V.setZ(rz);
     //Prolog3D.pp("rz="+rz);
@@ -103,8 +112,10 @@ class MobilePoint {
   
   public String toString() {
     // called through Vertex V's toString which is basically this
-    if(rank==0.0 || Params.verbose<1) return lbl;
-    NumberFormat nf = NumberFormat.getInstance();
+    if(rank==0.0 || Params.verbose<1) {
+        return lbl;
+        }
+    NumberFormat nf = getInstance();
     nf.setMaximumFractionDigits(2);
     String pr=nf.format(rank);
     return lbl+":"+pr+"("+component+")";

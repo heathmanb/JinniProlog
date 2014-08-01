@@ -6,11 +6,22 @@ import javax.swing.*;
 //import javax.swing.filechooser.*;
 
 import java.io.File;
+import static jgui.Start.setLooks;
 
-
+/**
+ *
+ * @author Brad
+ */
 public class JinniFileDialog extends JFileChooser  {
   
-public JinniFileDialog(JinniFrame F,String name,int mode,String filter) {
+    /**
+     *
+     * @param F
+     * @param name
+     * @param mode
+     * @param filter
+     */
+    public JinniFileDialog(JinniFrame F,String name,int mode,String filter) {
     //super(F,name,mode);
     super("."); //(File)null,(FileSystemView)null);
     this.mode=mode;
@@ -18,24 +29,37 @@ public JinniFileDialog(JinniFrame F,String name,int mode,String filter) {
     setDialogType(mode);
     //this.filter=filter;
     //setFilenameFilter(this);
-    Start.setLooks(this);
+        setLooks(this);
     
   }
   private int mode;
   //private String filter;
   
-  public String getChoice() {
+    /**
+     *
+     * @return
+     */
+    public String getChoice() {
      int status;
-     if(0==mode) 
-       status=showOpenDialog(null);
-     else  
-       status=showSaveDialog(null);
+     if(0==mode) {
+         status=showOpenDialog(null);
+        } else {
+         status=showSaveDialog(null);
+        }
      File selectedFile = getSelectedFile();
-     if(null==selectedFile) return null;
+     if(null==selectedFile) {
+         return null;
+        }
      return selectedFile.getName();
   }
   
-  public boolean accept(File dir, String name) {
+    /**
+     *
+     * @param dir
+     * @param name
+     * @return
+     */
+    public boolean accept(File dir, String name) {
     //Prolog.dump("accept called with: "+name);
     //return name.endsWith("."+this.filter);
     return true; // this makes behavior uniform accross platforms

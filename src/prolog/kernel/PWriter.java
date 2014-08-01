@@ -1,14 +1,23 @@
 package prolog.kernel;
 
+import static java.lang.String.valueOf;
 import prolog.logic.Interact;
 
-
+/**
+ *
+ * @author Brad
+ */
 public class PWriter extends PrologWriter {
 
     private boolean trouble = false;
 
 	//private Formatter formatter;
-    public PWriter(TextSink textSink) {
+
+    /**
+     *
+     * @param textSink
+     */
+        public PWriter(TextSink textSink) {
         super(textSink);
     }
 
@@ -77,22 +86,22 @@ public class PWriter extends PrologWriter {
 
     @Override
     public void print(int i) {
-        write(String.valueOf(i));
+        write(valueOf(i));
     }
 
     @Override
     public void print(long l) {
-        write(String.valueOf(l));
+        write(valueOf(l));
     }
 
     @Override
     public void print(float f) {
-        write(String.valueOf(f));
+        write(valueOf(f));
     }
 
     @Override
     public void print(double d) {
-        write(String.valueOf(d));
+        write(valueOf(d));
     }
 
     @Override
@@ -110,7 +119,7 @@ public class PWriter extends PrologWriter {
 
     @Override
     public void print(Object obj) {
-        write(String.valueOf(obj));
+        write(valueOf(obj));
     }
 
     @Override
@@ -168,7 +177,7 @@ public class PWriter extends PrologWriter {
 
     @Override
     public void println(Object x) {
-        String s = String.valueOf(x);
+        String s = valueOf(x);
         print(s);
         println();
     }

@@ -5,13 +5,22 @@ package prolog.logic;
  * Java objects
  */
 public class HeapRef implements Stateful {
-  public HeapRef(int ref) {
+
+    /**
+     *
+     * @param ref
+     */
+    public HeapRef(int ref) {
     this.ref=ref;
   }
 
   final private int ref;
   
-  final public int getRef() {
+    /**
+     *
+     * @return
+     */
+    final public int getRef() {
     return ref;
   }
   

@@ -12,6 +12,11 @@ import com.sun.j3d.loaders.IncorrectFormatException;
 import com.sun.j3d.loaders.Scene;
 import com.sun.j3d.utils.scenegraph.io.*;
 import java.util.zip.*;
+import static prolog.kernel.JavaIO.getPrologHome;
+import static prolog.kernel.JavaIO.url_or_file;
+import static prolog3d.Params.isApplet;
+import static prolog3d.Prolog3D.pp;
+import static prolog3d.Tools.collectChildren;
 
   // added !!!
 //import com.sun.j3d.loaders.vrml97.VrmlLoader;
@@ -27,16 +32,25 @@ public class Convert {
   Convert() {
   }
     
-  static public String fixFileName(String fname) {
-    if(fname.startsWith("http://")) return fname;
+    /**
+     *
+     * @param fname
+     * @return
+     */
+    static public String fixFileName(String fname) {
+    if(fname.startsWith("http://")) {
+        return fname;
+        }
     
-    if(!Params.isApplet()) {
-      if(new File(fname).exists()) return fname;
+    if(!isApplet()) {
+      if(new File(fname).exists()) {
+          return fname;
+            }
     }
     else {
       try {
         //Prolog3D.pp("TRYING fname="+fname);
-        fname=JavaIO.getPrologHome()+fname;
+        fname=  getPrologHome()+fname;
         return fname;
       }
       catch(Exception e) {
@@ -45,27 +59,41 @@ public class Convert {
     return null;
   }
 
-  static public InputStream urlInput(String url) {
+    /**
+     *
+     * @param url
+     * @return
+     */
+    static public InputStream urlInput(String url) {
     try {
       url=fixFileName(url);
-      InputStream s=new BufferedInputStream(JavaIO.url_or_file(url));
-      if(url.endsWith(".gz")) s=new GZIPInputStream(s);
+      InputStream s=new BufferedInputStream(url_or_file(url));
+      if(url.endsWith(".gz")) {
+          s=new GZIPInputStream(s);
+            }
       return s;
     }
     catch(Exception e) {
-      Prolog3D.pp("error opening: "+url+"=>"+e);
+            pp("error opening: "+url+"=>"+e);
       return null;
     }
   }
   
-  static public OutputStream fileOutput(String fname) {
+    /**
+     *
+     * @param fname
+     * @return
+     */
+    static public OutputStream fileOutput(String fname) {
     try {
       OutputStream s=new BufferedOutputStream(new FileOutputStream(new File(fname)));
-      if(fname.endsWith(".gz")) s=new GZIPOutputStream(s);
+      if(fname.endsWith(".gz")) {
+          s=new GZIPOutputStream(s);
+            }
       return s;
     }
     catch(Exception e) {
-      Prolog3D.pp("error opening: "+fname+"=>"+e);
+            pp("error opening: "+fname+"=>"+e);
       return null;
     }
   }
@@ -73,14 +101,18 @@ public class Convert {
 
   /**
      loads files in various formats to BranchGroup objects
+     * @return 
    */
   public static BranchGroup file2bgroup(String filename) {
     if(filename.endsWith(".j3f") || filename.endsWith(".J3F") 
-    || filename.endsWith(".j3f.gz") || filename.endsWith(".J3F.GZ")) 
-      return jf2bgroup(filename);  
+    || filename.endsWith(".j3f.gz") || filename.endsWith(".J3F.GZ")) {
+        return jf2bgroup(filename);  
+        }  
     //else  
     Scene s=file2scene(filename);
-    if(null==s) return null;
+    if(null==s) {
+        return null;
+        }
     BranchGroup b =  s.getSceneGroup();
     Hashtable H=s.getNamedObjects();
     if(null!=H) {
@@ -92,7 +124,11 @@ public class Convert {
     return b;
   }
   
-  public static void fixMap(HashMap H) {
+    /**
+     *
+     * @param H
+     */
+    public static void fixMap(HashMap H) {
     Iterator I=H.entrySet().iterator();
     while(I.hasNext()) {
       Map.Entry E=(Map.Entry)I.next();
@@ -110,64 +146,80 @@ public class Convert {
   
   /**
    loads files in various formats to BranchGroup objects trying them one by one
+     * @return 
    */
   public static BranchGroup file2bgroup(String[] fs) {
-    for(int i=0;i<fs.length;i++) {
-      BranchGroup b=file2bgroup(fs[i]);
-      if(null==b) continue;
-      //Prolog3D.pp("humanoid found at: "+fs[i]);
-      return b;
-    }
+        for (String f : fs) {
+            BranchGroup b = file2bgroup(f);
+            if (null==b) {
+                continue;
+            }
+            //Prolog3D.pp("humanoid found at: "+fs[i]);
+            return b;
+        }
     return null;
   }
   
   private static Scene file2scene(String filename) {
     Scene s=null;
     if(filename.endsWith(".obj") || filename.endsWith(".OBJ")
-      || filename.endsWith(".obj.gz") || filename.endsWith(".OBJ.GZ"))
-      s=obj2scene(filename);
+      || filename.endsWith(".obj.gz") || filename.endsWith(".OBJ.GZ")) {
+        s=obj2scene(filename);
 //    else if(filename.endsWith(".wrl") || filename.endsWith(".WRL")
 //      || filename.endsWith(".wrl.gz") || filename.endsWith(".WRL.GZ"))
 //      s=vrml2scene(filename);
-    else 
-      Prolog3D.pp("*** no loader for: " + filename);
+        } else {
+            pp("*** no loader for: " + filename);
+        }
     return s;
   }
 
-  
-  public static void file2jf(String f,String jf) {
+    /**
+     *
+     * @param f
+     * @param jf
+     */
+    public static void file2jf(String f,String jf) {
     BranchGroup b=file2bgroup(f);
     bgroup2jf(b,jf);
   }
   
   /**
      Saves a BranchGroup to a j3f.gz file.
+     * @param jf
    */ 
   public static void bgroup2jf(BranchGroup b,String jf) {
     try {
-      OutputStream s=fileOutput(jf);
-      if(null==s) return;
-      SceneGraphStreamWriter w;
-      w=new SceneGraphStreamWriter(s);
-      HashMap H;
-      Object D=b.getUserData();
-      if(null!=D && D instanceof HashMap) {
-        H=(HashMap)D;      
-        b.setUserData(null);
-      }
-      else H=new HashMap();
-      Iterator I=H.keySet().iterator();
-      while(I.hasNext()) {
-        Object k=I.next();
-        if(b==k) continue;
-        Node n=(Node)H.get(k);
-        if(null==n) continue;
-        n.setUserData(k);
-      }
-      w.writeBranchGraph(b,H);
-      //Prolog3D.pp("Saving HashMap="+H+"\n");
-      w.close();
-      s.close();
+            try (OutputStream s = fileOutput(jf)) {
+                if (null==s) {
+                    return;
+                }
+                SceneGraphStreamWriter w;
+                w=new SceneGraphStreamWriter(s);
+                HashMap H;
+                Object D=b.getUserData();
+                if (null!=D && D instanceof HashMap) {
+                    H=(HashMap)D;
+                    b.setUserData(null);
+                } else {
+                    H=new HashMap();
+                }
+                Iterator I=H.keySet().iterator();
+                while (I.hasNext()) {
+                    Object k=I.next();
+                    if (b==k) {
+                        continue;
+                    }
+                    Node n=(Node)H.get(k);
+                    if (null==n) {
+                        continue;
+                    }
+                    n.setUserData(k);
+                }
+                w.writeBranchGraph(b,H);
+                //Prolog3D.pp("Saving HashMap="+H+"\n");
+                w.close();
+            }
     }
     catch(Exception e) {
       e.printStackTrace();
@@ -176,18 +228,21 @@ public class Convert {
   
   /**
    Loads a j3f or j3f.gz file to a BranchGroup
+     * @return 
    */
   public static BranchGroup jf2bgroup(String jf) {  
     try {
-      InputStream s=urlInput(jf);
-      if(null==s) return null;
-      SceneGraphStreamReader r=new SceneGraphStreamReader(s);
-      HashMap H=new HashMap();
-      BranchGroup b=r.readBranchGraph(H);
-      b.setUserData(H);
-      Tools.collectChildren(b); // fixes HashMap in b - a Sun bug - which has no proper nodes attached to names
-      //Prolog3D.pp("Loading HashMap="+H+"\n");
-      s.close();
+        BranchGroup b;
+            try (InputStream s = urlInput(jf)) {
+                if (null==s) {
+                    return null;
+                }
+                SceneGraphStreamReader r=new SceneGraphStreamReader(s);
+                HashMap H=new HashMap();
+                b = r.readBranchGraph(H);
+                b.setUserData(H);
+                collectChildren(b); // fixes HashMap in b - a Sun bug - which has no proper nodes attached to names
+            }
       return b;
     }
     catch(Exception e) {
@@ -218,12 +273,14 @@ public class Convert {
    
   /**
      Loads a Shape3D serialized to XML using XML encoding for Java Beans
+     * @return 
    */  
   static public Shape3D xml2shape(String fname) {
     try {
-      XMLDecoder d = new XMLDecoder(urlInput(fname));
-      Object result = d.readObject();
-      d.close();
+        Object result;
+            try (XMLDecoder d = new XMLDecoder(urlInput(fname))) {
+                result = d.readObject();
+            }
       return (Shape3D)result;
     }
     catch(Exception e) {
@@ -234,13 +291,14 @@ public class Convert {
   
   /**
      Loads an array of Shape3D objects for use in a Morph
+     * @return 
    */
   public static Shape3D[] xml2shapes(Fun names) {
     Object[] args=names.args;
     int l=args.length;
     Shape3D[] shapes=new Shape3D[l];
     for(int i=0;i<l;i++) {
-      shapes[i]=Convert.xml2shape(args[i].toString());
+      shapes[i]=xml2shape(args[i].toString());
     }
     return shapes;
   }
@@ -251,11 +309,16 @@ public class Convert {
 
   /**
      Loads a Wawefront obj or obj.gz file to a Scene
+     * @return 
   */
   public static Scene obj2scene(String filename) {
     int flags = ObjectFile.RESIZE;
-    if (!noTriangulate) flags |= ObjectFile.TRIANGULATE;
-    if (!noStripify) flags |= ObjectFile.STRIPIFY;
+    if (!noTriangulate) {
+        flags |= ObjectFile.TRIANGULATE;
+        }
+    if (!noStripify) {
+        flags |= ObjectFile.STRIPIFY;
+        }
       
     ObjectFile f =
       new ObjectFile(flags, 
@@ -263,13 +326,14 @@ public class Convert {
     Scene s = null;
     try {
       filename=fixFileName(filename);
-      if(filename.startsWith("http://"))
-        s=f.load(new java.net.URL(filename));
-      else
-        s = f.load(filename);
+      if(filename.startsWith("http://")) {
+          s=f.load(new java.net.URL(filename));
+            } else {
+          s = f.load(filename);
+            }
     }
     catch (Exception e) {
-      Prolog3D.pp(e);
+            pp(e);
       return null;
     }
     return s;

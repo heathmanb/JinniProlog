@@ -1,5 +1,7 @@
 package jgp;
 
+import static java.lang.Math.max;
+import static java.lang.Thread.sleep;
 import prolog.logic.Tools;
 import prolog.core.Cat;
 import prolog.logic.Stateful;
@@ -11,7 +13,10 @@ import prolog.kernel.*;
 import prolog.core.*;
 import rli.RLIAdaptor;
 import java.math.*;
+import static java.math.BigInteger.valueOf;
 import java.util.Random;
+import static jgp.Ind.big2string;
+import static rli.RLIAdaptor.rli_call;
 
 /**
  * Top GP class: creates a world in which evolving individuals
@@ -24,6 +29,7 @@ public class GPWorld extends BigMath implements Stateful,Runnable {
  
   /**
    * Static constructor call with exception catching.
+     * @return 
    */
   public static GPWorld makeWorld() {
     try {
@@ -42,22 +48,34 @@ public class GPWorld extends BigMath implements Stateful,Runnable {
    * Creates an evolvable world using a given
    * formula evaluator.
    * 
+     * @param evaluator
    */
   public GPWorld(Eval evaluator){
     this(ranbig(evaluator.getNvars()),evaluator,new HammingDist());
   }
   
-  public GPWorld(String smodel,Eval evaluator){
+    /**
+     *
+     * @param smodel
+     * @param evaluator
+     */
+    public GPWorld(String smodel,Eval evaluator){
     this(new BigInteger(smodel,2),evaluator,new HammingDist());
   }
   
-  public GPWorld(BigInteger model,Eval evaluator){
+    /**
+     *
+     * @param model
+     * @param evaluator
+     */
+    public GPWorld(BigInteger model,Eval evaluator){
     this(model,evaluator,new HammingDist());
   }
   
   /**
    * Creates a new GPWorld. If needed, parmeters can be set after this but
    * should be set before calling run().
+     * @param distEval
    */
   public GPWorld(BigInteger model,Eval evaluator,DistEval distEval){
     this.model=model;
@@ -66,21 +84,33 @@ public class GPWorld extends BigMath implements Stateful,Runnable {
     this.nvars=evaluator.getNvars();
     this.npower=1<<nvars;
     this.gbits=1<<(nvars+2);
-    this.maxsteps=Math.max(1<<20,(gbits<64)?1<<(nvars+nvars):Long.MAX_VALUE);
+    this.maxsteps=max(1<<20,(gbits<64)?1<<(nvars+nvars):Long.MAX_VALUE);
     this.maxpop=nvars*gbits;
     this.maxperf=npower;
     Inds=new ObjectQueue();
     Perfs=new ObjectQueue();
   }
 
-  public static BigInteger ranbig(int nvars) {
+    /**
+     *
+     * @param nvars
+     * @return
+     */
+    public static BigInteger ranbig(int nvars) {
     return new BigInteger(1<<nvars,rand);
   }  
 
   // public static Random rand = prolog.logic.Tools.getRandom();
-  public static Random rand=new Random();
 
-  public static int vtrace=2;
+    /**
+     *
+     */
+      public static Random rand=new Random();
+
+    /**
+     *
+     */
+    public static int vtrace=2;
 
   /**
    * number of "ur-elements" interpreted as independent variables
@@ -118,7 +148,10 @@ public class GPWorld extends BigMath implements Stateful,Runnable {
    */
   final protected BigInteger model;
 
-  final protected Eval evaluator;
+    /**
+     *
+     */
+    final protected Eval evaluator;
   
   final private DistEval distEval;
   /**
@@ -128,13 +161,25 @@ public class GPWorld extends BigMath implements Stateful,Runnable {
 
   public int MUTATE=5; // % is the dif with 0
 
-  public int NEGATE=10; // % is the dif with previous
+    /**
+     *
+     */
+    public int NEGATE=10; // % is the dif with previous
 
-  public int GROW=20; // % is the dif with previous
+    /**
+     *
+     */
+    public int GROW=20; // % is the dif with previous
   
-  public int IMITATE=90; // % is the dif with previous
+    /**
+     *
+     */
+    public int IMITATE=90; // % is the dif with previous
 
-  public int CREATE=100; // % is the dif with previous
+    /**
+     *
+     */
+    public int CREATE=100; // % is the dif with previous
 
   private long steps=0;
 
@@ -143,7 +188,9 @@ public class GPWorld extends BigMath implements Stateful,Runnable {
    */
   public static void run_bg() {
     Runnable R=makeWorld();
-    if(null==R) return;
+    if(null==R) {
+        return;
+        }
     Thread T=new Thread(R,"GPThread");
     T.start();
   }
@@ -153,7 +200,9 @@ public class GPWorld extends BigMath implements Stateful,Runnable {
    */
   public static void run_fg() {
     Runnable R=makeWorld();
-    if(null!=R) R.run();
+    if(null!=R) {
+        R.run();
+        }
   }
 
    /**
@@ -176,6 +225,7 @@ public class GPWorld extends BigMath implements Stateful,Runnable {
     /**
    * returns a distance measuring ho close this Ind is to the specification
    * induced from a given model.
+     * @return 
    */
     public int distanceToModel(Ind ind) {
       return this.distEval.distance(evalPheno(ind),model);
@@ -184,6 +234,7 @@ public class GPWorld extends BigMath implements Stateful,Runnable {
     /**
      * Computes by interpreting the "genotype" a "phenotype" subject to be
      * tested for "closeness" to the "model" this individual seeks.
+     * @return 
      */
     public BigInteger evalPheno(Ind ind) {
       return evaluator.eval(ind.getGeno());
@@ -192,33 +243,50 @@ public class GPWorld extends BigMath implements Stateful,Runnable {
   /**
    * creates an individual
    * 
+     * @param verbose
    * @return
    */
   public Ind create(boolean verbose) {
     BigInteger body=new BigInteger(gbits, GPWorld.rand);
-    BigInteger seen=BigInteger.valueOf(steps);
-    if(body.compareTo(seen)<=0) body=one.shiftLeft(gbits).subtract(seen);
+    BigInteger seen=valueOf(steps);
+    if(body.compareTo(seen)<=0) {
+        body=one.shiftLeft(gbits).subtract(seen);
+        }
     body=body.add(seen);
-    body=body.and(BigMath.bigones(gbits));
+    body=body.and(bigones(gbits));
     //Ind I=new Ind(body,this.model,nvars,gbits);
     Ind I=new Ind(body,this);
-    if(verbose && times()) I.show("CREATE");
+    if(verbose && times()) {
+        I.show("CREATE");
+        }
     Inds.enq(I);
     return I;
   }
 
-  public Ind tryNext() {
-    return new Ind(BigInteger.valueOf(steps),this);
+    /**
+     *
+     * @return
+     */
+    public Ind tryNext() {
+    return new Ind(valueOf(steps),this);
     // Inds.enq(I);
   }
 
-  public Ind negate() {
+    /**
+     *
+     * @return
+     */
+    public Ind negate() {
     int i=rand.nextInt(Inds.size());
     Ind ind=(Ind)Inds.elementAt(i);
     return ind.negate(times());
   }
   
-  public Ind grow() {
+    /**
+     *
+     * @return
+     */
+    public Ind grow() {
     int i=rand.nextInt(Inds.size());
     Ind ind=(Ind)Inds.elementAt(i);
     return ind.grow(times());
@@ -227,6 +295,7 @@ public class GPWorld extends BigMath implements Stateful,Runnable {
   /**
    * Mutate and individual.
    * 
+     * @return 
    */
   public Ind mutate() {
     int i=rand.nextInt(Inds.size());
@@ -238,6 +307,7 @@ public class GPWorld extends BigMath implements Stateful,Runnable {
    * Picks an individual that imitates another, provided the other is closer to
    * the model. Imitation can be implemeted by flipping a bit that was different
    * from the closer other individual.
+     * @return 
    */
   public Ind imitate() {
     boolean show=times();
@@ -264,7 +334,11 @@ public class GPWorld extends BigMath implements Stateful,Runnable {
     //return J.imitate(I,show);
   }
 
-  public boolean perfectNext() {
+    /**
+     *
+     * @return
+     */
+    public boolean perfectNext() {
     Ind next=tryNext();
 
     if(next.isPerfect()) {
@@ -287,11 +361,16 @@ public class GPWorld extends BigMath implements Stateful,Runnable {
 
   }
 
-  public boolean seed() {
-    int popsize=(int)maxpop/2;
+    /**
+     *
+     * @return
+     */
+    public boolean seed() {
+    int popsize=maxpop/2;
     for(int i=0;i<popsize;i++) {
-      if(perfectNext())
-        return true;
+      if(perfectNext()) {
+          return true;
+            }
       Ind perfect=null;
       perfect=create(false);
       if(perfect.isPerfect()) {
@@ -310,11 +389,15 @@ public class GPWorld extends BigMath implements Stateful,Runnable {
     steps=0;
     Ind perfect=null;
 
-    if(seed()) return;
+    if(seed()) {
+        return;
+        }
 
     for(;steps<maxsteps;steps++) {
 
-      if(perfectNext()) return;
+      if(perfectNext()) {
+          return;
+            }
 
       int dice=rand.nextInt(CREATE);
       // System.out.println("dice=" + dice);
@@ -339,7 +422,9 @@ public class GPWorld extends BigMath implements Stateful,Runnable {
       
       if(null!=perfect && perfect.isPerfect()) {
         if(checkPerfect(perfect)) {
-          if(Perfs.size()>maxperf) return;
+          if(Perfs.size()>maxperf) {
+              return;
+                    }
         };
         perfect=null;
       }
@@ -351,10 +436,14 @@ public class GPWorld extends BigMath implements Stateful,Runnable {
 
   }
 
-  public void controlPopulation() {
+    /**
+     *
+     */
+    public void controlPopulation() {
     int l=Inds.size();
-    if(l<maxpop)
-      return;
+    if(l<maxpop) {
+        return;
+        }
     //System.out.println("\nInds before="+Inds+queueToString(Inds));
     cleanSort(maxpop/2);
     //System.out.println("\nInds after="+Inds+queueToString(Inds));
@@ -376,10 +465,16 @@ public class GPWorld extends BigMath implements Stateful,Runnable {
     }
   }
 
-  public boolean checkPerfect(Ind perfect) {
+    /**
+     *
+     * @param perfect
+     * @return
+     */
+    public boolean checkPerfect(Ind perfect) {
     if(Perfs.contains(perfect)<0) {
-      if(Perfs.size()<5)
-        showPerfect(perfect);
+      if(Perfs.size()<5) {
+          showPerfect(perfect);
+            }
       Perf clone=new Perf(perfect,this);
       Perfs.enq(clone);
       perfect.mutate(times());
@@ -388,7 +483,12 @@ public class GPWorld extends BigMath implements Stateful,Runnable {
     return false;
   }
 
-  public static ObjectQueue sort(ObjectQueue Os) {
+    /**
+     *
+     * @param Os
+     * @return
+     */
+    public static ObjectQueue sort(ObjectQueue Os) {
     Object[] os=Os.toArray();
     Tools.sort(os);
     Os=new ObjectQueue(os);
@@ -397,6 +497,7 @@ public class GPWorld extends BigMath implements Stateful,Runnable {
 
   /**
    * Sorts the population and eliminates dead individuals.
+     * @param max
    */
   public void cleanSort(int max) {
     Object[] inds=this.Inds.toArray();
@@ -405,8 +506,9 @@ public class GPWorld extends BigMath implements Stateful,Runnable {
     this.Inds=new ObjectQueue();
     for(int i=0;i<inds.length&&max>0;i++) {
       Ind I=(Ind)inds[i];
-      if(i>0&&I.equals((Ind)inds[i-1]))
-        continue;
+      if(i>0&&I.equals(inds[i-1])) {
+          continue;
+            }
       this.Inds.enq(inds[i]);
       max--;
     }
@@ -415,27 +517,35 @@ public class GPWorld extends BigMath implements Stateful,Runnable {
   /**
    * returns a String representation of this world as a list of representations
    * of its individuals alive.
+     * @return 
    */
   public String queueToString(ObjectQueue Os) {
-    StringBuffer buf=new StringBuffer("[");
+    StringBuilder buf=new StringBuilder("[");
     for(int i=0;i<Os.size();i++) {
-      if(i>0)
-        buf.append(',');
+      if(i>0) {
+          buf.append(',');
+            }
       buf.append(Os.elementAt(i));
     }
     buf.append("]");
     return buf.toString();
   }
 
-  public void showPerfect(Ind perfect) {
+    /**
+     *
+     * @param perfect
+     */
+    public void showPerfect(Ind perfect) {
     System.out.println("\n! FOUND PERFECT at step="+steps+"="+perfect);
     perfect.show("PERFECT");
-    if(vtrace>1)
-      rshow(perfect);
+    if(vtrace>1) {
+        rshow(perfect);
+        }
   }
   
   /**
    * shows this GPWorld
+     * @return 
    */
   public Ind pickBest() {
     if(Perfs.size()>0) {
@@ -450,49 +560,71 @@ public class GPWorld extends BigMath implements Stateful,Runnable {
     }
   }
 
-  public void showParams() {
+    /**
+     *
+     */
+    public void showParams() {
     System.out.println("PARAMS:"+"nvars="+nvars+",gbits="+gbits+",maxpop="
         +maxpop+",maxsteps="+maxsteps+"\n");
     System.out.println("VARS:\n"+evaluator.showVars());
   }
 
-  public void showBest() {
+    /**
+     *
+     */
+    public void showBest() {
     // System.out.println("PERFS:"+queueToString(Perfs));
     System.out.println("PERFS:"+Perfs.size()+",INDS:"+Inds.size());
 
     Ind best=pickBest();
     String s="APPROX. BEST";
-    if(best instanceof Perf)
-      s="PERFECT BEST";
-    String M=Ind.big2string(model,npower);
+    if(best instanceof Perf) {
+        s="PERFECT BEST";
+        }
+    String M=big2string(model,npower);
     System.out.println("\n"+s+":"+best+"=?="+M+":(model)"+",VAL="+best.getGeno());
-    if(vtrace>0)
-      rshow(best);
+    if(vtrace>0) {
+        rshow(best);
+        }
   }
 
   boolean times() {
-    long each=1000*(1<<Math.max(3,nvars));
+    long each=1000*(1<<max(3,nvars));
     return steps%each==0;
   }
 
-  public void showProgress() {
-    if(times())
-      System.out.println("Steps:"+steps+",Inds:"+Inds.size()+",Perfs:"
-          +Perfs.size());
+    /**
+     *
+     */
+    public void showProgress() {
+    if(times()) {
+        System.out.println("Steps:"+steps+",Inds:"+Inds.size()+",Perfs:"
+                +Perfs.size());
+        }
   }
 
-  public void rshow(Ind ind) {
+    /**
+     *
+     * @param ind
+     */
+    public void rshow(Ind ind) {
     int ccount=2;
     System.out.println("!!!:"+ind+"=>\n"+evaluator.toExpr(ind.getGeno()));
     rshow(nvars+ccount,evaluator.getArity(),ind.getGeno());
   }
   
-  public static void rshow(int maxur,int arity,BigInteger B) {
+    /**
+     *
+     * @param maxur
+     * @param arity
+     * @param B
+     */
+    public static void rshow(int maxur,int arity,BigInteger B) {
     Cat C=bigint2cat(maxur,arity,B);
     Fun G=new Fun("rshow",C);
-    RLIAdaptor.rli_call("localhost","renoir",G);
+        rli_call("localhost","renoir",G);
     try {
-      Thread.sleep(1000);
+            sleep(1000);
     } catch(Exception e) {
     }
   }

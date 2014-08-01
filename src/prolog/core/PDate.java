@@ -5,8 +5,19 @@ import prolog.logic.Stateful;
 import java.util.*;
 
 // meant to do arithmetics on things like 2003/04/01 08:02:00
+
+/**
+ *
+ * @author Brad
+ */
 public class PDate extends GregorianCalendar implements Stateful {
 
+    /**
+     *
+     * @param Date
+     * @param Inc
+     * @return
+     */
     public static Fun inc_date(Fun Date, Fun Inc) {
 
         PDate P = new PDate(Date);
@@ -30,14 +41,32 @@ public class PDate extends GregorianCalendar implements Stateful {
         return P.toFun();
     }
 
+    /**
+     *
+     * @param date
+     * @return
+     */
     public static String format_date(Fun date) {
         return new PDate(date).toString();
     }
 
+    /**
+     *
+     * @param year
+     * @param month
+     * @param dayOfMonth
+     * @param hourOfDay
+     * @param minute
+     * @param sec
+     */
     public PDate(int year, int month, int dayOfMonth, int hourOfDay, int minute, int sec) {
         super(year, month, dayOfMonth, hourOfDay, minute, sec);
     }
 
+    /**
+     *
+     * @param date
+     */
     public PDate(Fun date) {
         this(
                 ((Integer) date.getArg(1)),
@@ -48,6 +77,10 @@ public class PDate extends GregorianCalendar implements Stateful {
                 ((Integer) date.getArg(6)));
     }
 
+    /**
+     *
+     * @return
+     */
     public Fun toFun() {
         int Y = get(Calendar.YEAR);
         int M = get(Calendar.MONTH);

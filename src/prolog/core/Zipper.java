@@ -3,6 +3,7 @@ package prolog.core;
 import prolog.kernel.*;
 import java.io.*;
 import java.util.zip.*;
+import static prolog.logic.Interact.warnmes;
 
 /**
  * Provides zip/unzip compression for various Prolog tasks to save memory and
@@ -10,6 +11,13 @@ import java.util.zip.*;
  */
 public class Zipper {
 
+    /**
+     *
+     * @param jarname
+     * @param fname
+     * @param quiet
+     * @return
+     */
     public static InputStream zip2stream(String jarname, String fname, boolean quiet) {
         try {
             File JF = new File(jarname);
@@ -24,7 +32,7 @@ public class Zipper {
             return jf.getInputStream(entry);
         } catch (IOException e) {
             if (!quiet) {
-                JavaIO.warnmes("error opening zip or jar file component: "
+                warnmes("error opening zip or jar file component: "
                         + jarname + ":" + fname);
             }
             return null;

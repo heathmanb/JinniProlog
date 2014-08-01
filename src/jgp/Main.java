@@ -1,12 +1,26 @@
 package jgp;
 
+import static jgp.GPWorld.run_fg;
+
+/**
+ *
+ * @author Brad
+ */
 public class Main {
-  public static void start() {
+
+    /**
+     *
+     */
+    public static void start() {
     System.out.println("hello");
-    GPWorld.run_fg();
+        run_fg();
   }
   
-  public static void main(String[] args) {
+    /**
+     *
+     * @param args
+     */
+    public static void main(String[] args) {
     start();
   }
 }

@@ -3,6 +3,10 @@ package prolog.core;
 import prolog.kernel.*;
 import java.io.IOException;
 
+/**
+ *
+ * @author Brad
+ */
 public class CatXMLWriter implements CatWalker {
 
     CatXMLWriter(PrologWriter writer) {
@@ -15,17 +19,29 @@ public class CatXMLWriter implements CatWalker {
 
     private PrologWriter writer;
 
+    /**
+     *
+     */
     @Override
     public void atStart() {
         writer.println("<?xml version=\"1.0\"?>");
         writer.println("<cat>");
     }
 
+    /**
+     *
+     */
     @Override
     public void beforeProps() {
         writer.println("  <objects>");
     }
 
+    /**
+     *
+     * @param vertex
+     * @param key
+     * @param value
+     */
     @Override
     public void onProp(Object vertex, Object key, Object value) {
         writer.println("    <object>");
@@ -35,16 +51,29 @@ public class CatXMLWriter implements CatWalker {
         writer.println("    </object>");
     }
 
+    /**
+     *
+     */
     @Override
     public void afterProps() {
         writer.println("  </objects>");
     }
 
+    /**
+     *
+     */
     @Override
     public void beforeMorphisms() {
         writer.println("  <morphisms>");
     }
 
+    /**
+     *
+     * @param from
+     * @param to
+     * @param m
+     * @param md
+     */
     @Override
     public void onMorphism(Object from, Object to, Object m, Object md) {
         writer.println("    <morphism>");
@@ -55,11 +84,18 @@ public class CatXMLWriter implements CatWalker {
         writer.println("    </morphism>");
     }
 
+    /**
+     *
+     */
     @Override
     public void afterMorphisms() {
         writer.println("  </morphisms>");
     }
 
+    /**
+     *
+     * @return
+     */
     @Override
     public Object atEnd() {
         writer.println("</cat>");

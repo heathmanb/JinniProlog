@@ -3,14 +3,24 @@ package prolog3d;
 import javax.media.j3d.*;
 import javax.vecmath.*;
 
-
+/**
+ *
+ * @author Brad
+ */
 public class PyramShape extends Shape3D {
 
-  public PyramShape() {
+    /**
+     *
+     */
+    public PyramShape() {
     this(null);
   }
   
-  public PyramShape(Color3f color) {
+    /**
+     *
+     * @param color
+     */
+    public PyramShape(Color3f color) {
     //Prolog3D.pp(this+":"+color);
     this.geom=new PyramGeom(color);
     this.setGeometry(geom);
@@ -26,7 +36,9 @@ class PyramGeom extends QuadArray {
     super(24, QuadArray.COORDINATES|QuadArray.COLOR_3|GeometryArray.ALLOW_COORDINATE_WRITE);
     setCapability(GeometryArray.ALLOW_COORDINATE_WRITE);
     makeFaces(0.06f,0.0f,0.2f,0.0f);
-    if(color==null) color=Simple.defCol; 
+    if(color==null) { 
+        color=Simple.defCol;
+        } 
     makeColors(color);
   }
   

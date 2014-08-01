@@ -4,6 +4,9 @@ import java.io.IOException;
 import prolog.kernel.*;
 import prolog.logic.*;
 import java.net.*;
+import static prolog.kernel.JavaIO.toReader;
+import static prolog.kernel.JavaIO.toWriter;
+import static prolog.logic.Interact.errmes;
 
 /**
  * Allows ShellClient components to connect from remote machines and run
@@ -11,11 +14,22 @@ import java.net.*;
  */
 public class ShellServer extends Transport implements Runnable {
 
+    /**
+     *
+     * @param args
+     * @param port
+     * @throws SystemException
+     */
     public ShellServer(String args[], int port) throws SystemException {
         super(port);
         this.args = args;
     }
 
+    /**
+     *
+     * @param port
+     * @throws SystemException
+     */
     public ShellServer(int port) throws SystemException {
         this(null, port);
     }
@@ -30,10 +44,10 @@ public class ShellServer extends Transport implements Runnable {
             PrologWriter W;
             try {
                 Socket socket = service.client_socket;
-                R = JavaIO.toReader(socket.getInputStream());
-                W = JavaIO.toWriter(socket.getOutputStream());
+                R = toReader(socket.getInputStream());
+                W = toWriter(socket.getOutputStream());
             } catch (IOException e) {
-                JavaIO.errmes("error in ShellServer", e);
+                errmes("error in ShellServer", e);
                 break;
             }
 

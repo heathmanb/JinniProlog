@@ -14,7 +14,15 @@ public class Satellite extends Agent3D {
   public void addToCat() {
   }
   
-  public Satellite(World world,Agent3D From,Node sat,double r,Object data) {  
+    /**
+     *
+     * @param world
+     * @param From
+     * @param sat
+     * @param r
+     * @param data
+     */
+    public Satellite(World world,Agent3D From,Node sat,double r,Object data) {  
     super(world,data,false);
     this.From=From;
     getWorld().getAgents().setProp(From,this,"satellite");
@@ -27,7 +35,16 @@ public class Satellite extends Agent3D {
     From.addChild(getGroup());
   }
   
-  public Satellite(World world,Agent3D From,int shapeNo,Color3f c,double r,Object data) {
+    /**
+     *
+     * @param world
+     * @param From
+     * @param shapeNo
+     * @param c
+     * @param r
+     * @param data
+     */
+    public Satellite(World world,Agent3D From,int shapeNo,Color3f c,double r,Object data) {
     this(world,From,(new Shape(c)).toNode(shapeNo,data),r,data);
   }
  
@@ -43,15 +60,23 @@ public class Satellite extends Agent3D {
   public void transform() {
     float q=0.05f;
     alpha+= q+Params.rf(q);
-    if(alpha>2*Math.PI) alpha=0;
+    if(alpha>2*Math.PI) {
+        alpha=0;
+        }
     setRotY(alpha);
   }
    
-  public void onLeftClick() {
+    /**
+     *
+     */
+    public void onLeftClick() {
     print(data);
   }
   
-  public void onRightClick() {
+    /**
+     *
+     */
+    public void onRightClick() {
     print(From+"==>"+this);
   }
   

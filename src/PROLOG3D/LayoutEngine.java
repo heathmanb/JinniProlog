@@ -1,4 +1,9 @@
 package prolog3d;
+import static java.lang.Math.abs;
+import static java.lang.Math.log;
+import static java.lang.Math.max;
+import static java.lang.Math.min;
+import static java.lang.Math.sqrt;
 import prolog.core.IEdge;
 import prolog.core.IVertex;
 import prolog.core.IGraph;
@@ -7,15 +12,35 @@ import prolog.core.RankedData; //?!
 
 import javax.media.j3d.*;
 import javax.vecmath.*;
+import static prolog3d.Params.rs;
+import static prolog3d.Params.sleep;
 
+/**
+ *
+ * @author Brad
+ */
 abstract public class LayoutEngine extends IGraph {
   private final Prolog3D jworld;
-  protected int radius;
+
+    /**
+     *
+     */
+    protected int radius;
   int edgeLength;
   
-  public boolean running;
+    /**
+     *
+     */
+    public boolean running;
   
-  public LayoutEngine(Prolog3D jworld,Cat RG,int radius,boolean addVertex) {
+    /**
+     *
+     * @param jworld
+     * @param RG
+     * @param radius
+     * @param addVertex
+     */
+    public LayoutEngine(Prolog3D jworld,Cat RG,int radius,boolean addVertex) {
     super(RG,RG.getIFilter()); // passing Cat's IFilter
     this.jworld=jworld;
     this.radius=radius;
@@ -27,7 +52,13 @@ abstract public class LayoutEngine extends IGraph {
     //Prolog3D.pp("!here: "+RG);
   }
 
-  public int setShape(RankedData RD,IVertex V) {
+    /**
+     *
+     * @param RD
+     * @param V
+     * @return
+     */
+    public int setShape(RankedData RD,IVertex V) {
     int shape;
     switch(RD.hyper) {
       case 1:shape=Shape.CUBE; break;
@@ -41,14 +72,24 @@ abstract public class LayoutEngine extends IGraph {
     return shape;
   }
 
-  public void initPosition(IVertex V,MobilePoint N) {
-    Point3f RP=Params.rs(0.75f*radius);
-    N.setX((double)RP.x);
-    N.setY((double)RP.y);
-    N.setZ((double)RP.z);
+    /**
+     *
+     * @param V
+     * @param N
+     */
+    public void initPosition(IVertex V,MobilePoint N) {
+    Point3f RP=rs(0.75f*radius);
+    N.setX(RP.x);
+    N.setY(RP.y);
+    N.setZ(RP.z);
   }
 
-  public void addGraph(Cat RG,boolean add) {
+    /**
+     *
+     * @param RG
+     * @param add
+     */
+    public void addGraph(Cat RG,boolean add) {
     for(int i=0;i<size();i++) {
       IVertex V=vertices[i];
    
@@ -62,14 +103,16 @@ abstract public class LayoutEngine extends IGraph {
       Color3f color=comp2col(RD.component,RD.hyper);
   
       if(add) {
-        if(shape<Shape.maxSimple)
-          GV=jworld.addVertex(shape,color,V);
-        else {
+        if(shape<Shape.maxSimple) {
+            GV=jworld.addVertex(shape,color,V);
+                } else {
           Shape dataShape=new Shape(color);
           GV=jworld.addVertex(dataShape.toNode(shape,RS),RS); //$$
         }
       }
-      else GV=(Vertex3D)(V.key);
+      else {
+          GV=(Vertex3D)(V.key);
+            }
       
       MobilePoint N=new MobilePoint(RS,RD,GV,radius,size());
       V.data=N; // V contains N && N contains V - careful with toString!!!
@@ -83,29 +126,40 @@ abstract public class LayoutEngine extends IGraph {
       Vertex3D From=MFrom.V;
        
       IEdge[] es=F.outLinks;
-      for(int j=0;j<es.length;j++) {
-        IEdge E=es[j];
-        IVertex T=vertices[E.to];
-        MobilePoint MTo=(MobilePoint)(T.data);
-        Vertex3D To=MTo.V;
-        if(add) E.data=jworld.addEdge(From,To,E.data); //$$
-      }
+            for (IEdge E : es) {
+                IVertex T=vertices[E.to];
+                MobilePoint MTo=(MobilePoint)(T.data);
+                Vertex3D To=MTo.V;
+                if (add) {
+                    E.data=jworld.addEdge(From,To,E.data); //$$
+                }
+            }
     }
   }
    
-  public void refresh(int radius) {
+    /**
+     *
+     * @param radius
+     */
+    public void refresh(int radius) {
     this.radius=radius;
     getCenter();
   }
   
-  public void getCenter() {
+    /**
+     *
+     */
+    public void getCenter() {
     edgeLength=(int)(Math.PI*radius/size());
-    edgeLength=Math.min(140,Math.max(100,edgeLength));
+    edgeLength=min(140,max(100,edgeLength));
     //pp("edgeLength="+edgeLength+" rad="+radius);
   }
   
-  
-  static public void pp(Object O) {
+    /**
+     *
+     * @param O
+     */
+    static public void pp(Object O) {
     Prolog3D.pp(O.toString());
   }
     
@@ -113,9 +167,15 @@ abstract public class LayoutEngine extends IGraph {
     return (MobilePoint)vertices[i].data;
   }
   
-  public static Color3f comp2col(int c,int hyper) {
-    c=Math.max(0,c);
-    float red=(hyper>0)?0:(float)(1/(1+Math.log(1+c)));
+    /**
+     *
+     * @param c
+     * @param hyper
+     * @return
+     */
+    public static Color3f comp2col(int c,int hyper) {
+    c=  max(0,c);
+    float red=(hyper>0)?0:(float)(1/(1+log(1+c)));
     float green=1-red;
     float blue=0;
     //Prolog3D.pp("ranked color: c="+c+".h="+hyper+",r="+red+",g="+green+",b="+blue);
@@ -125,36 +185,60 @@ abstract public class LayoutEngine extends IGraph {
 
   /** 
    O(E) spring elasticity on edges
+     * @param j
    */
   abstract public void edgeFun(int i,MobilePoint n,IEdge e,int j);
   
   /**
    O(N^2) action on vertices
+     * @param n
    */
   abstract public void vertexStep(int i,MobilePoint n);
   
-  abstract public void PointFun(DataPoint P,MobilePoint n1,MobilePoint n2);
+    /**
+     *
+     * @param P
+     * @param n1
+     * @param n2
+     */
+    abstract public void PointFun(DataPoint P,MobilePoint n1,MobilePoint n2);
   
   void edgeStep(int i,MobilePoint n,IEdge[] es) {
     for(int j=0; j<es.length; j++) {
-      if(!running) break;
+      if(!running) {
+          break;
+            }
       edgeFun(i,n,es[j],j);
     }    
   }
   
   boolean trace=false;
   boolean isStable() {
-    if(trace)pp("oldenergy="+oldenergy);
+    if(trace) {
+        pp("oldenergy="+oldenergy);
+        }
     stepCount++;
-    if(trace)pp("energy="+energy);
-    double dynamism=Math.abs(energy-oldenergy)/oldenergy-0.001*Math.log(size());
-    if(trace)pp("dynamism="+dynamism);
+    if(trace) {
+        pp("energy="+energy);
+        }
+    double dynamism=abs(energy-oldenergy)/oldenergy-0.001*log(size());
+    if(trace) {
+        pp("dynamism="+dynamism);
+        }
     long smallsize=size();
-    if(smallsize>200) smallsize=200;
-    double youth=2*smallsize*Math.log(size())-stepCount;
-    if(trace)pp("youth="+youth);
-    if(trace)pp("");
-    if(!running) return true; 
+    if(smallsize>200) {
+        smallsize=200;
+        }
+    double youth=2*smallsize*log(size())-stepCount;
+    if(trace) { 
+        pp("youth="+youth);
+        }
+    if(trace) {
+        pp("");
+        }
+    if(!running) {
+        return true;
+        } 
     return dynamism<0 && youth<0;
   }
   
@@ -168,9 +252,17 @@ abstract public class LayoutEngine extends IGraph {
   
   final static int maxd=5;
   
-  final public double moderate(double d) {
-    if(d<-maxd) d=-maxd;
-    else if(d>maxd) d=maxd;
+    /**
+     *
+     * @param d
+     * @return
+     */
+    final public double moderate(double d) {
+    if(d<-maxd) {
+        d=-maxd;
+        } else if(d>maxd) {
+            d=maxd;
+        }
     return d;
   }
   
@@ -192,7 +284,12 @@ abstract public class LayoutEngine extends IGraph {
     return energy;
   }
   
-  public boolean borderFun(MobilePoint n) {  
+    /**
+     *
+     * @param n
+     * @return
+     */
+    public boolean borderFun(MobilePoint n) {  
     float d=radius-50f;
     double x=n.getX();
     double y=n.getY();
@@ -203,14 +300,15 @@ abstract public class LayoutEngine extends IGraph {
     if (!n.fixed) {
       int i=0;
       for(;i<max;i++) {
-        l=Math.sqrt(x*x+y*y+z*z);
+        l=      sqrt(x*x+y*y+z*z);
         if(l>d) {
           x-=x*m;
           y-=y*m;
           z-=z*m;
         }
-        else
-          break;
+        else {
+            break;
+                }
       }
       if(i>0) {
         n.setX(x);
@@ -224,7 +322,10 @@ abstract public class LayoutEngine extends IGraph {
     return true;
   }
 
-  public void stop() {
+    /**
+     *
+     */
+    public void stop() {
     Prolog3D.pp("layout stopping");
     running=false;
   }
@@ -236,11 +337,17 @@ abstract public class LayoutEngine extends IGraph {
    main O(N^2+E) iteration step
    */
   synchronized void step() {
-    if(Params.stopAll) running=false;
-    if(energy>0) oldenergy=energy;
+    if(Params.stopAll) {
+        running=false;
+        }
+    if(energy>0) {
+        oldenergy=energy;
+        }
     energy=0;
     for (int i=0;i<size();i++) {
-      if(!running) break;
+      if(!running) {
+          break;
+            }
       IVertex V=vertices[i];
       MobilePoint n = getPoint(i);
       vertexStep(i,n);    
@@ -250,8 +357,8 @@ abstract public class LayoutEngine extends IGraph {
     energy=energy/(size()*size());   
     if(isStable()) {
       if(stepCount>0) {
-        double st=Math.log(stepCount);
-        double si=Math.log(size());
+        double st=log(stepCount);
+        double si=log(size());
         //pp("steps="+st);
         //pp("si="+si);
         pp("size="+size()+", steps="+stepCount+
@@ -261,15 +368,22 @@ abstract public class LayoutEngine extends IGraph {
     }
   }
   
-  public void run() {
+    /**
+     *
+     */
+    public void run() {
     for(;;) {
       step();
-      if(!running) break;
+      if(!running) {
+          break;
+            }
       if(Params.layoutSleep>0) {
-        Params.sleep(getSleepTime());
+                sleep(getSleepTime());
       }  
     }
-    if(Params.layoutSleep==0) Params.sleep(1000);
+    if(Params.layoutSleep==0) {
+            sleep(1000);
+        }
     Prolog3D.pp("layout finished");
   }
   

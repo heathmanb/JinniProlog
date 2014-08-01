@@ -1,5 +1,7 @@
 package prolog.logic;
 
+import static java.lang.System.arraycopy;
+
 /**
  *  Implements the BinWAM engine's choice point stack
  */
@@ -59,7 +61,7 @@ final int restoreState(int[] regs, boolean discardChoice) {
 	trail.unwindTrail(SAVED_TR());
 	heap.setHeapTop(SAVED_H());
 	int[] savedRegs = ((ChoicePointStackEntry)peek()).regs;
-	System.arraycopy(savedRegs,0,regs,1,savedRegs.length);
+	arraycopy(savedRegs,0,regs,1,savedRegs.length);
   
   ((ChoicePointStackEntry)peek()).undo();
   

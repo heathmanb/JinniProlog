@@ -3,19 +3,31 @@ package jgp;
 import java.math.*;
 import prolog.core.BigMath;
 
+/**
+ *
+ * @author Brad
+ */
 public class EvalAndXOR extends Eval {
  
-  public EvalAndXOR(int nvars){
+    /**
+     *
+     * @param nvars
+     */
+    public EvalAndXOR(int nvars){
     super("andxor",nvars);
   }
   
-  
-  public int getArity() {
+    /**
+     *
+     * @return
+     */
+    public int getArity() {
     return 3;
   }
   
   /**
    * applies the primitive operation during synthesis
+     * @return 
    */
   public BigInteger applyOp(BigInteger[] Bs) { 
      BigInteger Op=Bs[0];

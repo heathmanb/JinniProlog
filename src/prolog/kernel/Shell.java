@@ -2,6 +2,12 @@ package prolog.kernel;
 
 import prolog.logic.*;
 import java.io.*;
+import static prolog.kernel.Machine.unQuote;
+import static prolog.kernel.Top.initProlog;
+import static prolog.kernel.Top.new_machine;
+import static prolog.logic.Interact.errmes;
+import static prolog.logic.Interact.halt;
+import static prolog.logic.Interact.warnmes;
 
 /**
  * Interactive Console Shell Abstraction For Querying the Prolog Machine.
@@ -11,12 +17,20 @@ import java.io.*;
  */
 public class Shell implements Runnable, Stateful {
 
+    /**
+     *
+     * @param args
+     * @param input
+     * @param output
+     * @param init
+     * @param prompt
+     */
     public Shell(String args[], PrologReader input, PrologWriter output,
             boolean init, String prompt) {
         this.input = input;
         this.output = output;
         if (init) {
-            this.M = Top.initProlog(args, input, output);
+            this.M = initProlog(args, input, output);
         } else {
             restart_machine(true);
         }
@@ -32,32 +46,57 @@ public class Shell implements Runnable, Stateful {
     private PrologWriter output;
 
     private void restart_machine(boolean ok) {
-        this.M = Top.new_machine(this.input, this.output);
+        this.M = new_machine(this.input, this.output);
         if (ok) {
-            JavaIO.warnmes("Starting New Prolog Machine.");
+            warnmes("Starting New Prolog Machine.");
         } else {
-            JavaIO.warnmes("Restarting Prolog Machine: " + M);
+            warnmes("Restarting Prolog Machine: " + M);
         }
     }
 
+    /**
+     *
+     * @param args
+     * @param input
+     * @param output
+     * @param init
+     */
     public Shell(String args[], PrologReader input, PrologWriter output, boolean init) {
         this(args, input, output, init, "?- ");
     }
 
+    /**
+     *
+     * @param args
+     * @param input
+     * @param output
+     */
     public Shell(String args[], PrologReader input, PrologWriter output) {
         this(args, input, output, true);
     }
 
+    /**
+     *
+     * @param args
+     */
     public Shell(String[] args) {
         this(args, null, null);
     }
 
+    /**
+     *
+     */
     public Shell() {
         this(null);
     }
 
     // begin IO
-    public String readln() {
+
+    /**
+     *
+     * @return
+     */
+        public String readln() {
         //return M.readln();
         if (null == input) {
             return consoleReadln();
@@ -66,17 +105,29 @@ public class Shell implements Runnable, Stateful {
 
     }
 
+    /**
+     *
+     * @param S
+     */
     public void print(String S) {
         //M.print(S);
         JavaIO.print(S);
     }
 
+    /**
+     *
+     * @param S
+     */
     public void println(String S) {
         //M.println(S);
         JavaIO.println(S);
     }
     // end IO
 
+    /**
+     *
+     * @return
+     */
     public String readQuery() {
         M.print(prompt);
         M.flush();
@@ -86,10 +137,19 @@ public class Shell implements Runnable, Stateful {
         return M.readln();
     }
 
+    /**
+     *
+     * @param S
+     */
     public void send_query(String S) {
         M.load_engine(make_query(S));
     }
 
+    /**
+     *
+     * @param S
+     * @return
+     */
     public Object make_query(String S) {
         //String SGoal="__A:-scall('("+S+")',__A)";  
 
@@ -102,16 +162,27 @@ public class Shell implements Runnable, Stateful {
         return SGoal;
     }
 
+    /**
+     *
+     * @return
+     * @throws PrologException
+     */
     public String get_answer_element() throws PrologException {
         int v = M.ask();
         if (0 == v) {
             return null;
         }
         String S = M.termToString(v);
-        S = Machine.unQuote(S);
+        S = unQuote(S);
         return S;
     }
 
+    /**
+     *
+     * @param S
+     * @return
+     * @throws PrologException
+     */
     public boolean shell_step(String S) throws PrologException {
         send_query(S);
 
@@ -149,7 +220,7 @@ public class Shell implements Runnable, Stateful {
     @Override
     public void run() {
         if (null == M) {
-            JavaIO.warnmes("unable to initialize Prolog engine");
+            warnmes("unable to initialize Prolog engine");
             return;
         }
         for (;;) {
@@ -166,7 +237,7 @@ public class Shell implements Runnable, Stateful {
                 ok = shell_step(S);
             } catch (PrologException e) {
                 //JavaIO.errmes("Error caught by Shell: ", e);
-                Interact.warnmes("Error caught by Shell!");
+                warnmes("Error caught by Shell!");
                 ok = false;
             }
             if (!ok) {
@@ -174,7 +245,7 @@ public class Shell implements Runnable, Stateful {
             }
         }
         if (init) {
-            JavaIO.halt(0);
+            halt(0);
         }
     }
 
@@ -185,11 +256,15 @@ public class Shell implements Runnable, Stateful {
         try {
             return new jline.ConsoleReader();
         } catch (IOException e) {
-            Interact.errmes("unable to start ConsoleIO");
+            errmes("unable to start ConsoleIO");
             return null;
         }
     }
 
+    /**
+     *
+     * @return
+     */
     public String consoleReadln() {
         try {
             return in.readLine("");
@@ -199,6 +274,11 @@ public class Shell implements Runnable, Stateful {
         }
     }
 
+    /**
+     *
+     * @return
+     * @throws IOException
+     */
     public int read() throws IOException {
         return in.readVirtualKey();
     }

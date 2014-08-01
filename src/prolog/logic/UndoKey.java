@@ -7,17 +7,28 @@ public class UndoKey implements Undoable, Stateful {
   private Object key;
   private LogicEngine machine;
 
-  public UndoKey(Object key, LogicEngine machine) {
+    /**
+     *
+     * @param key
+     * @param machine
+     */
+    public UndoKey(Object key, LogicEngine machine) {
     this.key = key;
     this.machine = machine;
   }
 
-  public void undo() {
+    /**
+     *
+     */
+    public void undo() {
     // Prolog.dump("undo: remove key="+key);
     this.machine.uremove(key);
   }
 
-  public void done() {
+    /**
+     *
+     */
+    public void done() {
     // nothing left to do
   }
 

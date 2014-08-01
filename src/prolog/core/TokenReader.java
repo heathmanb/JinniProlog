@@ -3,31 +3,58 @@ package prolog.core;
 import prolog.kernel.*;
 import prolog.logic.*;
 import java.io.*;
+import static java.lang.Math.floor;
+import static prolog.kernel.JavaIO.string2reader;
+import static prolog.kernel.JavaIO.url_or_file;
+import static prolog.logic.Interact.errmes;
 
 /**
  * Reads chars from char streams using the current default encoding
  */
 public final class TokenReader extends PrologReader {
 
+    /**
+     *
+     * @param fname
+     * @return
+     * @throws ExistenceException
+     */
     public static PrologReader toTokenReader(String fname) throws ExistenceException {
-        return new TokenReader(JavaIO.url_or_file(fname));
+        return new TokenReader(url_or_file(fname));
     }
 
+    /**
+     *
+     * @param cs
+     * @return
+     * @throws ExistenceException
+     */
     public static PrologReader string2TokenReader(String cs) throws ExistenceException {
-        Reader stream = JavaIO.string2reader(cs);
+        Reader stream = string2reader(cs);
         return new TokenReader(stream);
     }
 
+    /**
+     *
+     * @param stream
+     */
     public TokenReader(InputStream stream) {
         super(stream);
         init();
     }
 
+    /**
+     *
+     * @param reader
+     */
     public TokenReader(Reader reader) {
         super(reader);
         init();
     }
 
+    /**
+     *
+     */
     public void init() {
         tokenizer = new StreamTokenizer(this);
         tokenizer.parseNumbers();
@@ -42,6 +69,12 @@ public final class TokenReader extends PrologReader {
 
     private StreamTokenizer tokenizer;
 
+    /**
+     *
+     * @param M
+     * @return
+     * @throws PrologException
+     */
     @Override
     public int get(Machine M) throws PrologException {
         if (null == tokenizer) {
@@ -52,7 +85,7 @@ public final class TokenReader extends PrologReader {
         try {
             c = tokenizer.nextToken();
         } catch (IOException e) {
-            JavaIO.errmes("tokenizer error", e);
+            errmes("tokenizer error", e);
         }
 
         int t;
@@ -62,7 +95,7 @@ public final class TokenReader extends PrologReader {
                 break;
 
             case StreamTokenizer.TT_NUMBER:
-                if (tokenizer.nval == Math.floor(tokenizer.nval)) {
+                if (tokenizer.nval == floor(tokenizer.nval)) {
                     t = M.termReader.putInt((int) tokenizer.nval);
                 } else {
                     t = M.termReader.putFloat(tokenizer.nval);
@@ -89,6 +122,10 @@ public final class TokenReader extends PrologReader {
         return t;
     }
 
+    /**
+     *
+     * @param M
+     */
     @Override
     public void stop(Machine M) {
         super.stop(M);

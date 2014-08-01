@@ -6,6 +6,12 @@ import java.util.*;
 import java.awt.event.*;
 import java.awt.*;
 import com.sun.j3d.utils.picking.*;
+import static java.lang.Math.cos;
+import static java.lang.Math.max;
+import static java.lang.Math.min;
+import static java.lang.Math.sin;
+import static prolog3d.Params.ri;
+import static prolog3d.Prolog3D.pp;
 
 /**
   Generic agents - designed as behaviors to which Shapes can be added.
@@ -19,6 +25,7 @@ public class Agent3D extends Behavior
      At his point an agent is "pure behavior" - note that no 
      shape has yet been attached to the agent - this is usually 
      done by the classes that extend this base class.
+     * @param top
    */
   public Agent3D(World world,Object data,boolean top) {
     super();
@@ -26,7 +33,9 @@ public class Agent3D extends Behavior
     tg=new TransformGroup();
     setSchedulingBounds(World.bounds);
 
-    if(null==data) data="!?";
+    if(null==data) {
+        data="!?";
+        }
     this.world=world;
     this.data=data;
     reset();
@@ -35,13 +44,16 @@ public class Agent3D extends Behavior
     tg.setCapability(TransformGroup.ALLOW_TRANSFORM_READ);
     tg.addChild(this); // a behavior !!!
 
-    if(top) world.getScene().addChild(tg);
+    if(top) {
+        world.getScene().addChild(tg);
+        }
     addToCat();
   }
   
   /**
    Creates a new agent and inserts it in a given world
    as a toplevel entity.
+     * @param data
   */  
   public Agent3D(World world,Object data) {
     this(world,data,true);
@@ -51,7 +63,11 @@ public class Agent3D extends Behavior
     World containing the agent.
    */
   private final World world;
-  protected Object data;
+
+    /**
+     *
+     */
+    protected Object data;
   
   private int auto=0;
   
@@ -96,6 +112,7 @@ public class Agent3D extends Behavior
   
   /**
      Returns the World to which this agent belongs.
+     * @return 
    */
   public World getWorld() {
     return world;
@@ -115,6 +132,7 @@ public class Agent3D extends Behavior
   /**
      Returns the data attached to this agent seen as a vertex
      in a graph.
+     * @return 
    */
   public Object getData() {
     return getWorld().getAgents().getProp(this,"data");
@@ -122,6 +140,7 @@ public class Agent3D extends Behavior
 
   /**
      Gets the top TransformGroup containig visual components of this agent.
+     * @return 
    */
   public TransformGroup getGroup() {
     return tg;
@@ -131,17 +150,23 @@ public class Agent3D extends Behavior
   
   /**
      Adds a visual component (a child Node) to this agent.
+     * @param N
    */
   public void addChild(Node N) {
     tg.addChild(N);
   }
 
-  public void print(Object O) {
+    /**
+     *
+     * @param O
+     */
+    public void print(Object O) {
     getWorld().print(O);
   }
   
   /**
      Returns the tranlation component (position from origin) of this agent.
+     * @return 
    */
   public Vector3f getPos() {
     return pos;
@@ -158,6 +183,7 @@ public class Agent3D extends Behavior
   /**
      Sets the event handling mechanism for this agent by specifying
      what type of events (visual, mouse etc.) will be handled.
+     * @param tick
    */
   public void setWakeUp(int tick) {
     setWakeUp1(tick);
@@ -165,6 +191,7 @@ public class Agent3D extends Behavior
   
   /**
      Wake-up only on visual events
+     * @param tick
    */
   public void setWakeUp1(int tick) {
     condition=new WakeupOnElapsedTime(tick);
@@ -172,16 +199,20 @@ public class Agent3D extends Behavior
 
   /**
     Wake-up on visual and mouse events.
+     * @param tick
   */
   public void setWakeUp2(int tick) {
     WakeupCriterion[] criterions=new WakeupCriterion[2];
     criterions[0]=new WakeupOnElapsedTime(tick);
-    if(null==criterions[1]) criterions[1]=new WakeupOnAWTEvent(MouseEvent.MOUSE_CLICKED);
+    if(null==criterions[1]) {
+        criterions[1]=new WakeupOnAWTEvent(MouseEvent.MOUSE_CLICKED);
+        }
     condition=new WakeupOr(criterions);
   }
   
   /**
    Implements the Agents action on various events
+     * @param criteria
    */  
   public void processStimulus(Enumeration criteria) {
     //Prolog3D.pp("entering:"+this+" ,stopAll="+Params.stopAll);
@@ -198,45 +229,53 @@ public class Agent3D extends Behavior
       else if(criterion instanceof WakeupOnAWTEvent) {
         processAWTEvents((WakeupOnAWTEvent)criterion);
       }
-      else
-        Prolog3D.pp("Unexpected wakeUpOn="+criterion.getClass());
+      else {
+                pp("Unexpected wakeUpOn="+criterion.getClass());
+            }
     }
     wakeupOn(condition);
   }
   
   /**
      Action on Mouse Events
+     * @param criterion
    */
   public void processAWTEvents(WakeupOnAWTEvent criterion) {
     //Prolog3D.pp("AWTEvent in:"+this+" ,stopAll="+Params.stopAll);
-    if(Params.stopAll) return;
-    AWTEvent[] events=((WakeupOnAWTEvent)criterion).getAWTEvent();
-    for (int i=0; i<events.length; i++) { 
-      AWTEvent event=events[i];
-      int eventId = event.getID();         
-      if(eventId==MouseEvent.MOUSE_CLICKED) {
-        MouseEvent e=(MouseEvent)event;  
-        world.getPickCanvas().setShapeLocation(e);
-        PickResult result=null;
-        try {
-          result = world.getPickCanvas().pickClosest();
-        } catch(CapabilityNotSetException ex) {
-          Prolog3D.pp("warning: capabilities missing for picking this object");
+    if(Params.stopAll) {
+        return;
         }
-        if(null==result) continue;
-        //Node N=result.getObject();
-        Node N=result.getNode(PickResult.TRANSFORM_GROUP);
-        if(null==N) continue;
-        checkEventOnShape(N,e);  
-      }
-      else
-        Prolog3D.pp("unexpected Mouse event:"+events[i].getClass());
-    }
+    AWTEvent[] events=criterion.getAWTEvent();
+        for (AWTEvent event : events) {
+            int eventId = event.getID();
+            if (eventId==MouseEvent.MOUSE_CLICKED) {
+                MouseEvent e=(MouseEvent)event;
+                world.getPickCanvas().setShapeLocation(e);
+                PickResult result=null;
+                try {
+                    result = world.getPickCanvas().pickClosest();
+                } catch (CapabilityNotSetException ex) {
+                    pp("warning: capabilities missing for picking this object");
+                }
+                if (null==result) {
+                    continue;
+                }
+                //Node N=result.getObject();
+                Node N=result.getNode(PickResult.TRANSFORM_GROUP);
+                if (null==N) {
+                    continue;
+                }
+                checkEventOnShape(N,e);
+            } else {
+                pp("unexpected Mouse event:" + event.getClass());
+            }
+        }
     
   }
 
   /**
      Usually overridden. Handles events like mouse clicks on various shapes.
+     * @param e
    */
   public void checkEventOnShape(Node N,MouseEvent e) {}
 
@@ -253,21 +292,31 @@ public class Agent3D extends Behavior
      rotation, scale, translation.
    */
   public void transform() {
-    if(auto>0) runAuto();
-    //Prolog3D.pp(this+">>>"+rot);
-  }
+    if(auto>0) {
+        runAuto();
+        //Prolog3D.pp(this+">>>"+rot);
+        }  }
   
   synchronized private void applyTransform() {
     transformFocus();
   } 
 
-  public void transformFocus() {
+    /**
+     *
+     */
+    public void transformFocus() {
     applyTransformTo(tg);
     TransformGroup wg=world.getView(this);
-    if(null!=wg) applyTransformTo(wg);
+    if(null!=wg) {
+        applyTransformTo(wg);
+        }
   }
   
-  public void applyTransformTo(TransformGroup tgroup) {
+    /**
+     *
+     * @param tgroup
+     */
+    public void applyTransformTo(TransformGroup tgroup) {
     tgroup.setTransform(trans);
   }
   
@@ -283,7 +332,10 @@ public class Agent3D extends Behavior
     hiding=false;
   }
   
-  public void center() {
+    /**
+     *
+     */
+    public void center() {
     setX(0);
     setY(0);
     setZ(0);
@@ -305,7 +357,9 @@ public class Agent3D extends Behavior
      Makes an agent invisible.
    */
   public void hideAgent() {
-    if(hiding) return;
+    if(hiding) {
+        return;
+        }
     hiding=true;
     oldscale.x=scale.x;oldscale.y=scale.y;oldscale.z=scale.z;
     scaleTo(0.00001);
@@ -316,7 +370,9 @@ public class Agent3D extends Behavior
      Makes an agent visible.
   */
   public void showAgent() {
-    if(!hiding) return;
+    if(!hiding) {
+        return;
+        }
     hiding=false;
     scaleTo(oldscale.x,oldscale.y,oldscale.z);
   }
@@ -327,6 +383,7 @@ public class Agent3D extends Behavior
    
    /**
       Move this agent to a given position
+     * @param z
     */
   public void moveTo(double x,double y,double z) {
     pos.x=(float)x;
@@ -337,6 +394,7 @@ public class Agent3D extends Behavior
   /**
      Rotates this agent using Euler angles describing how
      much it rotates upon the x,y,z axes.
+     * @param z
    */
   public void rotateTo(double x,double y,double z) {
     rot.x=x;
@@ -346,6 +404,7 @@ public class Agent3D extends Behavior
   
   /**
      Scales this agent by given x,y,z factors.
+     * @param z
    */
   public void scaleTo(double x,double y,double z) {
     scale.x=x;
@@ -355,78 +414,169 @@ public class Agent3D extends Behavior
   
   /**
      Scales this agent uniformly.
+     * @param s
    */
   public void scaleTo(double s) {
     scaleTo(s,s,s);
   }
   
-  public void setX(double x) {
+    /**
+     *
+     * @param x
+     */
+    public void setX(double x) {
     pos.x=(float)x;
     //Prolog3D.pp("pos="+pos);
   }
   
-  public void setY(double y) {
+    /**
+     *
+     * @param y
+     */
+    public void setY(double y) {
     pos.y=(float)y;
   }
   
-  public void setZ(double z) {
+    /**
+     *
+     * @param z
+     */
+    public void setZ(double z) {
     pos.z=(float)z;
   }
   
-  
-  public void incX(double x) {
+    /**
+     *
+     * @param x
+     */
+    public void incX(double x) {
     pos.x+=(float)x;
   }
   
-  public void incY(double y) {
+    /**
+     *
+     * @param y
+     */
+    public void incY(double y) {
     pos.y+=(float)y;
   }
   
-  public void incZ(double z) {
+    /**
+     *
+     * @param z
+     */
+    public void incZ(double z) {
     pos.z+=(float)z;
   }
   
-  public void incRotX(double angle) {
+    /**
+     *
+     * @param angle
+     */
+    public void incRotX(double angle) {
     rot.x+=angle;
   }
   
-  public void incRotY(double angle) {
+    /**
+     *
+     * @param angle
+     */
+    public void incRotY(double angle) {
     rot.y+=angle;
   }
   
-  public void incRotZ(double angle) {
+    /**
+     *
+     * @param angle
+     */
+    public void incRotZ(double angle) {
     rot.z+=angle;
   }
   
-  
-  public void setRotX(double angle) {
+    /**
+     *
+     * @param angle
+     */
+    public void setRotX(double angle) {
     rot.x=angle;
   }
   
-  public void setRotY(double angle) {
+    /**
+     *
+     * @param angle
+     */
+    public void setRotY(double angle) {
     rot.y=angle;
   }
   
-  public void setRotZ(double angle) {
+    /**
+     *
+     * @param angle
+     */
+    public void setRotZ(double angle) {
     rot.z=angle;
   }
   
-  public double getX() {return pos.x;}
-  public double getY() {return pos.y;}
-  public double getZ() {return pos.z;}
-  public double getRotX() {return rot.x;}
-  public double getRotY() {return rot.y;}
-  public double getRotZ() {return rot.z;}
-  public double getScaleX() {return scale.x;}
-  public double getScaleY() {return scale.y;}
-  public double getScaleZ() {return scale.z;}
+    /**
+     *
+     * @return
+     */
+    public double getX() {return pos.x;}
+
+    /**
+     *
+     * @return
+     */
+    public double getY() {return pos.y;}
+
+    /**
+     *
+     * @return
+     */
+    public double getZ() {return pos.z;}
+
+    /**
+     *
+     * @return
+     */
+    public double getRotX() {return rot.x;}
+
+    /**
+     *
+     * @return
+     */
+    public double getRotY() {return rot.y;}
+
+    /**
+     *
+     * @return
+     */
+    public double getRotZ() {return rot.z;}
+
+    /**
+     *
+     * @return
+     */
+    public double getScaleX() {return scale.x;}
+
+    /**
+     *
+     * @return
+     */
+    public double getScaleY() {return scale.y;}
+
+    /**
+     *
+     * @return
+     */
+    public double getScaleZ() {return scale.z;}
   
   
   /*
      high level i.e. somewhat anthropomorphic moving comands
   */
   
-  private int sleep_ms=Math.min(10,Math.max(1,(10-Params.speed)))*Params.tick;
+  private int sleep_ms=min(10,max(1,(10-Params.speed)))*Params.tick;
   
   /**
      Accelerates an agent by reducing sleep time between
@@ -437,15 +587,19 @@ public class Agent3D extends Behavior
      steps are all executed.
   */
   public void hurry() {
-    Prolog3D.pp("hurrying: sleep_ms="+sleep_ms);
-    if(sleep_ms>2*Params.tick) sleep_ms-=Params.tick;
+        pp("hurrying: sleep_ms="+sleep_ms);
+    if(sleep_ms>2*Params.tick) {
+        sleep_ms-=Params.tick;
+        }
   }
   
   /**
      slows down an agent by increasing sleep time between animation steps
   */
   public void relax() {
-    if(sleep_ms<20*Params.tick) sleep_ms+=Params.tick;
+    if(sleep_ms<20*Params.tick) {
+        sleep_ms+=Params.tick;
+        }
   }
   
   /**
@@ -461,6 +615,7 @@ public class Agent3D extends Behavior
   
   /**
    * sets delta used by one walk() call - default 0.1 units
+     * @param delta
    */
   public void setStep(double delta) {
     this.delta=delta;
@@ -468,6 +623,7 @@ public class Agent3D extends Behavior
 
   /**
    * sets alpha used by one turn or tilt step - default 30 degrees = "1 hour"
+     * @param degrees
    */
   public void setTurn(int degrees) {
     this.alpha=degrees*(Math.PI/180);
@@ -477,7 +633,7 @@ public class Agent3D extends Behavior
      Sets the focus to a named TransformGroup which
      is part of this agent or the agent's top TransformGroup
      if the parameter is null.
-     
+     * @return     
   */
   public boolean setFocus(String name) {
     //nothing to do here - but see overridings in Body.java
@@ -492,12 +648,12 @@ public class Agent3D extends Behavior
     setFocus(null);
 
     double a=getRotY();
-    incX(delta*Math.sin(a));
-    incZ(delta*Math.cos(a));
+    incX(delta*sin(a));
+    incZ(delta*cos(a));
    
     double b=getRotX();
-    incY(-delta*Math.sin(b));
-    incZ(delta*Math.cos(b));
+    incY(-delta*sin(b));
+    incZ(delta*cos(b));
    
     //Prolog3D.pp("a="+getRotY()+",x="+getX()+",z="+getZ());
 
@@ -568,6 +724,7 @@ public class Agent3D extends Behavior
   
   /**
      Puts the agent on some random automatic behavior.
+     * @param auto
    */
   public void setAuto(int auto) {
     this.auto=auto;
@@ -589,8 +746,11 @@ public class Agent3D extends Behavior
     }
   }
   
-  public void autoMove() {
-    int choice=Params.ri(6);
+    /**
+     *
+     */
+    public void autoMove() {
+    int choice=ri(6);
     switch(choice) {
       case 0:
         setX(getX()+rf(0.1));
@@ -617,11 +777,15 @@ public class Agent3D extends Behavior
     }
   }
 
-  public void autoColor() {
+    /**
+     *
+     */
+    public void autoColor() {
   }
 
   /**
      Generates random float from -r to r
+     * @return 
    */
   public static float rf(double r) {
     return Params.rf((float)r);
@@ -629,10 +793,14 @@ public class Agent3D extends Behavior
   
   /**
     Provides a readable representation of the state of this agent.
+     * @return 
    */
   public String toString() {
     Object data=getData();
-    if(null==data) return "vertex at: [pos"+pos+",rot"+rot+",scale"+scale+"]";
-    else return data.toString();
+    if(null==data) {
+        return "vertex at: [pos"+pos+",rot"+rot+",scale"+scale+"]";
+        } else {
+        return data.toString();
+        }
   }
 }

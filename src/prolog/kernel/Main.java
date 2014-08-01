@@ -468,7 +468,12 @@ package prolog.kernel;
 public class Main {
 
     // see versions in Init
-    public static void main(String[] argv) {
+
+    /**
+     *
+     * @param argv
+     */
+        public static void main(String[] argv) {
     //Top.testProlog();
     /*
          System.err.println("ARGS:\n"+argv.length);

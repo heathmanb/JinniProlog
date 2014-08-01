@@ -4,19 +4,33 @@ import com.sun.glass.events.WindowEvent;
 import java.applet.*;
 import java.awt.*;
 import java.util.Arrays;
+import static java.util.Arrays.stream;
+import static prolog.core.GuiBuiltins.stopComponent;
 import prolog.kernel.*;
+import static prolog.kernel.JavaIO.pathOf;
+import static prolog.kernel.Top.initProlog;
 import prolog.logic.*;
+import static prolog.logic.Interact.errmes;
+import static prolog.logic.Interact.warnmes;
+import static prolog.logic.Prolog.dump;
 
 /**
  * Provides an Applet wrapper for the Prolog GUI
  */
 public class PrologApplet extends Applet implements Stateful {
 
+    /**
+     *
+     */
     public static Applet applet;
 
+    /**
+     *
+     * @return
+     */
     public static String getAppletHome() {
         String appletURL = applet.getCodeBase().toString();
-        return JavaIO.pathOf(appletURL);
+        return pathOf(appletURL);
     }
 
     /**
@@ -44,26 +58,26 @@ public class PrologApplet extends Applet implements Stateful {
         argv[1] = command;
         //Machine M=
         try {
-            Top.initProlog(argv);
+            initProlog(argv);
         } catch (Throwable e) {
-            JavaIO.errmes("ireecoverable Prolog error", e);
+            errmes("ireecoverable Prolog error", e);
             destroy();
         }
     }
 
     @Override
     public void start() {
-        Prolog.dump("starting...");
+        dump("starting...");
     }
 
     @Override
     public void stop() {
-        Prolog.dump("stopping...");
+        dump("stopping...");
     }
 
     @Override
     public void destroy() {
-        Prolog.dump("destroying...");
+        dump("destroying...");
         super.destroy();
     }
 
@@ -72,7 +86,7 @@ public class PrologApplet extends Applet implements Stateful {
         if (evt.target instanceof Runnable) {
             ((Runnable) evt.target).run();
         } else {
-            JavaIO.warnmes("UNEXPECTED  TARGET: " + evt.target);
+            warnmes("UNEXPECTED  TARGET: " + evt.target);
             return false;
         }
         return true;
@@ -81,8 +95,8 @@ public class PrologApplet extends Applet implements Stateful {
     @Override
     public void processEvent(AWTEvent event) {
         if ((event.getID() & WindowEvent.CLOSE) > 0) {
-            Arrays.stream(getComponents()).forEach(
-                    C -> GuiBuiltins.stopComponent(C));
+            stream(getComponents()).forEach(
+                    C -> stopComponent(C));
             removeAll();
             destroy();
         }

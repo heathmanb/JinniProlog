@@ -52,6 +52,10 @@ public class RoleMap implements Stateful {
         return new RoleMap(map, (BitSet) (roles.clone()));
     }
 
+    /**
+     *
+     * @return
+     */
     public BitSet getRoles() {
         return roles;
     }
@@ -74,51 +78,101 @@ public class RoleMap implements Stateful {
         return map.get(key);
     }
 
+    /**
+     *
+     * @param key
+     * @param value
+     */
     public void setValue(Object key, Object value) {
         Entry entry = map.getEntry(key);
         entry.value = value;
     }
 
+    /**
+     *
+     * @param bit
+     */
     public void set(int bit) {
         roles.set(bit);
     }
 
+    /**
+     *
+     * @param bit
+     * @return
+     */
     public boolean get(int bit) {
         return roles.get(bit);
     }
 
+    /**
+     *
+     * @param bit
+     */
     public void clear(int bit) {
         roles.clear(bit);
     }
 
+    /**
+     *
+     */
     public void clear() {
         roles.and(emptySet);
     }
 
+    /**
+     *
+     * @param key
+     */
     public void set(Object key) {
         roles.set(map.getOrdinal(key));
     }
 
+    /**
+     *
+     * @param key
+     * @return
+     */
     public boolean get(Object key) {
         return roles.get(map.getOrdinal(key));
     }
 
+    /**
+     *
+     * @param key
+     */
     public void clear(Object key) {
         roles.clear(map.getOrdinal(key));
     }
 
+    /**
+     *
+     * @param other
+     */
     public void and(RoleMap other) {
         roles.and(other.getRoles());
     }
 
+    /**
+     *
+     * @param other
+     */
     public void or(RoleMap other) {
         roles.or(other.getRoles());
     }
 
+    /**
+     *
+     * @param other
+     */
     public void xor(RoleMap other) {
         roles.xor(other.getRoles());
     }
 
+    /**
+     *
+     * @param other
+     */
     public void andNot(RoleMap other) {
         //return roles.clone().andNot(other.getRoles()); // only in 1.2
         BitSet oroles = (BitSet) other.getRoles().clone();
@@ -126,6 +180,10 @@ public class RoleMap implements Stateful {
         roles.and(oroles);
     }
 
+    /**
+     *
+     * @return
+     */
     public ObjectDict toDict() {
         ObjectIterator I = map.getKeys();
         ObjectDict D = new ObjectDict();

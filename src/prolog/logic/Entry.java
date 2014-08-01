@@ -4,13 +4,27 @@ package prolog.logic;
    Implements an Entry in the ObjectDict hash based dictionary
  */
 public class Entry implements Stateful {
-  public int ordinal;
+
+    /**
+     *
+     */
+    public int ordinal;
   private final Object key;
-  public Object value;
+
+    /**
+     *
+     */
+    public Object value;
   private final int code;
   Entry next;
  
-public Entry(Object key,Object value,Entry next) {
+    /**
+     *
+     * @param key
+     * @param value
+     * @param next
+     */
+    public Entry(Object key,Object value,Entry next) {
     this.key=key;
     this.code=o2hash(key);
     this.value=value;
@@ -18,11 +32,18 @@ public Entry(Object key,Object value,Entry next) {
     this.ordinal=-1;
   }
   
-public Object getKey() {
+    /**
+     *
+     * @return
+     */
+    public Object getKey() {
     return key;
   }
   
-public void clear() {
+    /**
+     *
+     */
+    public void clear() {
     this.value=null;
     this.next=null;
   }

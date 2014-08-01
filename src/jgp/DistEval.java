@@ -6,5 +6,12 @@ import java.math.BigInteger;
  * from its intended model
  */
 public interface DistEval {
+
+    /**
+     *
+     * @param A
+     * @param B
+     * @return
+     */
     public int distance(BigInteger A,BigInteger B);
 }

@@ -1,5 +1,8 @@
 package prolog.logic;
 
+import static java.lang.System.arraycopy;
+import static prolog.logic.Prolog.dump;
+
 /**
 Dynamic Stack for int data.
  */
@@ -7,21 +10,39 @@ public class IntStack implements Stateful {
   private int stack[];
   private int top;
   
-  public static int SIZE=16; // power of 2
-  public static int MINSIZE=1<<15; // power of 2
+    /**
+     *
+     */
+    public static int SIZE=16; // power of 2
+
+    /**
+     *
+     */
+    public static int MINSIZE=1<<15; // power of 2
   
-  public IntStack() {
+    /**
+     *
+     */
+    public IntStack() {
     this(SIZE);
   }
   
-  public IntStack(int size) {
+    /**
+     *
+     * @param size
+     */
+    public IntStack(int size) {
     stack=new int[size];
     clear();
   }
   
-  public IntStack(int[] array) {
+    /**
+     *
+     * @param array
+     */
+    public IntStack(int[] array) {
     this(array.length);
-    System.arraycopy(array,0,stack,0,array.length);
+        arraycopy(array,0,stack,0,array.length);
     setTop(array.length-1);
   }
 
@@ -46,7 +67,11 @@ public class IntStack implements Stateful {
     stack=null;
   }
    
-  public final boolean isEmpty() {
+    /**
+     *
+     * @return
+     */
+    public final boolean isEmpty() {
     return top<0;
   }
   
@@ -54,6 +79,7 @@ public class IntStack implements Stateful {
    * Pushes an element - top is incremented frirst than the
    * element is assigned. This means top point to the last assigned
    * element - which can be returned with peek().
+     * @param i
    */
   public final void push(int i) {
     //IO.dump("push:"+i);
@@ -71,40 +97,75 @@ public class IntStack implements Stateful {
     //stack[top]=i;
   }
 
-  public final  int pop() {
+    /**
+     *
+     * @return
+     */
+    public final  int pop() {
     return stack[top--];
   }
   
-  public final  int peek() {
+    /**
+     *
+     * @return
+     */
+    public final  int peek() {
     return stack[top];
   }
   
-   
-  public final  int at(int i) {
+    /**
+     *
+     * @param i
+     * @return
+     */
+    public final  int at(int i) {
     return stack[i];
   }
   
-  public final int find(int val) {
+    /**
+     *
+     * @param val
+     * @return
+     */
+    public final int find(int val) {
     for(int i=0;i<size();i++) {
-      if(stack[i]==val) return i;
+      if(stack[i]==val) {
+          return i;
+            }
     }
     return -1;
   }
   
-  public final int del_swap(int val) {
+    /**
+     *
+     * @param val
+     * @return
+     */
+    public final int del_swap(int val) {
     int i=find(val);
     if(i>=0) {
       int tval=pop();
-      if(i<=top) update(i,tval);
+      if(i<=top) {
+          update(i,tval);
+            }
     }
     return i;
   }
   
-  public final  void update(int i,int val) {
+    /**
+     *
+     * @param i
+     * @param val
+     */
+    public final  void update(int i,int val) {
     stack[i]=val;
   }
   
-  public final int size() {
+    /**
+     *
+     * @return
+     */
+    public final int size() {
     return top+1;
   }
   
@@ -114,8 +175,10 @@ public class IntStack implements Stateful {
   protected void expand() {
     int l=stack.length;
     int[] newstack=new int[l<<1];
-    if(PrologGC.trace>=2) Prolog.dump("IntStack: expanding to:"+(l<<1));
-    System.arraycopy(stack,0,newstack,0,l);
+    if(PrologGC.trace>=2) {
+            dump("IntStack: expanding to:"+(l<<1));
+        }
+        arraycopy(stack,0,newstack,0,l);
     stack=newstack;
   }
   
@@ -124,24 +187,39 @@ public class IntStack implements Stateful {
   */
   protected void shrink() {
     int l=stack.length;
-    if(l<=MINSIZE || top<<2>=l) return;
+    if(l<=MINSIZE || top<<2>=l) {
+        return;
+        }
     l=1+(top<<1); // still means shrink to at 1/2 or less of the heap
-    if(top<MINSIZE) l=MINSIZE;
-    if(PrologGC.trace>=2) Prolog.dump("IntStack shrinking to: "+l);
+    if(top<MINSIZE) {
+        l=MINSIZE;
+        }
+    if(PrologGC.trace>=2) {
+            dump("IntStack shrinking to: "+l);
+        }
     int[] newstack=new int[l];
-    System.arraycopy(stack,0,newstack,0,top+1);
+        arraycopy(stack,0,newstack,0,top+1);
     stack=newstack;
   }
   
-  public int[] toArray() {
+    /**
+     *
+     * @return
+     */
+    public int[] toArray() {
     int[] array=new int[size()];
     //Prolog.dump("toArray:"+size());
-    if(size()>0)
-      System.arraycopy(stack,0,array,0,size());
+    if(size()>0) {
+            arraycopy(stack, 0, array, 0, size());
+        }
     return array;
   }
   
-  public byte[] toByteArray() {
+    /**
+     *
+     * @return
+     */
+    public byte[] toByteArray() {
     byte[] array=new byte[size()];
     //Prolog.dump("toArray:"+size());
     for(int i=0;i<size(); i++) {
@@ -151,12 +229,17 @@ public class IntStack implements Stateful {
   }
   
   public String toString() {
-    if(isEmpty()) return "[]";
-    StringBuffer b=new StringBuffer(top<<2);
+    if(isEmpty()) {
+        return "[]";
+        }
+    StringBuilder b=new StringBuilder(top<<2);
     b.append("[");
     for(int i=0; i<=top; i++) {
-      if(i==0) b.append(""+stack[i]);
-      else b.append(","+stack[i]);
+      if(i==0) {
+          b.append("").append(stack[i]);
+            } else {
+          b.append(",").append(stack[i]);
+            }
     }
     b.append("]");
     return b.toString();
@@ -175,17 +258,31 @@ public class IntStack implements Stateful {
       if (stack[from]<=heapTop) {
 		    from++; // keep
 		  }    
-		  else
-		    stack[from] = stack[top--]; // remove
+		  else {
+          stack[from] = stack[top--]; // remove
+            }
 	  }
 	}
   
-  public int toList(HeapStack heap) {
+    /**
+     *
+     * @param heap
+     * @return
+     */
+    public int toList(HeapStack heap) {
     return toList(heap,heap.prolog.G_NIL);
   }
   
-  public int toList(HeapStack heap,int tail) {
-    if(isEmpty()) return tail;
+    /**
+     *
+     * @param heap
+     * @param tail
+     * @return
+     */
+    public int toList(HeapStack heap,int tail) {
+    if(isEmpty()) {
+        return tail;
+        }
     int h=heap.getHeapTop()+1;
     for(int i=0; i<=top; i++) {
       heap.pushList(stack[i]);

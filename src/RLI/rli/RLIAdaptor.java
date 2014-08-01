@@ -1,5 +1,6 @@
 package rli;
 
+import static java.lang.System.exit;
 import prolog.logic.Fun;
 import prolog.logic.Var;
 import prolog.logic.Prolog;
@@ -7,26 +8,45 @@ import prolog.kernel.PrologReader;
 import prolog.kernel.PrologWriter;
 import java.net.NetworkInterface;
 import java.net.InetAddress;
+import static java.net.NetworkInterface.getNetworkInterfaces;
 import java.util.*;
+import static java.util.Collections.synchronizedMap;
+import static rli.RLIClient.clientPrologCall;
+import static rli.RLIClient.stopServer;
 
+/**
+ *
+ * @author Brad
+ */
 public class RLIAdaptor {
 
-  public static boolean trace=false;
+    /**
+     *
+     */
+    public static boolean trace=false;
 
-  public static boolean cacheServers=false;
+    /**
+     *
+     */
+    public static boolean cacheServers=false;
   
-  public static Map InnerServers = Collections.synchronizedMap(new HashMap());
+    /**
+     *
+     */
+    public static Map InnerServers = synchronizedMap(new HashMap());
   
   /**
    * Independent testing function
+     * @param args
    */
   public static void main(String args[]) {
     String host=null; // means "localhost";
     String portName="7777"; // ll ports are virtual - their names are strings -
     // avoid confusion with socket layers
     if("server".equals(args[0])) {
-      if(rli_start_server(portName,null)<0)
-        System.exit(1);
+      if(rli_start_server(portName,null)<0) {
+                exit(1);
+            }
     } else {
       Fun goal=new Fun("println","hello");
       Object answer=rli_call(host,portName,goal);
@@ -34,56 +54,118 @@ public class RLIAdaptor {
     }
   }
 
-  public static Object Stopper=new Object();
+    /**
+     *
+     */
+    public static Object Stopper=new Object();
 
   // basic named port API
 
   //
-  public static int rli_start_server(String portName,Prolog prolog,
+
+    /**
+     *
+     * @param portName
+     * @param prolog
+     * @param reader
+     * @param writer
+     * @return
+     */
+      public static int rli_start_server(String portName,Prolog prolog,
       PrologReader reader,PrologWriter writer) {
     RLIServer server=new RLIServer(portName,prolog,reader,writer);
     int r=server.start(); // first !!!
-    if(r>=0) InnerServers.put(portName,server);
+    if(r>=0) {
+        InnerServers.put(portName,server);
+        }
     return r;
   }
 
-  public static int rli_start_server(String portName,Prolog prolog,
+    /**
+     *
+     * @param portName
+     * @param prolog
+     * @param writer
+     * @return
+     */
+    public static int rli_start_server(String portName,Prolog prolog,
       PrologWriter writer) {
     return rli_start_server(portName,prolog,null,writer);
   }
 
-  public static int rli_start_server(String portName,Prolog prolog) {
+    /**
+     *
+     * @param portName
+     * @param prolog
+     * @return
+     */
+    public static int rli_start_server(String portName,Prolog prolog) {
     return rli_start_server(portName,prolog,null,null);
   }
 
-  public static void rli_stop_server(String host,String portName) {
-    RLIClient.stopServer(host,portName);
-    if("localhost".equals(host)) InnerServers.remove(portName);
+    /**
+     *
+     * @param host
+     * @param portName
+     */
+    public static void rli_stop_server(String host,String portName) {
+        stopServer(host,portName);
+    if("localhost".equals(host)) {
+        InnerServers.remove(portName);
+        }
   }
 
   //
-  public static Object rli_call(String host,String portName,Object goal) {
+
+    /**
+     *
+     * @param host
+     * @param portName
+     * @param goal
+     * @return
+     */
+      public static Object rli_call(String host,String portName,Object goal) {
     if(cacheServers && "localhost".equals(host)) {
       RLIServer inner=(RLIServer)InnerServers.get(portName);
-      if(null!=inner) return inner.serverCallProlog(goal); //?? bg
-    }
-    return RLIClient.clientPrologCall(host,portName,goal);
+      if(null!=inner) {
+          return inner.serverCallProlog(goal); //?? bg
+            }    }
+    return clientPrologCall(host,portName,goal);
   }
 
-  public static int rli_wait(String host,String portName,int timeout) {
+    /**
+     *
+     * @param host
+     * @param portName
+     * @param timeout
+     * @return
+     */
+    public static int rli_wait(String host,String portName,int timeout) {
     return RLIClient.rli_wait(host,portName,timeout);
   }
 
-  
-  public static Object rli_in(String host,String port) {
+    /**
+     *
+     * @param host
+     * @param port
+     * @return
+     */
+    public static Object rli_in(String host,String port) {
     if(cacheServers && "localhost".equals(host)) {
       RLIServer inner=(RLIServer)InnerServers.get(port);
-      if(null!=inner) return inner.rli_in(); //?? bg
-    }
+      if(null!=inner) {
+          return inner.rli_in(); //?? bg
+            }    }
     return RLIClient.rli_in(host,port);
   }
 
-  public static void rli_out(String host,String port,Object T) {
+    /**
+     *
+     * @param host
+     * @param port
+     * @param T
+     */
+    public static void rli_out(String host,String port,Object T) {
     if(cacheServers && "localhost".equals(host)) {
       RLIServer inner=(RLIServer)InnerServers.get(port);
       if(null!=inner) {
@@ -96,26 +178,56 @@ public class RLIAdaptor {
 
   // derived int port API - for backward compatilility
 
+    /**
+     *
+     * @param port
+     * @param prolog
+     * @return
+     */
+    
   public static int rli_start_server(int port,Prolog prolog) {
     return rli_start_server(""+port,prolog);
   }
 
-  public static void rli_stop_server(String host,int port) {
+    /**
+     *
+     * @param host
+     * @param port
+     */
+    public static void rli_stop_server(String host,int port) {
     rli_stop_server(host,""+port);
   }
 
-  public static Object rli_call(String host,int port,Object goal) {
+    /**
+     *
+     * @param host
+     * @param port
+     * @param goal
+     * @return
+     */
+    public static Object rli_call(String host,int port,Object goal) {
     return rli_call(host,""+port,goal);
   }
 
-  public static int rli_wait(String host,int port,int timeout) {
+    /**
+     *
+     * @param host
+     * @param port
+     * @param timeout
+     * @return
+     */
+    public static int rli_wait(String host,int port,int timeout) {
     return rli_wait(host,""+port,timeout);
   }
   
-  public static Fun rli_get_inets() {
+    /**
+     *
+     * @return
+     */
+    public static Fun rli_get_inets() {
     Vector V=new Vector();
     try {
-      Enumeration E=NetworkInterface.getNetworkInterfaces();
+      Enumeration E=getNetworkInterfaces();
       while(E.hasMoreElements()) {
         NetworkInterface I=(NetworkInterface)E.nextElement();
         Enumeration A=I.getInetAddresses();

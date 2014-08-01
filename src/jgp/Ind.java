@@ -12,6 +12,7 @@ public class Ind implements Comparable {
 	
     /**
      * Gets the "genotype" describing this individual
+     * @return 
      */
 	public BigInteger getGeno() {
 	   return body;
@@ -19,6 +20,7 @@ public class Ind implements Comparable {
 
     /**
      * Sets the "genotype" describing this individual to a given value
+     * @param body
      */
 	public void setGeno(BigInteger body) {
 	   this.body=body;
@@ -29,6 +31,7 @@ public class Ind implements Comparable {
    * 
    * @param model:
    *          target of the evolution
+     * @param world
    * @param bits:
    *          size of the individual in bits
    * @param hops:
@@ -44,21 +47,25 @@ public class Ind implements Comparable {
 	}
 
 	public boolean equals(Object other) {
-		if (other instanceof Ind)
-			return getGeno().equals(((Ind) other).getGeno());
-		else
-			return false;
+		if (other instanceof Ind) {
+                    return getGeno().equals(((Ind) other).getGeno());
+        } else {
+                    return false;
+        }
 	}
 
     /***************************************************************************
      * compares to Inds based on distance to their model the closer the model
      * the smaller the Ind is
+     * @param other
      */
 	public int compareTo(Object other) {
 		Ind O = (Ind) other;
 		int distcomp=world.distanceToModel(this) - world.distanceToModel(O);
         //if(true) return distcomp;
-        if(0!=distcomp) return distcomp;
+        if(0!=distcomp) {
+            return distcomp;
+        }
         return getGeno().compareTo(O.getGeno());
 	}
     
@@ -66,31 +73,44 @@ public class Ind implements Comparable {
      * Induces a small random change in an individual. If the resulting
      * individual is "perfect" w.r.t to the model, it is returned, otherwise
      * null is returned.
+     * @return 
      */
 	public Ind mutate(boolean show) {
 		int l = getGeno().bitLength();
 		if (l > 0) {
 			int n = GPWorld.rand.nextInt(l);
 			setGeno(getGeno().flipBit(n));
-			if(show) show("MUTATE");		
+			if(show) {		
+                            show("MUTATE");
+            }		
 		}
 		return this;
 	}
 	 
+    /**
+     *
+     * @param show
+     * @return
+     */
     public Ind negate(boolean show) {
         BigInteger geno=getGeno();
         setGeno(world.evaluator.negate(geno,world.gbits));
-        if(show) show("NEGATE");
+        if(show) {
+            show("NEGATE");
+        }
         return this;
     }
     
     /**
      * Implements self-similar growth
+     * @return 
      */
     public Ind grow(boolean show) {
       BigInteger geno=getGeno();
       setGeno(world.evaluator.grow(geno,world.gbits));
-      if(show) show("GROW");
+      if(show) {
+          show("GROW");
+        }
       return this;
   }
     
@@ -98,6 +118,7 @@ public class Ind implements Comparable {
    * Induces a small change in an individual trying to become more similar to
    * one closer to its model. If the resulting individual is "perfect" w.r.t to
    * the model, it is returned, otherwise null is returned.
+     * @return 
    */
 	public Ind imitate(Ind other,boolean show) {
 		if(show) {
@@ -108,11 +129,17 @@ public class Ind implements Comparable {
 		int d = D.getLowestSetBit();
 		// System.out.println("d=" + d + ",D=" + D.toString(2));
 		setGeno(getGeno().flipBit(d));
-		if(show) show("AFTER=");
+		if(show) {
+                    show("AFTER=");
+        }
 	    return this;
 	}
 	
-	public boolean isPerfect() {
+    /**
+     *
+     * @return
+     */
+    public boolean isPerfect() {
 		return world.model.equals(world.evalPheno(this));
 	}
 
@@ -124,10 +151,11 @@ public class Ind implements Comparable {
    *          a BigInteger to be shown as a bitstring
    * @param bits:
    *          width of the result
+     * @return 
    */
 	public static String big2string(BigInteger B,int bits) {
 		String s=B.toString(2);
-		StringBuffer b=new StringBuffer(bits);
+		StringBuilder b=new StringBuilder(bits);
 		int n=bits-s.length();
 		while(--n >=0) {
 			b.append('0');
@@ -140,7 +168,7 @@ public class Ind implements Comparable {
    * returns a String representation of this
    */
 	public String toString() {
-		StringBuffer b=new StringBuffer();
+		StringBuilder b=new StringBuilder();
 		b.append("d");
 		b.append(world.distanceToModel(this));
 		b.append("_");
@@ -152,6 +180,7 @@ public class Ind implements Comparable {
 
 	/**
    * prints out a string representation of this individual
+     * @param op
    */
     
 	public void show(String op) {

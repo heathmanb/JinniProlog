@@ -1,25 +1,36 @@
 package prolog3d;
 
+import static java.lang.Math.sqrt;
 import javax.media.j3d.*;
 import javax.vecmath.*;
 
 // vertices could be at (0, 0, 0), (0, 1, 1), (1, 0, 1), (1, 1, 0)
+
+/**
+ *
+ * @author Brad
+ */
 public class Tetra extends Simple {
   Tetra() {
     super(new TetraShape());
     transformScale(defScale);
   }
   
-  public Tetra(Color3f c,float t) {
+    /**
+     *
+     * @param c
+     * @param t
+     */
+    public Tetra(Color3f c,float t) {
     super(new TetraShape(),makeApp(c,t));
     transformScale(defScale);
   }
 }
 
 class TetraShape extends Shape3D {
-  private static final float sqrt3 = (float) Math.sqrt(3.0);
+  private static final float sqrt3 = (float) sqrt(3.0);
   private static final float sqrt3_3 = sqrt3 / 3.0f;
-  private static final float sqrt24_3 = (float) Math.sqrt(24.0) / 3.0f;
+  private static final float sqrt24_3 = (float) sqrt(24.0) / 3.0f;
 
   private static final float ycenter = 0.5f * sqrt24_3;
   private static final float zcenter = -sqrt3_3;
@@ -59,7 +70,9 @@ class TetraShape extends Shape3D {
     Vector3f v1 = new Vector3f();
     Vector3f v2 = new Vector3f();
     Point3f [] pts = new Point3f[3];
-    for (i = 0; i < 3; i++) pts[i] = new Point3f();
+    for (i = 0; i < 3; i++) {
+        pts[i] = new Point3f();
+        }
 
     for (face = 0; face < 4; face++) {
       tetra.getCoordinates(face*3, pts);

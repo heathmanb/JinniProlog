@@ -21,6 +21,8 @@ import java.io.InputStream;
  */
 //*
 import prolog.core.*;
+import static prolog.kernel.JavaIO.toReader;
+import static prolog.kernel.JavaIO.toWriter;
 
 /**
  * Bridge between mandatory prolog.kernel classes and optional classes in
@@ -41,6 +43,12 @@ public class Extender extends ExtenderFactory implements Stateful {
         return TokenReader.string2TokenReader(cs);
     }
 
+    /**
+     *
+     * @param codeStore
+     * @return
+     * @throws Exception
+     */
     public static boolean activateBytecode(CodeStore codeStore) throws Exception {
         return Javafier.activateBytecode(codeStore);
     }
@@ -53,22 +61,45 @@ public class Extender extends ExtenderFactory implements Stateful {
         return Zipper.zip2stream(jarname, fname, quiet);
     }
 
+    /**
+     *
+     * @return
+     */
     public static PrologReader stdIn() {
-        return JavaIO.toReader(System.in);
+        return toReader(System.in);
     }
 
+    /**
+     *
+     * @return
+     */
     public static PrologWriter stdOut() {
-        return JavaIO.toWriter(System.out);
+        return toWriter(System.out);
     }
 
+    /**
+     *
+     * @return
+     */
     public static String getAppletHome() {
         return PrologApplet.getAppletHome();
     }
 
+    /**
+     *
+     * @param f
+     * @param O
+     * @return
+     */
     public static boolean toFile(String f, Object O) {
         return Transport.toFile(f, O);
     }
 
+    /**
+     *
+     * @param f
+     * @return
+     */
     static public Object fromFile(String f) {
         return Transport.fromFile(f);
     }

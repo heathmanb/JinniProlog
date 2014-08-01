@@ -2,6 +2,10 @@ package prolog.core;
 
 import prolog.kernel.*;
 import prolog.logic.*;
+import static prolog.logic.Interact.errmes;
+import static prolog.logic.Interact.errmes;
+import static prolog.logic.Interact.printStackTrace;
+import static prolog.logic.Prolog.dump;
 
 /**
  * Implements (Finite) Categories by extending Graph to support multiple edges
@@ -38,12 +42,12 @@ public class SmallCat extends RankedGraph { // Graph
      */
     @Override
     public void addVertex(Object v, Object data) {
-        JavaIO.errmes("error directly adding vertex in SmallCat:" + v + ":" + data);
+        errmes("error directly adding vertex in SmallCat:" + v + ":" + data);
     }
 
     @Override
     public void addEdge(Object from, Object to, Object data) {
-        JavaIO.errmes("error directly adding edge in SmallCat:" + from + "=>" + to + ":" + data);
+        errmes("error directly adding edge in SmallCat:" + from + "=>" + to + ":" + data);
     }
 
     /**
@@ -99,6 +103,12 @@ public class SmallCat extends RankedGraph { // Graph
         return morphisms.get(m);
     }
 
+    /**
+     *
+     * @param from
+     * @param to
+     * @param m
+     */
     public void addSmallMorphism(Object from, Object to, Object m) {
         if (null == morphisms.get(m)) {
             defineSmallMorphism(m, m);
@@ -108,6 +118,7 @@ public class SmallCat extends RankedGraph { // Graph
 
     /**
      * removes a morphism m between two objects
+     * @param m
      */
     public void clearSmallMorphism(Object from, Object to, Object m) {
         RoleMap D = (RoleMap) edgeData(from, to);
@@ -116,6 +127,9 @@ public class SmallCat extends RankedGraph { // Graph
         }
     }
 
+    /**
+     *
+     */
     public static void sctest() {
         try {
             SmallCat C = new SmallCat();
@@ -128,14 +142,14 @@ public class SmallCat extends RankedGraph { // Graph
             C.setSmallMorphism("car", "engine", "mm");
             C.setSmallMorphism("engine", "thing", "hyp");
             Object m = C.getSmallMorphism("car", "vehicle", "hyp");
-            Prolog.dump("got car / vehicle =>" + m);
+            dump("got car / vehicle =>" + m);
             //C.setProp("car","brand","Toyota");
             C.runGraphRanker();
             C.rankSort();
             //C.addEdge("car","vehicle","is_a,relation");
-            Prolog.dump("cat=\n" + C);
+            dump("cat=\n" + C);
         } catch (Exception e) {
-            JavaIO.printStackTrace(e);
+            printStackTrace(e);
         }
     }
 }

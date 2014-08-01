@@ -5,34 +5,55 @@ import prolog.core.Cat;
 import javax.media.j3d.*;
 import javax.vecmath.*;
 import java.util.*;
+import static prolog3d.Prolog3D.drawGraph;
 
+/**
+ *
+ * @author Brad
+ */
 public class Tools {  
 
-  public Tools() {
+    /**
+     *
+     */
+    public Tools() {
   }
   
-  public static String showChildren(Node N) {
+    /**
+     *
+     * @param N
+     * @return
+     */
+    public static String showChildren(Node N) {
     StringBuffer b=new StringBuffer();
     showChildren(N,b,0);
     return b.toString();  
   }
   
-   public static void showChildren(Node N,StringBuffer b,int d) {
+    /**
+     *
+     * @param N
+     * @param b
+     * @param d
+     */
+    public static void showChildren(Node N,StringBuffer b,int d) {
     for(int i=0;i<d;i++) {
       b.append(' ');
     }
-    Object D=N.getUserData();  if(null!=D) b.append(D+":");
+    Object D=N.getUserData();  if(null!=D) {
+        b.append(D).append(":");
+        }
     if(N instanceof Link) {
-      b.append(N+"=>\n");
+        b.append(N).append("=>\n");
       N=((Link)N).getSharedGroup();
       showChildren(N,b,d+1);
     }
     else if(N instanceof Leaf) {
-       b.append(N+"\n");
+        b.append(N).append("\n");
     }
     else {
       Group G=(Group)N;
-      b.append(showGroup(G)+"\n");
+      b.append(showGroup(G)).append("\n");
       //G.setCapability(Group.ALLOW_CHILDREN_READ);
       Enumeration e=G.getAllChildren();
       while(e.hasMoreElements()) {
@@ -43,7 +64,12 @@ public class Tools {
     }
   }
   
-  public static String showGroup(Group G) {
+    /**
+     *
+     * @param G
+     * @return
+     */
+    public static String showGroup(Group G) {
     if(G instanceof TransformGroup) {
       TransformGroup TG=(TransformGroup)G;
       return G.toString();
@@ -51,32 +77,49 @@ public class Tools {
     return G.toString();
   }
 
-  public static Cat collectChildren(Node N) {
+    /**
+     *
+     * @param N
+     * @return
+     */
+    public static Cat collectChildren(Node N) {
     Cat cat=new Cat();
     Object O=N.getUserData();
     HashMap H;
-    if(O instanceof HashMap) H=(HashMap)O;
-    else H=null;
-    if(null==H) H=new HashMap();
+    if(O instanceof HashMap) {
+        H=(HashMap)O;
+        } else {
+        H=null;
+        }
+    if(null==H) {
+        H=new HashMap();
+        }
     collectChildren(N,cat,0,H);
     N.setUserData(H);   
     return cat;  
   }
   
-  public static void collectChildren(Node N,Cat cat,int d,HashMap H) {
+    /**
+     *
+     * @param N
+     * @param cat
+     * @param d
+     * @param H
+     */
+    public static void collectChildren(Node N,Cat cat,int d,HashMap H) {
    
     if(N instanceof Link) {
-      cat.setProp(N,"link",new Integer(d));
+      cat.setProp(N,"link", d);
       Node G=((Link)N).getSharedGroup();
       collectChildren(G,cat,d+1,H);
       cat.setMorphism(N,G,"child","link");
     }
     else if(N instanceof Leaf) {
-      cat.setProp(N,"leaf",new Integer(d));
+      cat.setProp(N,"leaf", d);
     }
     else {
       Group G=(Group)N;
-      cat.setProp(G,"group",new Integer(d));
+      cat.setProp(G,"group", d);
       collectGroup(G,cat,d);
       Enumeration e=G.getAllChildren();
       while(e.hasMoreElements()) {
@@ -85,19 +128,34 @@ public class Tools {
       }
     }
     Node P=N.getParent();
-    if(null!=P) cat.setMorphism(P,N,"child","group");
+    if(null!=P) {
+        cat.setMorphism(P,N,"child","group");
+        }
     fixUserData(N,H);
   }
   
-  public static void fixUserData(Node N,HashMap H) {
+    /**
+     *
+     * @param N
+     * @param H
+     */
+    public static void fixUserData(Node N,HashMap H) {
     Object key=N.getUserData();
-    if(null==key) return;
+    if(null==key) {
+        return;
+        }
     if(key instanceof String) {
       H.put(key,N);
     }
   }
   
-  public static void collectGroup(Group G,Cat cat,int d) {
+    /**
+     *
+     * @param G
+     * @param cat
+     * @param d
+     */
+    public static void collectGroup(Group G,Cat cat,int d) {
     if(G instanceof TransformGroup) {
       TransformGroup TG=(TransformGroup)G;
       TG.setCapability(TransformGroup.ALLOW_TRANSFORM_WRITE);
@@ -113,9 +171,13 @@ public class Tools {
     }
   }
   
-  public static void drawChildren(Group G) {
+    /**
+     *
+     * @param G
+     */
+    public static void drawChildren(Group G) {
     Cat C=collectChildren(G);
     //Prolog3D.pp(Cat.showInfo(C));
-    Prolog3D.drawGraph(C);
+        drawGraph(C);
   }
 }

@@ -28,6 +28,10 @@ public class Cat extends RankedGraph implements IFilter {
         super(size);
     }
 
+    /**
+     *
+     * @return
+     */
     @Override
     public RankedGraph new_instance() {
         return new Cat();
@@ -53,6 +57,11 @@ public class Cat extends RankedGraph implements IFilter {
         return getProp(v, "data");
     }
 
+    /**
+     *
+     * @param v
+     * @return
+     */
     @Override
     protected Content toVertex(Object v) {
         return toVertex(v, new ObjectDict());
@@ -344,6 +353,15 @@ public class Cat extends RankedGraph implements IFilter {
         return C;
     }
 
+    /**
+     *
+     * @param O
+     * @param shared
+     * @param ftype
+     * @param ctype
+     * @param level
+     * @return
+     */
     public Object addTermTree(Term O, ObjectDict shared, int ftype, int ctype, int level) {
         Object S = shared.get(O);
         if (S != null) {
@@ -376,14 +394,27 @@ public class Cat extends RankedGraph implements IFilter {
 
     private IFilter iFilter = this;
 
+    /**
+     *
+     * @param iFilter
+     */
     public void setIFilter(IFilter iFilter) {
         this.iFilter = iFilter;
     }
 
+    /**
+     *
+     * @return
+     */
     public IFilter getIFilter() {
         return this.iFilter;
     }
 
+    /**
+     *
+     * @param rankedData
+     * @return
+     */
     @Override
     public Object filterVertex(Object rankedData) {
         RankedData RD = (RankedData) rankedData;
@@ -394,6 +425,11 @@ public class Cat extends RankedGraph implements IFilter {
         return dict.get("data");
     }
 
+    /**
+     *
+     * @param iEdgeData
+     * @return
+     */
     @Override
     public Object filterEdge(Object iEdgeData) {
         //return iEdgeData.getClass()+"@@"+iEdgeData.toString()+"@@";

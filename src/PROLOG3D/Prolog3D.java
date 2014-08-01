@@ -16,6 +16,8 @@ import com.sun.j3d.utils.universe.*;
 import javax.media.j3d.*;
 import javax.vecmath.*;
 import com.sun.j3d.utils.behaviors.vp.*;
+import static prolog3d.Params.isApplet;
+import static prolog3d.Params.sleep;
 
 
 /**
@@ -28,15 +30,30 @@ public class Prolog3D // implements Serializable
   
   private World world=null;
   private Frame frame=null;
-  public TextArea output=null;
+
+    /**
+     *
+     */
+    public TextArea output=null;
   private int inst;
   
   /* returns main Panel */
+
+    /**
+     *
+     * @return
+     */
+    
   public World getWorld() {
     return world;
   }
   
-  public Panel addPanel(String whereNSEWC) {
+    /**
+     *
+     * @param whereNSEWC
+     * @return
+     */
+    public Panel addPanel(String whereNSEWC) {
     Panel P=new Panel();
     this.world.add(whereNSEWC,P);
     //this.world.validate();
@@ -45,6 +62,7 @@ public class Prolog3D // implements Serializable
   
   /**
    Creates a new world in a window, not yet visible.
+     * @param f
    */
   public Prolog3D(String title,Frame f) {
     super();
@@ -54,29 +72,46 @@ public class Prolog3D // implements Serializable
       this.frame=sharedFrame;
     }
     else {
-      if(null==f) this.frame=new Frame(title);
-      else this.frame=f; // title not used
+      if(null==f) {
+          this.frame=new Frame(title);
+            } else {
+          this.frame=f; // title not used
+            }
 
       frame.setLayout(new BorderLayout());
       frame.validate();
-      if(Params.reuseTopWindow) sharedFrame=frame;
+      if(Params.reuseTopWindow) {
+          sharedFrame=frame;
+            }
     }
     world=new World();
   }
   
-  public Prolog3D(Frame frame) {
+    /**
+     *
+     * @param frame
+     */
+    public Prolog3D(Frame frame) {
     this(null,frame);
   }
 
-  public Prolog3D(String title) {
+    /**
+     *
+     * @param title
+     */
+    public Prolog3D(String title) {
     this(title,null);
   }
 
-  public Prolog3D() {
+    /**
+     *
+     */
+    public Prolog3D() {
     this(Params.winTitle);
   }
   /**
    Adds a vertex agent of a given shape to the world
+     * @return 
    */
   public Vertex3D addVertex(Node shape,Object data) {
     return new Vertex3D(world,shape,data);
@@ -84,21 +119,38 @@ public class Prolog3D // implements Serializable
   
   /**
    Adds a vertex agent of a given shape number to the world
+     * @return 
    */
   public Vertex3D addVertex(int shapeNo,Color3f c,Object data) {
     return new Vertex3D(world,shapeNo,c,Simple.transparency,data); // $$
   }
   
-  public Vertex3D addVertex(int shapeNo,double r,double g,double b,double trans,Object data) {
+    /**
+     *
+     * @param shapeNo
+     * @param r
+     * @param g
+     * @param b
+     * @param trans
+     * @param data
+     * @return
+     */
+    public Vertex3D addVertex(int shapeNo,double r,double g,double b,double trans,Object data) {
     return new Vertex3D(world,shapeNo,new Color3f((float)r,(float)g,(float)b),(float)trans,data);
   }
 
-  public Vertex3D addVertex(String label) {
+    /**
+     *
+     * @param label
+     * @return
+     */
+    public Vertex3D addVertex(String label) {
     return new Vertex3D(world,null,label);
   }
   
   /**
    Adds an Edge for 3D Graph Drawing application
+     * @return 
   */
   public Edge3D addEdge(Vertex3D From,Vertex3D To,Object label) {
     return new Edge3D(world,From,To,label);
@@ -106,6 +158,7 @@ public class Prolog3D // implements Serializable
   
   /**
    Adds an Edge represented as a mobile shape to a 3D Graph Drawing application
+     * @return 
    */
   public MobileEdge3D addMobileEdge(Vertex3D From,Vertex3D To,Object label) {
     return new MobileEdge3D(world,From,To,label);
@@ -114,21 +167,40 @@ public class Prolog3D // implements Serializable
   /**
    Creates an body agent with a "body" with a HashMap of parts that can be controlled
    individualy
+     * @return 
    */
   public Body addBody(String modelFile,Object data) {
     return new Body(world,modelFile,data);
   }
   
-  public Satellite addSat(Agent3D from,Node sat,double r,Object data) {
+    /**
+     *
+     * @param from
+     * @param sat
+     * @param r
+     * @param data
+     * @return
+     */
+    public Satellite addSat(Agent3D from,Node sat,double r,Object data) {
     return new Satellite(world,from,sat,r,data);
   }
   
-  public Satellite addSat(Agent3D from,int shapeNo,Color3f c,double r,Object data) {
+    /**
+     *
+     * @param from
+     * @param shapeNo
+     * @param c
+     * @param r
+     * @param data
+     * @return
+     */
+    public Satellite addSat(Agent3D from,int shapeNo,Color3f c,double r,Object data) {
     return new Satellite(world,from,shapeNo,c,r,data);
   }
   
   /**
     Creates an agent morphing continuously between two shapes
+     * @return 
    */
   public Morph3D addMorph(Shape3D[] shapes,Object data) {
     return new Morph3D(world,shapes,data);
@@ -136,12 +208,19 @@ public class Prolog3D // implements Serializable
   
   /**
    Creates an agent morphing continuously between two models
+     * @return 
    */
   public Morph3D addMorph(Fun fnames,Object data) {
     return new Morph3D(world,fnames,data);
   }
   
-  public void setView(double x,double y,double z) {
+    /**
+     *
+     * @param x
+     * @param y
+     * @param z
+     */
+    public void setView(double x,double y,double z) {
     TransformGroup tg=getWorld().getView(null);
     Transform3D t=new Transform3D();
     tg.getTransform(t);
@@ -158,16 +237,24 @@ public class Prolog3D // implements Serializable
     tg.setTransform(t);
   }
   
-  public void setHolder(Agent3D viewHolder) {
+    /**
+     *
+     * @param viewHolder
+     */
+    public void setHolder(Agent3D viewHolder) {
     world.setHolder(viewHolder);
   }
   
-  public void removeHolder() {
+    /**
+     *
+     */
+    public void removeHolder() {
     world.removeHolder();
   }
   
   /**
     Compiles/closes and shows this world in a window.
+     * @param h
   */
   public void showWorld(int w,int h) {
     world.run();
@@ -182,7 +269,7 @@ public class Prolog3D // implements Serializable
         exit();
       }
     } );
-    Params.sleep(1000L);
+        sleep(1000L);
   }
   
   /**
@@ -190,10 +277,14 @@ public class Prolog3D // implements Serializable
   */
   
   public void stopWorld() {
-    if(0==inst) Params.stopAll=true;
+    if(0==inst) {
+        Params.stopAll=true;
+        }
     world.destroy();
     frame.removeAll();
-    if(!Params.reuseTopWindow) frame.dispose();
+    if(!Params.reuseTopWindow) {
+        frame.dispose();
+        }
     pp("stopped world("+inst+"):"+this);
   }
   
@@ -201,12 +292,15 @@ public class Prolog3D // implements Serializable
      Forces exiting this application.
    */
   public void exit() {
-    if((!Params.isApplet()) && 0==inst) System.exit(0);
+    if((!isApplet()) && 0==inst) {
+        System.exit(0);
+        }
   }
   
   /**
      Opens a snaphot window ready to be printed or saved
      to a PNG file.
+     * @param h
    */
   public void printWorld(int w,int h) {
     world.print(w,h);
@@ -214,6 +308,7 @@ public class Prolog3D // implements Serializable
   
    /**
      Adds controls to a world.
+     * @param output
    */
   public void addOutput(TextArea output) {
     this.output=output;
@@ -228,6 +323,7 @@ public class Prolog3D // implements Serializable
   
   /**
    Adds controls to a world created as a result of running a layout engine.
+     * @param LG
   */
    
   public void addControls(LayoutEngine LG) {
@@ -248,6 +344,7 @@ public class Prolog3D // implements Serializable
   /** 
      Runs a layout engine on an attributed graph/category
      in a world of a given 3D radius
+     * @param radius
    */
   public void runLayout(int radius) {
     Cat C=world.getAgents();
@@ -259,6 +356,7 @@ public class Prolog3D // implements Serializable
   
   /** 
      Draws a ranked graph with default parameters
+     * @param RG
    */
   static public void drawGraph(Cat RG) {
     drawGraph(RG,20,300,400,400);
@@ -267,6 +365,7 @@ public class Prolog3D // implements Serializable
   /**
      Runs a layout algorithm  on a ranked graph and displays it for a
      given time (in seconds). 
+     * @param h
    */  
   static public void drawGraph(Cat RG,int time,int radius,int w,int h) {
     Params.bgfile="";
@@ -277,7 +376,7 @@ public class Prolog3D // implements Serializable
     M.showWorld(w,h);
     L.run();
     if(time>0) {
-      Params.sleep(1000L*time);
+            sleep(1000L*time);
       M.stopWorld();
     }
   }
@@ -285,6 +384,7 @@ public class Prolog3D // implements Serializable
    /**
      Runs a layout algorithm on a ranked graph in an existing universe,
      without animating the layout.
+     * @param bgfile
    */  
   static public void catModel(Prolog3D M,int radius,Cat RG,String bgfile) {
     Params.bgfile=bgfile;
@@ -295,13 +395,20 @@ public class Prolog3D // implements Serializable
     L.run();
   }
   
-  static public void catModel(Prolog3D M,int radius,Cat RG) {
+    /**
+     *
+     * @param M
+     * @param radius
+     * @param RG
+     */
+    static public void catModel(Prolog3D M,int radius,Cat RG) {
     catModel(M,radius,RG,"");
   }
 
   /**
    Runs a layout algorithm on a ranked graph in an existing universe,
    without animating the layout.
+     * @param bgfile
    */  
   static public void drawTree(Prolog3D M,int radius,Cat RG,String bgfile) {
     Params.bgfile=bgfile;
@@ -310,13 +417,20 @@ public class Prolog3D // implements Serializable
     L.run();
   }
   
-  static public void drawTree(Prolog3D M,int radius,Cat RG) {
+    /**
+     *
+     * @param M
+     * @param radius
+     * @param RG
+     */
+    static public void drawTree(Prolog3D M,int radius,Cat RG) {
     drawTree(M,radius,RG,"");
   }
   
   /**
      Runs a layout algorithm  on a ranked graph and displays it for a
      given time (in seconds), after representing it as a frowzed geometry object. 
+     * @param h
    */
   static public void drawFrozenGraph(Cat RG,int time,int r,int w,int h) {
     Params.bgfile="";
@@ -329,13 +443,14 @@ public class Prolog3D // implements Serializable
     L.run();
     toFrozen(L,w,h);
     if(time>0) {
-      Params.sleep(1000L*time);
+            sleep(1000L*time);
       M.stopWorld();
     }
   } 
   
   /**
       Converts a graph layout to an efficient point/line geometry representation.
+     * @param h
    */
   static public void toFrozen(LayoutEngine L,int w,int h) { 
     FrozenGraph S=new FrozenGraph(L);
@@ -347,6 +462,7 @@ public class Prolog3D // implements Serializable
   
   /**
      Prints a message (usually for tracing) to the standard error stream.
+     * @param O
    */
   static public void pp(Object O) {
     System.err.println(O.toString());
@@ -354,6 +470,7 @@ public class Prolog3D // implements Serializable
   
   /**
      Main method that can be used to start a self contained application
+     * @param args
    */
 
   public static void main0(String[] args) {
@@ -361,13 +478,16 @@ public class Prolog3D // implements Serializable
     Vertex3D V=M.addVertex("one");
     V.setAuto(1);
     M.showWorld(400,400);
-    Params.sleep(10000);
+        sleep(10000);
     M.stopWorld();
     M.exit();
   }
 
-  
-  public static void main(String[] argv) {
+    /**
+     *
+     * @param argv
+     */
+    public static void main(String[] argv) {
     //Top.ZIPSTORE="prolog3d.jar";
     (new prolog.kernel.Shell(argv,null,null,true)).run();
   }

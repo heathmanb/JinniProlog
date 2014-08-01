@@ -1,6 +1,9 @@
 // Init.java
 package prolog.kernel;
 
+import static java.lang.System.getProperty;
+import static prolog.kernel.JavaIO.println;
+
 final class Init {
 
     private final static int year = 2012;
@@ -31,19 +34,19 @@ final class Init {
         }
         String jinni = XBRAND_NAME;
 
-        userdir = System.getProperty("user.dir");
+        userdir = getProperty("user.dir");
         if (null == userdir) {
             userdir = ".";
         }
-        osname = System.getProperty("os.name");
+        osname = getProperty("os.name");
         if (null == osname) {
             osname = "?";
         }
-        String java = System.getProperty("java.version");
+        String java = getProperty("java.version");
         if (null == java) {
             java = "";
         }
-        String jvendor = System.getProperty("java.vendor");
+        String jvendor = getProperty("java.vendor");
         if (null == jvendor) {
             jvendor = "";
         }
@@ -63,7 +66,7 @@ final class Init {
                 + "Detected " + jvendor + " " + java + " Java, " + osname + JavaIO.NL
                 + "User Dir " + userdir + JavaIO.NL;
         if (verbosity > 0) {
-            JavaIO.println(s);
+            println(s);
         }
     }
 

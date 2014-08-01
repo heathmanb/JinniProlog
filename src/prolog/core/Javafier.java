@@ -4,10 +4,21 @@ import prolog.kernel.*;
 import prolog.logic.*;
 
 import java.io.*;
+import static java.lang.Class.forName;
+import static java.lang.System.arraycopy;
 import java.lang.reflect.*;
 import java.util.Arrays;
+import static java.util.Arrays.stream;
 import java.util.stream.Collectors;
+import static java.util.stream.Collectors.summingInt;
 import java.util.zip.*;
+import static prolog.core.Transport.file2bytes;
+import static prolog.kernel.JavaIO.toWriter;
+import static prolog.kernel.JavaIO.toWriter;
+import static prolog.kernel.Top.getPrologVersion;
+import static prolog.logic.Interact.errmes;
+import static prolog.logic.Interact.warnmes;
+import static prolog.logic.Prolog.dump;
 
 /**
  * Converts byte code to Java classes that can be included in jar files and
@@ -16,36 +27,62 @@ import java.util.zip.*;
  */
 public class Javafier {
 
+    /**
+     *
+     */
     public static String TARGET = "Wam";
+
+    /**
+     *
+     */
     public static String TARGET_DIR = "../prolog/kernel/";
     private static final short codeword = 27182; // for obfuscation
 
     private static boolean inactive = false;
     private static final boolean zipping = true; //
 
+    /**
+     *
+     */
     public static final void turnOff() {
         inactive = true;
     }
 
+    /**
+     *
+     */
     public static int SPLIT = 7200;
 
+    /**
+     *
+     */
     public static void run() {
         javafy(Interact.PROLOG_BYTECODE_FILE);
     }
 
+    /**
+     *
+     * @param ByteCodeFile
+     */
     public static void javafy(String ByteCodeFile) {
-        Prolog.dump("Starting conversion of " + ByteCodeFile + " Prolog bytecode file to Java");
+        dump("Starting conversion of " + ByteCodeFile + " Prolog bytecode file to Java");
         try {
             javafy0(ByteCodeFile);
-            Prolog.dump("conversion of " + ByteCodeFile + " to Java succeded");
+            dump("conversion of " + ByteCodeFile + " to Java succeded");
         } catch (PrologException e) {
-            JavaIO.errmes("conversion of " + ByteCodeFile + " to Java failed", e);
+            errmes("conversion of " + ByteCodeFile + " to Java failed", e);
         }
     }
 
+    /**
+     *
+     * @param fname
+     * @return
+     * @throws ExistenceException
+     */
     public static byte[] toBytes(String fname) throws ExistenceException {
         try {
-            return Transport.file2bytes(fname);
+            return file2bytes(fname);
         } catch (IOException e) {
             throw new ExistenceException("unable to read: " + fname);
         }
@@ -53,7 +90,7 @@ public class Javafier {
 
     private static PrologWriter newCodeWriter(int ctr) {
         String sname = TARGET_DIR + TARGET + ctr + ".java";
-        PrologWriter out = JavaIO.toWriter(sname);
+        PrologWriter out = toWriter(sname);
         out.println("package prolog.kernel;\n");
         out.println("import prolog.logic.*;\n");
         out.println("\nclass "
@@ -95,7 +132,7 @@ public class Javafier {
 
         // new class Wam
         String wname = TARGET_DIR + TARGET + ".java";
-        out = JavaIO.toWriter(wname);
+        out = toWriter(wname);
         out.println("package prolog.kernel;\n");
         out.println("import prolog.logic.*;\n");
         out.println("\npublic class " + TARGET + " implements Stateful {");
@@ -110,7 +147,7 @@ public class Javafier {
         out.println("final static public int maxwam=" + ctr + ";\n");
 
         out.println("final static public int prologVersion() {return "
-                + Top.getPrologVersion()
+                + getPrologVersion()
                 + ";}\n}");
 
         out.close();
@@ -118,6 +155,12 @@ public class Javafier {
         // end class
     }
 
+    /**
+     *
+     * @param codeStore
+     * @return
+     * @throws Exception
+     */
     public static boolean activateBytecode(CodeStore codeStore) throws Exception {
 
         if (inactive) {
@@ -129,7 +172,7 @@ public class Javafier {
         try {
             String className = "prolog.kernel.Wam";
             String methodName = "getByteCode";
-            Class C = Class.forName(className);
+            Class C = forName(className);
             Method theMethod = C.getMethod(methodName, (Class[]) null);
             scodes = (short[][]) theMethod.invoke(C, (Object[]) null);
         } catch (ClassNotFoundException | NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
@@ -143,20 +186,20 @@ public class Javafier {
         try {
             String className = "prolog.kernel.Wam";
             String methodName = "prologVersion";
-            Class C = Class.forName(className);
+            Class C = forName(className);
             Method theMethod = C.getMethod(methodName, (Class[]) null);
             Integer Version = (Integer) theMethod.invoke(C, (Object[]) null);
             int vers = Version;
-            int vers0 = Top.getPrologVersion();
+            int vers0 = getPrologVersion();
             if (vers0 != vers) {
-                JavaIO.warnmes("Prolog source version " + vers0 + " different from runtime version: " + vers);
+                warnmes("Prolog source version " + vers0 + " different from runtime version: " + vers);
             }
         } catch (ClassNotFoundException | NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
-            JavaIO.warnmes("unable to get prolog version information->" + e);
+            warnmes("unable to get prolog version information->" + e);
         }
 
-        int codesize = Arrays.stream(scodes)
-                .collect(Collectors.summingInt(sc -> sc.length));
+        int codesize = stream(scodes)
+                .collect(summingInt(sc -> sc.length));
 
         short[] scode = new short[codesize];
 
@@ -178,11 +221,16 @@ public class Javafier {
             (new CodeIO(codeStore)).floadfromReader(r);
             return true;
         } catch (IOException e) {
-            JavaIO.warnmes("failed to load code from internal files, code length: " + code.length);
+            warnmes("failed to load code from internal files, code length: " + code.length);
             return false;
         }
     }
 
+    /**
+     *
+     * @param bs
+     * @return
+     */
     public static byte[] zip(byte[] bs) {
         Deflater zipper = new Deflater(); //Deflater.BEST_COMPRESSION);
         zipper.setInput(bs);
@@ -192,11 +240,16 @@ public class Javafier {
         int l = zipper.getTotalOut();
         //Prolog.dump("zip: "+l+"<"+bs.length);
         bs = new byte[l];
-        System.arraycopy(zs, 0, bs, 0, l);
+        arraycopy(zs, 0, bs, 0, l);
 
         return bs;
     }
 
+    /**
+     *
+     * @param zs
+     * @return
+     */
     public static byte[] unzip(byte[] zs) {
         Inflater unzipper = new Inflater();
         byte[] cs = new byte[zs.length * 10];
@@ -204,12 +257,12 @@ public class Javafier {
             unzipper.setInput(zs);
             unzipper.inflate(cs);
         } catch (DataFormatException e) {
-            JavaIO.errmes("unable to get zipped Prolog bytecode from Java class", e);
+            errmes("unable to get zipped Prolog bytecode from Java class", e);
             return null;
         }
         int l = unzipper.getTotalOut();
         byte[] bs = new byte[l];
-        System.arraycopy(cs, 0, bs, 0, l);
+        arraycopy(cs, 0, bs, 0, l);
         return bs;
     }
 
@@ -254,7 +307,7 @@ public class Javafier {
         cs[cl] = (short) (bl % 2);
         for (int i = 0; i < bs.length; i += 2) {
             byte a = bs[i];
-            byte b = ((i + 1) < bs.length) ? bs[i + 1] : (byte) 0;
+            byte b = ((i + 1) < bs.length) ? bs[i + 1] : 0;
             cs[i / 2] = fuse(a, b);
         }
 

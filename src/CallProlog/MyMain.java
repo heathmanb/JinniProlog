@@ -10,6 +10,18 @@ import prolog.kernel.*;
 import prolog.logic.*;
 import java.util.*;
 import java.io.*;
+import static prolog.kernel.JavaIO.dump;
+import static prolog.kernel.JavaIO.println;
+import static prolog.kernel.Top.initProlog;
+import static prolog.kernel.Top.new_machine;
+import static prolog.kernel.Top.new_machine;
+import static prolog.kernel.Top.new_machine;
+import static prolog.kernel.Top.new_machine;
+import static prolog.kernel.Top.new_machine;
+import static prolog.kernel.Top.new_machine;
+import static prolog.logic.Interact.errmes;
+import static prolog.logic.Interact.halt;
+import static prolog.logic.LogicEngine.call;
 /**
  *  Shows examples of calls form Java to Prolog and back
  */
@@ -21,26 +33,28 @@ public class MyMain  {
    *  because that's where Jinni will look for its Java code
    *  as well as the for its Prolog bytecode.
    *  Start Jinni with: go.bat, then run.bat
+     * @param args
    */
   public static void main (String args[]) { 
-    JavaIO.println("basic engine test=>"+ 
-      LogicEngine.call(new Fun("eq",new Var(1),"hello"))
+        println("basic engine test=>"+ 
+        call(new Fun("eq",new Var(1),"hello"))
     );
-    Machine M=Top.initProlog(args); 
+    Machine M=initProlog(args); 
     if(M!=null) {
       String query="compile('myMain')";
         testJavaPrologInterface();
         M.run(query);
       //Top.toplevel();
     }
-    JavaIO.halt(0);
+        halt(0);
   }
 
   /**
    * just makes printing easier
+     * @param s
    */
   public static void p(String s) {
-    JavaIO.dump(s);
+        dump(s);
   }
 
 /**
@@ -48,25 +62,27 @@ public class MyMain  {
  */  
 public static void testJavaPrologInterface() {
 
-  Machine M=Top.new_machine();
+  Machine M=new_machine();
   
   {
   // simple String queries
   
     String s=M.run("member(X,[a,b,c])");
-    JavaIO.dump("testJinni: first X in member/3: "+s);   
+            dump("testJinni: first X in member/3: "+s);   
      
     M.run("assert(a(88))");
-    JavaIO.dump("assert works: " + M.run("X:-a(X)"));    
+            dump("assert works: " + M.run("X:-a(X)"));    
       
     // building a compound term query, getting all answers
  
     Object X=new Var(1);
-    Object goal_args[]={X,new Integer(1),new Integer(5)};
+    Object goal_args[]={X, 1, 5};
     Fun Goal=new Fun("for",goal_args);
     Object[] answer_args={X,Goal};
     Fun Query=new Fun(":-",answer_args);
-    if(!M.load_engine(Query)) return;
+    if(!M.load_engine(Query)) {
+        return;
+            }
     for(;;) {
       Object answer=M.get_answer();
       if(null==answer) {
@@ -75,40 +91,41 @@ public static void testJavaPrologInterface() {
         M.stop(); 
         break;
       }
-      JavaIO.dump("testJinni: X in for/3(X,1,5): "+answer);
+                dump("testJinni: X in for/3(X,1,5): "+answer);
     }
   }  
 
   { // passing to Prolog a Java object for a call back method
   
-    M=Top.new_machine(); // stop killed the previous one
+    M=      new_machine(); // stop killed the previous one
     Date today=new Date();
     Object R=new Var(1);
     Object goal_args[]={today,"toString",R}; // note first arg "today" - it is a handle to a Date
     Fun Goal=new Fun("invoke_java_method",goal_args); // we build the callback goal
     Object[] answer_args={R,Goal}; // we build the answer pattern to be returned
     Fun Query=new Fun(":-",answer_args); // we put them together as a query with clause syntax
-    if(!M.load_engine(Query)) return; // we load the (existing) Prolog engine
-    for(;;) {
+    if(!M.load_engine(Query)) {
+        return; // we load the (existing) Prolog engine
+            }    for(;;) {
       Object answer=M.get_answer(); // get an answer
       if(null==answer) {
         M.stop();
         break; // exit loop when finished
       }
       // print out an answer
-      JavaIO.dump("testJinni: Prolog callback on a Java Date object gives ===> "+answer);
+                dump("testJinni: Prolog callback on a Java Date object gives ===> "+answer);
     }
   }  
   
   {
     // simple String query with output written by Prolog collected into a String
     ByteArrayOutputStream output=new ByteArrayOutputStream();
-    M=Top.new_machine(null,new PrologWriter(output));
+    M=      new_machine(null,new PrologWriter(output));
     String query="X:-member(X,[a,b,c]),println(writing(X)),fail;X=done";
     String answer=M.run(query);
-    JavaIO.dump("query with output redirected to String:\n"+query);
-    JavaIO.dump("collected output=>\n"+output.toString());
-    JavaIO.dump("computed answer =>"+answer);
+            dump("query with output redirected to String:\n"+query);
+            dump("collected output=>\n"+output.toString());
+            dump("computed answer =>"+answer);
   }
   
   {
@@ -116,13 +133,13 @@ public static void testJavaPrologInterface() {
     String goal="for(I,1,3),println(I),fail;true. ";
     ByteArrayInputStream input=new ByteArrayInputStream(goal.getBytes());
     ByteArrayOutputStream output=new ByteArrayOutputStream();
-    M=Top.new_machine(new PrologReader(input),new PrologWriter(output));
+    M=      new_machine(new PrologReader(input),new PrologWriter(output));
     String query="Answer:-read(Goal),println(read_from_string=Goal),call(Goal),fail;Answer=done";
     String answer=M.run(query);
-    JavaIO.dump("query with I/O from/to a String:\n"+query);
-    JavaIO.dump("goal read from a String:\n"+goal);
-    JavaIO.dump("collected output=>\n"+output.toString());
-    JavaIO.dump("computed answer =>"+answer);
+            dump("query with I/O from/to a String:\n"+query);
+            dump("goal read from a String:\n"+goal);
+            dump("collected output=>\n"+output.toString());
+            dump("computed answer =>"+answer);
   }
 
 
@@ -132,54 +149,62 @@ public static void testJavaPrologInterface() {
     String toRead="end_of_file";
     ByteArrayInputStream input=new ByteArrayInputStream(toRead.getBytes());
     ByteArrayOutputStream output=new ByteArrayOutputStream();
-    M=Top.new_machine(new PrologReader(input),new PrologWriter(output));
+    M=      new_machine(new PrologReader(input),new PrologWriter(output));
     Object[] args=new Object[2];args[0]="first";args[1]="second";
     
     for(int i=0;i<args.length;i++) {
       Fun aQuery=new Fun("assert",new Fun("get_i",new Integer(i),args[i]));
-      if(!M.load_engine(aQuery)) return;
+      if(!M.load_engine(aQuery)) {
+          return;
+                }
       Object answer=M.get_answer();
     }
     Var I=new Var(1);
     Var X=new Var(2);
     Fun bQuery=new Fun("foreach",new Fun("get_i",I,X),new Fun("assert",new Fun("put_i",I,X)));
-    if(!M.load_engine(bQuery)) return;
+    if(!M.load_engine(bQuery)) {
+        return;
+            }
       Object answer=M.get_answer();
-      JavaIO.dump("!!!"+answer);
+            dump("!!!"+answer);
 
     Fun cQuery=new Fun(":-",X,new Fun("put_i",I,X));
-    if(!M.load_engine(cQuery)) return;
+    if(!M.load_engine(cQuery)) {
+        return;
+            }
     for(;;) {
       answer=M.get_answer(); // get an answer
       if(null==answer) {
         M.stop();
         break; // exit loop when finished
       }
-      JavaIO.dump("!!!"+answer);
+                dump("!!!"+answer);
     }
     M.stop();
   }
 
   { // some easier ways to build queries - using special purpose Fun constructors
     
-    M=Top.new_machine(); // stop killed the previous one
+    M=      new_machine(); // stop killed the previous one
     Fun List=new Fun(".","a",new Fun(".","b","[]"));
     Fun Goal=new Fun("append",new Var(1),new Var(2),List); // we build the Prolog goal
     Fun Query=new Fun(":-",new Fun("result",new Var(1),new Var(2)),Goal); // we put them together as a query with clause syntax
-    if(!M.load_engine(Query)) return; // we load the (existing) Prolog engine
-    for(;;) {
+    if(!M.load_engine(Query)) {
+        return; // we load the (existing) Prolog engine
+            }    for(;;) {
       Object answer=M.get_answer(); // get an answer
       if(null==answer) {
         M.stop();
         break; // exit loop when finished
       }
       // print out an answer
-      JavaIO.dump("testJinni: Prolog nondeterministic list append gives ===> "+answer);
+                dump("testJinni: Prolog nondeterministic list append gives ===> "+answer);
     }
   }  
 }  
   /**
    *  Exhibits work in Java on a term sent from Prolog
+     * @return 
    */
   public static Object workOnPrologData(Object oterm) {
     //Machine machine=Top.new_machine();
@@ -192,9 +217,8 @@ public static void testJavaPrologInterface() {
     
     Var X=new Var(1); Var Y=new Var(2);
     Object[] args={
-      "hello",new Integer(11),
-      X,X,Y,Y,
-      new Double(3.14),
+      "hello", 11,
+      X,X,Y,Y, 3.14,
       "bye"
     };
     return new Fun("fromJava",args);
@@ -205,14 +229,14 @@ public static void testJavaPrologInterface() {
    */
   static int countNodes(Object O) {
     p("count_trace: "+O);
-    if(!(O instanceof Fun)) 
-      return 1;
+    if(!(O instanceof Fun)) {
+        return 1;
+        }
     Fun F=(Fun)O;
     int count=1;
-    for(int i=0; i<F.args.length; 
-      i++) {
-      count+=countNodes(F.args[i]);
-    }
+        for (Object arg : F.args) {
+            count += countNodes(arg);
+        }
     return count;
   }
   
@@ -225,7 +249,7 @@ public static void testJavaPrologInterface() {
       getLeaves(O,V);
     }
     catch(Exception e) {
-      JavaIO.errmes("error in getLeaves",e); 
+            errmes("error in getLeaves",e); 
     }
     return V;
   }
@@ -234,13 +258,13 @@ public static void testJavaPrologInterface() {
    * recurses over Prolog term seen as a tree
    */
   static void getLeaves(Object O,Vector V) {
-    if(!(O instanceof Fun)) 
-      V.addElement(O);
-    else {
+    if(!(O instanceof Fun)) {
+        V.addElement(O);
+        } else {
       Fun F=(Fun)O;
-      for(int i=0; i<F.args.length; i++) {
-        getLeaves(F.args[i],V);
-      }
+            for (Object arg : F.args) {
+                getLeaves(arg, V);
+            }
     }
   }
 }

@@ -11,11 +11,20 @@ import prolog.logic.*;
 
 public class Barrier implements Stateful {
 
+    /**
+     *
+     * @param count
+     * @param action
+     */
     public Barrier(int count, Runnable action) {
         this.count = count;
         this.action = action;
     }
 
+    /**
+     *
+     * @param count
+     */
     public Barrier(int count) {
         this(count, null);
     }
@@ -23,6 +32,9 @@ public class Barrier implements Stateful {
     private Runnable action;
     private int count;
 
+    /**
+     *
+     */
     public void await() {
         this.count--;
         await0();
@@ -43,6 +55,9 @@ public class Barrier implements Stateful {
         notifyAll();
     }
 
+    /**
+     *
+     */
     public void stop() {
         this.count = 0;
     }

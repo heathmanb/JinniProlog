@@ -47,6 +47,10 @@ package prolog.logic;
 
 public class Defs implements Stateful { // abstract
 
+    /**
+     *
+     */
+    
   public static final int END = 0;
 
   /** Unify unbound An() with currentArg.
@@ -337,16 +341,32 @@ public class Defs implements Stateful { // abstract
   static final int INLINE = 50;
 
   static final int FAIL_0 = 50;
-  protected static final int CWRITE_1 = 51;
-  protected static final int NL_0 = 52;
+
+    /**
+     *
+     */
+    protected static final int CWRITE_1 = 51;
+
+    /**
+     *
+     */
+    protected static final int NL_0 = 52;
   static final int VAR_1 = 53;
   static final int NONVAR_1 = 54;
   static final int INTEGER_1 = 55;
   static final int ATOMIC_1 = 56;
   static final int IS_COMPILED_1 = 57;
   static final int RETURN_1 = 58;
-  protected static final int SEEN_0 = 59;
-  protected static final int TOLD_0 = 60;
+
+    /**
+     *
+     */
+    protected static final int SEEN_0 = 59;
+
+    /**
+     *
+     */
+    protected static final int TOLD_0 = 60;
 
   static final int ARITH = 61;
   static final int PLUS_3 = 61;
@@ -355,8 +375,16 @@ public class Defs implements Stateful { // abstract
   static final int DIV_3 = 64;
   static final int MOD_3 = 65;
   static final int RANDOM_1 = 66;
-  protected static final int GET0_1 = 67;
-  protected static final int PUT0_1 = 68;
+
+    /**
+     *
+     */
+    protected static final int GET0_1 = 67;
+
+    /**
+     *
+     */
+    protected static final int PUT0_1 = 68;
   static final int LESS_2 = 69;
   static final int GREATER_2 = 70;
   static final int LESS_EQ_2 = 71;
@@ -380,10 +408,25 @@ public class Defs implements Stateful { // abstract
   static final int COPY_TERM_2 = 88;
   static final int NEW_CODE_2 = 89;
 
-  protected static final int SEEING_1 = 90;
-  protected static final int TELLING_1 = 91;
-  protected static final int SEE_OR_FAIL_1 = 92;
-  protected static final int TELL_OR_FAIL_1 = 93;
+    /**
+     *
+     */
+    protected static final int SEEING_1 = 90;
+
+    /**
+     *
+     */
+    protected static final int TELLING_1 = 91;
+
+    /**
+     *
+     */
+    protected static final int SEE_OR_FAIL_1 = 92;
+
+    /**
+     *
+     */
+    protected static final int TELL_OR_FAIL_1 = 93;
 
   static final int ADD_INSTR_5 = 94;
   static final int DET_APPEND_3 = 95;
@@ -394,15 +437,45 @@ public class Defs implements Stateful { // abstract
 
   static final int NEW_FLUENT_3 = 99;
 
-  protected static final int SREAD0_4 = 100;
-  protected static final int SWRITE_2 = 101;
+    /**
+     *
+     */
+    protected static final int SREAD0_4 = 100;
 
-  protected static final int NEW_JAVA_CLASS_2 = 102;
-  protected static final int NEW_JAVA_OBJECT_3 = 103;
-  protected static final int INVOKE_JAVA_METHOD_5 = 104;
-  protected static final int DELETE_JAVA_CLASS_2 = 105;
-  protected static final int DELETE_JAVA_OBJECT_2 = 106;
-  protected static final int GET_JAVA_FIELD_HANDLE_3 = 107;
+    /**
+     *
+     */
+    protected static final int SWRITE_2 = 101;
+
+    /**
+     *
+     */
+    protected static final int NEW_JAVA_CLASS_2 = 102;
+
+    /**
+     *
+     */
+    protected static final int NEW_JAVA_OBJECT_3 = 103;
+
+    /**
+     *
+     */
+    protected static final int INVOKE_JAVA_METHOD_5 = 104;
+
+    /**
+     *
+     */
+    protected static final int DELETE_JAVA_CLASS_2 = 105;
+
+    /**
+     *
+     */
+    protected static final int DELETE_JAVA_OBJECT_2 = 106;
+
+    /**
+     *
+     */
+    protected static final int GET_JAVA_FIELD_HANDLE_3 = 107;
 
   static final int RUN_BG_2 = 108;
   static final int CURRENT_ENGINE_1 = 109;
@@ -474,7 +547,10 @@ public class Defs implements Stateful { // abstract
 
   private static final int TAGBITS = 2;
 
-  public final static int MAXINT=(1<<(32-TAGBITS-2))-1;
+    /**
+     *
+     */
+    public final static int MAXINT=(1<<(32-TAGBITS-2))-1;
     
   // static final int getTagBits() {return TAGBITS;}
   /**********************LOW-LEVEL TERM OPERATIONS*****************/
@@ -492,24 +568,30 @@ public class Defs implements Stateful { // abstract
   private static final int LMASK = (~0 << (MBITS + RBITS));
   private static final int MMASK = (~LMASK & ~RMASK);
 
-  private static final int LGET(int W) { return W >>> (MBITS + RBITS); }
-  private static final int LPUT(int W, int val) { return ((W & ~LMASK) | (val << (MBITS + RBITS))); }
+  private static int LGET(int W) { return W >>> (MBITS + RBITS); }
+  private static int LPUT(int W, int val) { return ((W & ~LMASK) | (val << (MBITS + RBITS))); }
 
-  private static final int MGET(int W) { return (W) << LBITS >>> (LBITS + RBITS); }
-  private static final int MPUT(int W, int val) { return ((W & ~MMASK) | (val << (LBITS + RBITS) >>> LBITS)); }
+  private static int MGET(int W) { return (W) << LBITS >>> (LBITS + RBITS); }
+  private static int MPUT(int W, int val) { return ((W & ~MMASK) | (val << (LBITS + RBITS) >>> LBITS)); }
 
-  private static final int RGET(int W) { return W & RMASK; }
-  private static final int RPUT(int W, int val) { return ((W & ~RMASK) | val); }
+  private static int RGET(int W) { return W & RMASK; }
+  private static int RPUT(int W, int val) { return ((W & ~RMASK) | val); }
 
   /*******************INTERFACE TERM OPERATIONS ******************/
 
-  private static final int PUTTAG(int W, int val) { return LPUT(W, val); }
+  private static int PUTTAG(int W, int val) { return LPUT(W, val); }
 
   static final int PUTSYMNO(int W, int val) { return MPUT(W, val); }
   static final int GETSYMNO(int W) { return MGET(W); }
 
   static final int PUTARITY(int W, int val) { return RPUT(W, val); }
-  public static final int GETARITY(int W) { return RGET(W); }
+
+    /**
+     *
+     * @param W
+     * @return
+     */
+    public static final int GETARITY(int W) { return RGET(W); }
 
   /* 
    VAR tags are assumed 0 - otherwise it can all change
@@ -522,21 +604,57 @@ public class Defs implements Stateful { // abstract
 
   //static private final int noTAG =  PUTTAG(0,3);
 
-  /*************** HIGH-LEVEL TERM OPERATIONS************************/
+  /*************** HIGH-LEVEL TERM OPERATION
+     * @return S************************/
   public static final boolean isNONVAR(int hRef) { return (hRef & TAGMASK) != VARTAG; }
   // {return isIDENTIFIER(hRef) || isINTEGER(hRef);}
-  public static final boolean isVAR(int hRef) { return (hRef & TAGMASK) == VARTAG; }
-  public static final boolean isINTEGER(int hRef) { return (hRef & TAGMASK) == INTTAG; }
-  public static final boolean isIDENTIFIER(int hRef) { return (hRef & TAGMASK) == FUNTAG; }
 
-  public static final boolean isSYMCONST(int hRef) { return isIDENTIFIER(hRef) && GETARITY(hRef) == 0; }
+    /**
+     *
+     * @param hRef
+     * @return
+     */
+      public static final boolean isVAR(int hRef) { return (hRef & TAGMASK) == VARTAG; }
+
+    /**
+     *
+     * @param hRef
+     * @return
+     */
+    public static final boolean isINTEGER(int hRef) { return (hRef & TAGMASK) == INTTAG; }
+
+    /**
+     *
+     * @param hRef
+     * @return
+     */
+    public static final boolean isIDENTIFIER(int hRef) { return (hRef & TAGMASK) == FUNTAG; }
+
+    /**
+     *
+     * @param hRef
+     * @return
+     */
+    public static final boolean isSYMCONST(int hRef) { return isIDENTIFIER(hRef) && GETARITY(hRef) == 0; }
   static final boolean isCOMPOUND(int hRef) { return isIDENTIFIER(hRef) && GETARITY(hRef) != 0; }
   static final boolean isATOMIC(int hRef) { return isINTEGER(hRef) || isSYMCONST(hRef); }
 
   //************** Packing/unpacking integer terms.
   // FIXED UGLY BUG with negative numbers confused with compound terms - uses unsigned right shift >>> PT
-  public static final int INPUT_INT(int val) { return ((val << TAGBITS) >>> TAGBITS) | INTTAG; }
-  public static final int OUTPUT_INT(int val) { return (val << TAGBITS) >> TAGBITS; }
+
+    /**
+     *
+     * @param val
+     * @return
+     */
+      public static final int INPUT_INT(int val) { return ((val << TAGBITS) >>> TAGBITS) | INTTAG; }
+
+    /**
+     *
+     * @param val
+     * @return
+     */
+    public static final int OUTPUT_INT(int val) { return (val << TAGBITS) >> TAGBITS; }
 
   static final int addArity(int symno, int arity) {
     return PUTARITY(PUTSYMNO(FUNTAG, symno), arity);
@@ -567,10 +685,15 @@ public class Defs implements Stateful { // abstract
 
   static String showCell(int val) {
     String s;
-    if (isVAR(val)) s = "_" + val;
-    else if (isINTEGER(val)) s = "" + OUTPUT_INT(val);
-    else if (isIDENTIFIER(val)) s = "<" + GETSYMNO(val) + ">/" + GETARITY(val);
-    else s = "unknown?" + LGET(val) + "#" + val;
+    if (isVAR(val)) {
+        s = "_" + val;
+        } else if (isINTEGER(val)) {
+            s = "" + OUTPUT_INT(val);
+        } else if (isIDENTIFIER(val)) {
+            s = "<" + GETSYMNO(val) + ">/" + GETARITY(val);
+        } else {
+            s = "unknown?" + LGET(val) + "#" + val;
+        }
     return s;
   }
 

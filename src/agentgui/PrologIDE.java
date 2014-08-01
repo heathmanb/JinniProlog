@@ -6,15 +6,37 @@ import prolog.logic.*;
 import prolog.kernel.*;
 import prolog.core.*;
 
+/**
+ *
+ * @author Brad
+ */
 public class PrologIDE extends PrologAdaptor {
-	public String vPort="vProlog";
-	public String vName;
-	public static int instCount=0;
+
+    /**
+     *
+     */
+    public String vPort="vProlog";
+
+    /**
+     *
+     */
+    public String vName;
+
+    /**
+     *
+     */
+    public static int instCount=0;
 	
 	private VFrame vframe;
 	private String ide;
 	
-	public PrologIDE(VFrame vframe,String vName,String ide) {
+    /**
+     *
+     * @param vframe
+     * @param vName
+     * @param ide
+     */
+    public PrologIDE(VFrame vframe,String vName,String ide) {
 		super();
 		this.vframe=vframe;
 		this.vName=vName;
@@ -32,19 +54,31 @@ public class PrologIDE extends PrologAdaptor {
 		 callProlog(startIde);
    }
    */
+
+    /**
+     *
+     * @return
+     */
+    
 	
 	public String newName() {
-	  if(0==instCount) 
-		return  vName;
-	  else
-		return vName+instCount;
+	  if(0==instCount) {
+              return  vName;
+        } else {
+              return vName+instCount;
+        }
 	}
 	
-	public String newPort() {
-		  if(0==instCount) 
-			return  vName;
-		  else
-			return vName+instCount;
+    /**
+     *
+     * @return
+     */
+    public String newPort() {
+		  if(0==instCount) {
+                      return  vName;
+        } else {
+                      return vName+instCount;
+        }
    }
 	
 	public void run() {	

@@ -12,11 +12,13 @@ public abstract class Interactor implements Stateful {
 
   /** 
    * called by the client to initialize this Interactor with data
+     * @return 
    */
   public abstract Interactor init(Object data); // new_engine
 
   /**
    * called by the client to reinitialize this Interactor with new data
+     * @param data
    */
   public abstract void reuse(Object data);
 
@@ -32,6 +34,12 @@ public abstract class Interactor implements Stateful {
    * operation, or a null value indicating that no more values can
    * be produced
   */
+
+    /**
+     *
+     * @return
+     */
+    
   public abstract Object client_get(); // get
   // in a MT context this can start speculatively
   // to work on the computations associated with
@@ -39,7 +47,8 @@ public abstract class Interactor implements Stateful {
   // exchanges are absent or coordinated with parent                
 
   /**
-   * called by client to provide new data to this Interactor
+   * called by client to provide new data to this Interactor     * @param what
+
    */
   public abstract void client_send(Object what); // to_engine
   
@@ -48,10 +57,17 @@ public abstract class Interactor implements Stateful {
    * a return value available to the client issuing a 
    * client_get() operation
    */
+    /**
+     *
+     * @return
+     */
+    
+
   public abstract Object yield_return(); // return
 
   /**
-   * called by this Interactor to receive new data from parent
+   * called by this Interactor to receive new data from parent     * @return 
+
    */
   public abstract Object receive(); // from_engine
 }

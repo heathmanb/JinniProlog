@@ -1,8 +1,11 @@
 package prolog.core;
 
 import java.util.Arrays;
+import static java.util.Arrays.stream;
 import prolog.kernel.*;
 import prolog.logic.*;
+import static prolog.logic.Interact.printStackTrace;
+import static prolog.logic.Prolog.dump;
 
 /**
  * Implements efficient Directed Graphs supporting constant time access to
@@ -33,10 +36,19 @@ public class Graph extends ObjectDict {
 
     private int edgeCount;
 
+    /**
+     *
+     * @return
+     */
     public int getEdgeCount() {
         return edgeCount;
     }
 
+    /**
+     *
+     * @param v
+     * @return
+     */
     protected Content toVertex(Object v) {
         return toVertex(v, null);
     }
@@ -56,6 +68,11 @@ public class Graph extends ObjectDict {
         return p;
     }
 
+    /**
+     *
+     * @param data
+     * @return
+     */
     protected Object wrapData(Object data) {
         return data;
     }
@@ -142,6 +159,9 @@ public class Graph extends ObjectDict {
         return ts.getKeys();
     }
 
+    /**
+     *
+     */
     public void dualize() {
         ObjectIterator Vs = vertexIterator();
         while (Vs.hasNext()) {
@@ -225,23 +245,25 @@ public class Graph extends ObjectDict {
      * @param sfilter
      */
     public void setSelectFilter(String sfilter) {
-        if (null != sfilter) switch (sfilter) {
-            case "key":
-                filter = KEY;
-                break;
-            case "data":
-                filter = DATA;
-                break;
-            case "id":
-                filter = ID;
-                break;
-            case "rank":
-                filter = RANK;
-                break;
-            default:
-                filter = ATTR;
-                this.sfilter = sfilter;
-                break;
+        if (null != sfilter) {
+            switch (sfilter) {
+                case "key":
+                    filter = KEY;
+                    break;
+                case "data":
+                    filter = DATA;
+                    break;
+                case "id":
+                    filter = ID;
+                    break;
+                case "rank":
+                    filter = RANK;
+                    break;
+                default:
+                    filter = ATTR;
+                    this.sfilter = sfilter;
+                    break;
+            }
         }
     }
 
@@ -354,10 +376,10 @@ public class Graph extends ObjectDict {
         }
         ObjectDict fs = (ObjectDict) p.key;
         Object[] ks = fs.toKeys();
-        Arrays.stream(ks).parallel().forEach(k -> removeEdge(v,k));
+        stream(ks).parallel().forEach(k -> removeEdge(v,k));
         ObjectDict ts = (ObjectDict) p.value;
         ks = ts.toKeys();
-        Arrays.stream(ks).parallel().forEach(k -> removeEdge(k,v));
+        stream(ks).parallel().forEach(k -> removeEdge(k,v));
         remove(v);
         return true;
     }
@@ -371,6 +393,11 @@ public class Graph extends ObjectDict {
         return super.toString();
     }
 
+    /**
+     *
+     * @param F
+     * @return
+     */
     public Object visit(GraphVisitor F) {
         F.init();
         ObjectIterator Vs = getKeys();
@@ -451,6 +478,9 @@ public class Graph extends ObjectDict {
         return "<" + s + ">:" + OutV;
     }
 
+    /**
+     *
+     */
     public static void gtest() {
         try {
             Graph G = new Graph();
@@ -466,26 +496,26 @@ public class Graph extends ObjectDict {
             ObjectIterator Vs = G.vertexIterator();
             while (Vs.hasNext()) {
                 Object V = Vs.next();
-                Prolog.dump(V + ": in=" + G.inDegree(V) + " out=" + G.outDegree(V));
+                dump(V + ": in=" + G.inDegree(V) + " out=" + G.outDegree(V));
             }
-            Prolog.dump("\n" + G.toString());
-            Prolog.dump("super:\n" + G.asMap());
-            Prolog.dump("\nIGraph Test\n");
+            dump("\n" + G.toString());
+            dump("super:\n" + G.asMap());
+            dump("\nIGraph Test\n");
             IGraph IG = new IGraph(G, null);
-            Prolog.dump("\nIGraph\n" + IG);
+            dump("\nIGraph\n" + IG);
 
             G.removeEdge("c", "a");
             G.removeVertex("b");
-            Prolog.dump("c=>a and b removed:\n" + G.toString());
-            Prolog.dump(G.info() + "edges=" + G.getEdgeCount());
+            dump("c=>a and b removed:\n" + G.toString());
+            dump(G.info() + "edges=" + G.getEdgeCount());
             G.removeVertex("d");
-            Prolog.dump("d removed:\n" + G.toString());
-            Prolog.dump(G.info() + "edges=" + G.getEdgeCount());
+            dump("d removed:\n" + G.toString());
+            dump(G.info() + "edges=" + G.getEdgeCount());
             G.shuffle(1001);
-            Prolog.dump("\nafter compacting and shuffling\n" + G);
-            Prolog.dump(G.info() + "edges=" + G.getEdgeCount());
+            dump("\nafter compacting and shuffling\n" + G);
+            dump(G.info() + "edges=" + G.getEdgeCount());
         } catch (Exception e) {
-            JavaIO.printStackTrace(e);
+            printStackTrace(e);
         }
     }
 }

@@ -8,7 +8,11 @@ import com.sun.j3d.utils.geometry.*;
    A Color Cube
  */
 public class CCube extends Simple {
-  public CCube() {
+
+    /**
+     *
+     */
+    public CCube() {
     super(new ColorCube(defScale));
   }
 }

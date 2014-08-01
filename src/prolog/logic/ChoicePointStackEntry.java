@@ -1,5 +1,7 @@
 package prolog.logic;
 
+import static java.lang.System.arraycopy;
+
 /**
  * ChoicePoint entry containing heapTop,trailTop,instrPtr fields and register array regs
  */
@@ -10,7 +12,7 @@ final class ChoicePointStackEntry implements Stateful {
      this.trailTop=trailTop;
      this.instrPtr=instrPtr;
      this.regs= new int[regCount];
-     System.arraycopy(regs,1,this.regs,0,regCount);
+        arraycopy(regs,1,this.regs,0,regCount);
      undoStack=null;
   }
   
@@ -21,12 +23,16 @@ final class ChoicePointStackEntry implements Stateful {
    ObjectStack undoStack;
    
    final void add(Undoable O) {
-     if(null==undoStack) undoStack=new ObjectStack();
+     if(null==undoStack) {
+         undoStack=new ObjectStack();
+        }
      undoStack.push(O);
    }
    
    public void undo() {
-     if(null==undoStack) return;
+     if(null==undoStack) {
+         return;
+        }
      
      for(int i=undoStack.getTop();i>=0;i--) {
        Undoable O=(Undoable)undoStack.at(i);
@@ -35,7 +41,9 @@ final class ChoicePointStackEntry implements Stateful {
    }
    
    final void done() {
-     if(null==undoStack) return;
+     if(null==undoStack) {
+         return;
+        }
      
      for(int i=undoStack.getTop();i>=0;i--) {
        Undoable O=(Undoable)undoStack.at(i);

@@ -11,6 +11,10 @@ import prolog.logic.*;
  */
 public class NetTunnel implements Stateful {
 
+    /**
+     *
+     * @param s
+     */
     public static void pp(String s) {
     }
 
@@ -25,10 +29,19 @@ public class NetTunnel implements Stateful {
             + "3. client behind firewall or NAT with\n\t"
             + cusage;
 
+    /**
+     *
+     */
     public static void usage() {
         pp(hint);
     }
 
+    /**
+     *
+     * @param ServerPort
+     * @param LinkServerPort
+     * @return
+     */
     public static VS server(int ServerPort, int LinkServerPort) {
         VS vs = VS.server(ServerPort, LinkServerPort);
         if (null == vs) {
@@ -37,6 +50,14 @@ public class NetTunnel implements Stateful {
         return vs;
     }
 
+    /**
+     *
+     * @param LinkHost
+     * @param LinkPort
+     * @param LocalServer
+     * @param LocalPort
+     * @return
+     */
     public static VC client(
             String LinkHost, int LinkPort,
             String LocalServer, int LocalPort) {
@@ -47,6 +68,9 @@ public class NetTunnel implements Stateful {
         return vc;
     }
 
+    /**
+     *
+     */
     public static class Connector implements Runnable {
 
         private InputStream iFrom = null;
@@ -67,6 +91,9 @@ public class NetTunnel implements Stateful {
             return client.getOutputStream();
         }
 
+        /**
+         *
+         */
         public void stop() {
             try {
                 iFrom.close();
@@ -84,7 +111,7 @@ public class NetTunnel implements Stateful {
                 to.close();
             } catch (IOException i) {
             }
-            NetTunnel.pp("stopped: " + from + "=>" + to);
+            pp("stopped: " + from + "=>" + to);
         }
 
         @Override
@@ -93,7 +120,7 @@ public class NetTunnel implements Stateful {
             try {
                 iFrom = open_input(from);
                 oTo = open_output(to);
-                NetTunnel.pp("CONNECTING: " + from + "=>" + to);
+                pp("CONNECTING: " + from + "=>" + to);
                 for (;;) {
                     int n = iFrom.read(buf);
                     //Main.pp("<:"+n);
@@ -135,13 +162,13 @@ public class NetTunnel implements Stateful {
 
         @Override
         public void run() {
-            NetTunnel.pp("tunneling: " + rHost + ":" + rPort + "=>" + lHost + ":" + lPort);
+            pp("tunneling: " + rHost + ":" + rPort + "=>" + lHost + ":" + lPort);
             for (;;) {
                 try {
                     toRemote = new Socket(rHost, rPort);
-                    NetTunnel.pp("toRemote=" + toRemote);
+                    pp("toRemote=" + toRemote);
                     toLocal = new Socket(lHost, lPort);
-                    NetTunnel.pp("toLocal=" + toLocal);
+                    pp("toLocal=" + toLocal);
                     reader = new Connector(toRemote, toLocal);
                     writer = new Connector(toLocal, toRemote);
                 } catch (IOException e) {
@@ -154,6 +181,9 @@ public class NetTunnel implements Stateful {
             stop();
         }
 
+        /**
+         *
+         */
         public void stop() {
             if (null != reader) {
                 reader.stop();
@@ -169,9 +199,17 @@ public class NetTunnel implements Stateful {
                 toLocal.close();
             } catch (IOException i) {
             }
-            NetTunnel.pp("stopped tunneling: " + rHost + ":" + rPort + "=>" + lHost + ":" + lPort);
+            pp("stopped tunneling: " + rHost + ":" + rPort + "=>" + lHost + ":" + lPort);
         }
 
+        /**
+         *
+         * @param rHost
+         * @param rPort
+         * @param lHost
+         * @param lPort
+         * @return
+         */
         public static VC client(String rHost, int rPort, String lHost, int lPort) {
             try {
                 VC vc = new VC(rHost, rPort, lHost, lPort);
@@ -184,6 +222,9 @@ public class NetTunnel implements Stateful {
         }
     }
 
+    /**
+     *
+     */
     public static class VS extends ServerSocket implements Runnable, Stateful {
 
         VS(int fromPort, int toPort) throws IOException {
@@ -199,9 +240,9 @@ public class NetTunnel implements Stateful {
         public void run() {
             while (null != toServer) {
                 try {
-                    NetTunnel.pp("accepting toServer: " + toServer);
+                    pp("accepting toServer: " + toServer);
                     toService = this.toServer.accept();
-                    NetTunnel.pp("accepting this: " + this);
+                    pp("accepting this: " + this);
                     fromService = accept();
                 } catch (IOException e) {
                     //e.printStackTrace();
@@ -210,13 +251,16 @@ public class NetTunnel implements Stateful {
                 Connector reader = new Connector(fromService, toService);
                 Connector writer = new Connector(toService, fromService);
 
-                NetTunnel.pp("connecting: " + fromService + "=>" + toService);
+                pp("connecting: " + fromService + "=>" + toService);
 
                 (new Thread(reader, "TunnelThread")).start();
                 (new Thread(writer, "TunnelThread")).start();
             }
         }
 
+        /**
+         *
+         */
         public void stop() {
             try {
                 toServer.close();
@@ -235,9 +279,15 @@ public class NetTunnel implements Stateful {
                 fromService.close();
             } catch (IOException e) {
             }
-            NetTunnel.pp("stopped server on: " + this);
+            pp("stopped server on: " + this);
         }
 
+        /**
+         *
+         * @param from
+         * @param to
+         * @return
+         */
         public static VS server(int from, int to) {
             try {
                 VS vs = new VS(from, to);

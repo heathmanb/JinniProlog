@@ -5,9 +5,20 @@ import prolog.logic.*;
 
 import java.net.*;
 import java.io.*;
+import static java.lang.Thread.sleep;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import static java.util.logging.Logger.getLogger;
 import java.util.zip.*;
+import static prolog.kernel.JavaIO.println;
+import static prolog.kernel.Top.askProlog;
+import static prolog.kernel.Top.newProlog;
+import static prolog.logic.Interact.errmes;
+import static prolog.logic.Interact.errmes;
+import static prolog.logic.Interact.errmes;
+import static prolog.logic.Interact.errmes;
+import static prolog.logic.Interact.warnmes;
+import static prolog.logic.Prolog.dump;
 
 /**
  * Transport layer: provides socket based client/server interaction Supports
@@ -19,11 +30,34 @@ public class Transport implements Stateful {
     static final int OTypeTag = -1; // can be any negative number - more tags can be used
     static int SRETRY = 10;
 
+    /**
+     *
+     */
     public String host;
+
+    /**
+     *
+     */
     public int port;
+
+    /**
+     *
+     */
     transient protected DataInputStream from;
+
+    /**
+     *
+     */
     transient protected DataOutputStream to;
+
+    /**
+     *
+     */
     transient protected Socket client_socket;
+
+    /**
+     *
+     */
     transient protected ServerSocket server_socket;
 
     /**
@@ -37,7 +71,7 @@ public class Transport implements Stateful {
             return;
         }
         this.server_socket = null;
-        JavaIO.errmes("Socket Error: service creation failure on: " + T.server_socket, null);
+        errmes("Socket Error: service creation failure on: " + T.server_socket, null);
     }
 
     /**
@@ -56,6 +90,12 @@ public class Transport implements Stateful {
         }
     }
 
+    /**
+     *
+     * @param host
+     * @param port
+     * @throws SystemException
+     */
     public Transport(String host, int port) throws SystemException {
         this(host, port, 1);
     }
@@ -76,14 +116,19 @@ public class Transport implements Stateful {
         }
 
         if (null == server_socket) {
-            JavaIO.errmes("Socket Error: server creation failure: " + port,
+            errmes("Socket Error: server creation failure: " + port,
                     new SystemException()
             );
         } else {
-            JavaIO.println("Server listening on port: " + port);
+            println("Server listening on port: " + port);
         }
     }
 
+    /**
+     *
+     * @param Server
+     * @return
+     */
     public static Transport newService(Transport Server) {
         Transport service = new Transport(Server);
         if (service.server_socket == null) {
@@ -104,7 +149,7 @@ public class Transport implements Stateful {
     synchronized public Object read_from() {
         Object o = null;
         if (null == from) {
-            JavaIO.warnmes("read_from: null socket exception");
+            warnmes("read_from: null socket exception");
             return o;
         }
         try {
@@ -115,14 +160,14 @@ public class Transport implements Stateful {
             } else if (OTypeTag == l) {
                 o = oread_from(from);
             } else {
-                JavaIO.warnmes("Bad int data type in read_from: " + l);
+                warnmes("Bad int data type in read_from: " + l);
             }
         } catch (EOFException e) {
             //JavaIO.warnmes("EOF Exception in read_from: " + e);
         } catch (IOException e) {
-            JavaIO.warnmes("IO Exception in read_from: " + e);
+            warnmes("IO Exception in read_from: " + e);
         } catch (ClassNotFoundException e) {
-            JavaIO.warnmes("ClassNotFoundException in read_from: " + e);
+            warnmes("ClassNotFoundException in read_from: " + e);
         }
         /*catch (Throwable e) {
          JavaIO.errmes("UNEXPECTED ERROR IN read_from()",e);
@@ -147,7 +192,7 @@ public class Transport implements Stateful {
                 owrite_to(to, o);
             }
         } catch (IOException e) {
-            JavaIO.warnmes("IO Exception in write_to: " + e + "<==" + o);
+            warnmes("IO Exception in write_to: " + e + "<==" + o);
             disconnect();
         }
         JavaIO.traceln("write_to TRACE:" + "<" + o + ">");
@@ -165,10 +210,22 @@ public class Transport implements Stateful {
         bwrite_to(f, bs);
     }
 
+    /**
+     *
+     * @param s
+     * @return
+     */
     public static String force_utf8(String s) {
         return force_encoding(s, "ISO-8859-1", "UTF-8");
     }
 
+    /**
+     *
+     * @param s
+     * @param fromFormat
+     * @param toFormat
+     * @return
+     */
     public static String force_encoding(String s, String fromFormat, String toFormat) {
         try {
             byte[] bs = s.getBytes(fromFormat);
@@ -178,6 +235,12 @@ public class Transport implements Stateful {
         return s;
     }
 
+    /**
+     *
+     * @param fname
+     * @return
+     * @throws IOException
+     */
     public static byte[] file2bytes(String fname) throws IOException {
         File file = new File(fname);
         int l = (int) (file.length());
@@ -188,12 +251,25 @@ public class Transport implements Stateful {
         return bs;
     }
 
+    /**
+     *
+     * @param f
+     * @param length
+     * @return
+     * @throws IOException
+     */
     public static final byte[] bread_from(DataInputStream f, int length) throws IOException {
         byte bs[] = new byte[length];
         f.readFully(bs);
         return bs;
     }
 
+    /**
+     *
+     * @param f
+     * @param bs
+     * @throws IOException
+     */
     public static final void bwrite_to(OutputStream f, byte[] bs) throws IOException {
         f.write(bs);
         f.flush();
@@ -220,27 +296,47 @@ public class Transport implements Stateful {
         g.flush();
     }
 
+    /**
+     *
+     */
     static public boolean compress = true;
 
+    /**
+     *
+     */
     static public void compressOn() {
         compress = true;
     }
 
+    /**
+     *
+     */
     static public void compressOff() {
         compress = false;
     }
 
+    /**
+     *
+     * @param fname
+     * @param O
+     * @return
+     */
     static public boolean toFile(String fname, Object O) {
         try (ObjectOutputStream f = (compress) ? new ObjectOutputStream(new DeflaterOutputStream(new FileOutputStream(fname)))
                 : new ObjectOutputStream(new FileOutputStream(fname))) {
             f.writeObject(O);
             return true;
         } catch (IOException e) {
-            JavaIO.errmes("unable to save object to file: " + fname, e);
+            errmes("unable to save object to file: " + fname, e);
             return false;
         }
     }
 
+    /**
+     *
+     * @param fname
+     * @return
+     */
     static public Object fromFile(String fname) {
         Object O;
         try (ObjectInputStream f = (compress) ? new ObjectInputStream(new InflaterInputStream(new FileInputStream(fname)))
@@ -248,11 +344,15 @@ public class Transport implements Stateful {
             O = f.readObject();
             return O;
         } catch (Exception e) {
-            JavaIO.errmes("unable to rebuild object from file: " + fname, e);
+            errmes("unable to rebuild object from file: " + fname, e);
             return null;
         }
     }
 
+    /**
+     *
+     * @param s
+     */
     static protected void traceln(String s) {
         JavaIO.traceln(s);
     }
@@ -281,7 +381,7 @@ public class Transport implements Stateful {
                 to = null;
                 client_socket = null;
             } catch (IOException e) {
-                JavaIO.errmes("disconnect: failing to close socket", e);
+                errmes("disconnect: failing to close socket", e);
             }
         }
     }
@@ -299,7 +399,7 @@ public class Transport implements Stateful {
                 to = null;
                 server_socket = null;
             } catch (IOException e) {
-                JavaIO.errmes("disconnect: failing to close server socket", e);
+                errmes("disconnect: failing to close server socket", e);
             }
         }
     }
@@ -321,10 +421,10 @@ public class Transport implements Stateful {
                 } catch (BindException e) {
                     // workaround to OS bug (on various Windows)
                     long waitingTime = 1000L * (1 << i);
-                    Prolog.dump("waiting " + waitingTime
+                    dump("waiting " + waitingTime
                             + "ms for broken Operating System to close old sockets:" + e);
                     try {
-                        Thread.sleep(waitingTime);
+                        sleep(waitingTime);
                     } catch (InterruptedException ie) {
                     }
                 }
@@ -356,13 +456,17 @@ public class Transport implements Stateful {
         if (ok) {
             traceln("client connected!");
         } else {
-            JavaIO.warnmes(
+            warnmes(
                     "client connection failure"
             );
         }
         return ok;
     }
 
+    /**
+     *
+     * @return
+     */
     public final boolean connect() {
         boolean ok = create_socket() && open_connection();
         if (!ok) {
@@ -386,21 +490,34 @@ public class Transport implements Stateful {
     }
 
     /* new server API */
+
+    /**
+     *
+     * @param port
+     * @return
+     */
+    
     public static boolean server(int port) {
         return server(port, null);
     }
 
+    /**
+     *
+     * @param port
+     * @param bpFile
+     * @return
+     */
     public static boolean server(int port, String bpFile) {
         try {
             Transport server = new Transport(port);
-            Machine I = Top.newProlog((String) null);
+            Machine I = newProlog((String) null);
             for (;;) {
                 if (!server.serverStep(I)) {
                     return false;
                 }
             }
         } catch (SystemException e) {
-            Interact.errmes("error in server on port: " + port);
+            errmes("error in server on port: " + port);
             return false;
         }
     }
@@ -417,27 +534,39 @@ public class Transport implements Stateful {
                 //Prolog.dump("RAW="+raw+":"+raw.getClass());
                 Object[] in = (Object[]) raw;
 
-                Object[] out = Top.askProlog(I, in);
+                Object[] out = askProlog(I, in);
                 //Prolog.dump("SERVER COMPUTED: "+out+ "=>"+out.getClass());
                 service.write_to(out);
                 ok = true;
             }
         } catch (Exception e) {
-            Logger.getLogger("Transport").log(
+            getLogger("Transport").log(
                     Level.SEVERE, host, e);
         }
         return ok;
     }
 
+    /**
+     *
+     * @param host
+     * @param port
+     * @return
+     */
     public static Transport connection(String host, int port) {
         try {
             return new Transport(host, port);
         } catch (SystemException e) {
-            Interact.errmes("error in creating client on host=" + host + ",port=" + port);
+            errmes("error in creating client on host=" + host + ",port=" + port);
             return null;
         }
     }
 
+    /**
+     *
+     * @param service
+     * @param E
+     * @return
+     */
     synchronized public static Object ask_lserver(Transport service, Machine E) {
         try {
             Object[] bundle = E.getBundle();
@@ -448,7 +577,7 @@ public class Transport implements Stateful {
             E.setBundle(bundle);
             return "yes";
         } catch (Exception e) {
-            Interact.errmes("error in ask_server on host=" + service.host + ",port=" + service.port);
+            errmes("error in ask_server on host=" + service.host + ",port=" + service.port);
             return "no";
         }
     }

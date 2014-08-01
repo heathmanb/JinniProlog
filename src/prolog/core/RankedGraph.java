@@ -1,9 +1,14 @@
 package prolog.core;
 
+import static java.lang.Math.abs;
 import java.util.Arrays;
+import static java.util.Arrays.stream;
 import java.util.Random;
 import prolog.kernel.*;
 import prolog.logic.*;
+import static prolog.logic.Interact.printStackTrace;
+import static prolog.logic.Prolog.dump;
+import static prolog.logic.Tools.sort;
 
 /**
  * An extension to the class Graph adapted to support ranking vertex algorithms
@@ -14,6 +19,10 @@ public class RankedGraph extends Graph {
     private double d, e;
     private int maxIter;
     private IntStack componentCounts;
+
+    /**
+     *
+     */
     public boolean hasCycle;
 
     /**
@@ -29,6 +38,13 @@ public class RankedGraph extends Graph {
         init(d, e, maxIter);
     }
 
+    /**
+     *
+     * @param size
+     * @param d
+     * @param e
+     * @param maxIter
+     */
     public RankedGraph(int size, double d, double e, int maxIter) {
         super(size);
         init(d, e, maxIter);
@@ -58,6 +74,11 @@ public class RankedGraph extends Graph {
         this.hasCycle = false;
     }
 
+    /**
+     *
+     * @param data
+     * @return
+     */
     @Override
     protected Object wrapData(Object data) {
         RankedData rd = new RankedData(data);
@@ -116,11 +137,19 @@ public class RankedGraph extends Graph {
         return rd.hyper;
     }
 
+    /**
+     *
+     * @param v
+     * @param hyper
+     */
     public void setHyper(Object v, int hyper) {
         RankedData rd = (RankedData) super.vertexData(v);
         rd.hyper = hyper;
     }
 
+    /**
+     *
+     */
     public void dualizeHyper() {
         ObjectIterator Vs = vertexIterator();
         while (Vs.hasNext()) {
@@ -131,34 +160,48 @@ public class RankedGraph extends Graph {
         }
     }
 
+    /**
+     *
+     * @param H
+     * @param Ks
+     */
     public void addHyperEdge(Object H, Object[] Ks) {
         addVertex(H, "hyperedge");
         setHyper(H, 1);
-        Arrays.stream(Ks).forEach(K -> {
+        stream(Ks).forEach(K -> {
             addVertex(K, "hypervertex");
             addEdge(K, H, "vertex_to_edge");
         });
     }
 
+    /**
+     *
+     * @param H
+     * @param Is
+     * @param Os
+     */
     public void addHyperArrow(Object H, Object[] Is, Object[] Os) {
         addVertex(H, "directedHyperedge");
         setHyper(H, 2);
-        Arrays.stream(Is).forEach(I -> {
+        stream(Is).forEach(I -> {
             addVertex(I, "hyperFrom");
             addEdge(I, H, "fanIn");
         });
-        Arrays.stream(Os).forEach(O -> {
+        stream(Os).forEach(O -> {
             addVertex(O, "hyperTo");
             addEdge(H, O, "fanOut");
         });
     }
 
+    /**
+     *
+     */
     static public void hgtest() {
         RankedGraph G = new RankedGraph();
         G.addHyperEdge("AB", new Object[]{"A", "B"});
         G.addHyperEdge("BC", new Object[]{"B", "C"});
         G.addHyperEdge("CA", new Object[]{"C", "A"});
-        Prolog.dump("hgtest:\n" + G);
+        dump("hgtest:\n" + G);
     }
 
     /**
@@ -238,7 +281,7 @@ public class RankedGraph extends Graph {
             double r
                     = (1 - d) + d * sum;
             setRank(V, r);
-            done = done && (Math.abs(r - r0) < e);
+            done = done && (abs(r - r0) < e);
         }
         return done;
     }
@@ -252,6 +295,10 @@ public class RankedGraph extends Graph {
         return runGraphRanker(true);
     }
 
+    /**
+     *
+     * @return
+     */
     public int runDualGraphRanker() {
         return runGraphRanker(false);
     }
@@ -271,6 +318,10 @@ public class RankedGraph extends Graph {
         return -1;
     }
 
+    /**
+     *
+     * @return
+     */
     public RankedKey[] getRankedKeys() {
         ObjectIterator Vs = vertexIterator();
         RankedKey[] Ks = new RankedKey[size()];
@@ -279,12 +330,16 @@ public class RankedGraph extends Graph {
             Object V = Vs.next();
             Ks[i++] = new RankedKey(V, getRank(V));
         }
-        Tools.sort(Ks);
+        sort(Ks);
         normalizeRanks(Ks);
         //Prolog.dump("!!!here"+this);
         return Ks;
     }
 
+    /**
+     *
+     * @param Ks
+     */
     public void normalizeRanks(RankedKey[] Ks) {
         //Prolog.dump("normalizing ranks");
         if (Ks.length == 0) {
@@ -329,12 +384,21 @@ public class RankedGraph extends Graph {
         componentCounts = (IntStack) visit(C);
     }
 
+    /**
+     *
+     * @return
+     */
     public int checkCycle() {
         GraphVisitor D = new CycleDetector(this);
         visit(D);
         return hasCycle ? 1 : 0;
     }
 
+    /**
+     *
+     * @param c
+     * @return
+     */
     public ObjectStack filterComponent(int c) {
         if (!(c >= 0 && c < countComponents())) {
             return null;
@@ -350,6 +414,10 @@ public class RankedGraph extends Graph {
         return Cs;
     }
 
+    /**
+     *
+     * @return
+     */
     public int countComponents() {
         if (null == componentCounts) {
             return -1;
@@ -357,6 +425,11 @@ public class RankedGraph extends Graph {
         return componentCounts.size();
     }
 
+    /**
+     *
+     * @param c
+     * @return
+     */
     public int componentSize(int c) {
         if (!(c >= 0 && c < countComponents())) {
             return -1;
@@ -364,6 +437,10 @@ public class RankedGraph extends Graph {
         return componentCounts.at(c);
     }
 
+    /**
+     *
+     * @return
+     */
     public int giantComponent() {
         if (null == componentCounts) {
             return -1;
@@ -416,6 +493,11 @@ public class RankedGraph extends Graph {
         }
     }
 
+    /**
+     *
+     * @param RG
+     * @return
+     */
     public static String showInfo(RankedGraph RG) {
         int times = RG.runGraphRanker();
         RG.rankSort();
@@ -465,10 +547,18 @@ public class RankedGraph extends Graph {
         return G;
     }
 
+    /**
+     *
+     * @return
+     */
     public RankedGraph new_instance() {
         return new RankedGraph();
     }
 
+    /**
+     *
+     * @return
+     */
     public RankedGraph trimToGiant() {
         RankedKey[] Ks = getRankedKeys();
         RankedGraph G = new_instance();
@@ -485,6 +575,12 @@ public class RankedGraph extends Graph {
         return G;
     }
 
+    /**
+     *
+     * @param giantOnly
+     * @param max
+     * @return
+     */
     public RankedGraph trim(boolean giantOnly, int max) {
         // assumed ranked, rank sorted, and components computed
         RankedGraph A = new_instance();
@@ -526,6 +622,9 @@ public class RankedGraph extends Graph {
         return A;
     }
 
+    /**
+     *
+     */
     public static void rgtest() {
         try {
             //RankedGraph G=new RankedGraph();G.randomize(0,30,2);
@@ -548,17 +647,17 @@ public class RankedGraph extends Graph {
             G.rankSort();
 
             int x = G.checkCycle();
-            Prolog.dump(
+            dump(
                     "\n" + x + " cycles,"
                     + G.componentCounts + "\ncomponents="
                     + c + ",giant=" + g + " ,gsize="
                     + gs + "\ntimes=" + times + " after ranking:\n" + G.toString());
             G = G.trim(true, 10);
             IGraph IG = new IGraph(G, null);
-            Prolog.dump("\n----IGraph---\n" + IG);
-            Prolog.dump("\n---------\n");
+            dump("\n----IGraph---\n" + IG);
+            dump("\n---------\n");
         } catch (Throwable e) {
-            JavaIO.printStackTrace(e);
+            printStackTrace(e);
         }
     }
 
@@ -607,6 +706,11 @@ public class RankedGraph extends Graph {
      Prolog.dump("\n---------\n"); 
      }
      */
+
+    /**
+     *
+     */
+    
 
     public static class RankedKey implements Stateful, Comparable {
 

@@ -1,5 +1,9 @@
 package prolog.logic;
 
+import static java.lang.System.arraycopy;
+import static prolog.logic.Interact.warnmes;
+import static prolog.logic.Prolog.dump;
+
 /**
   Implements everything needed for a Prolog code container - in particular a Prolog class
 */
@@ -11,16 +15,16 @@ public final class CodeStore extends Defs {
 
   static final int GETINSTR_OP(int instr) { return RCGET(instr); }
 
-  private final void SETOP(int instPtr,int val) { code[instPtr]=RCPUT(code[instPtr],val); }
-  private final int GETOP(int instPtr) { return RCGET(code[instPtr]); }
-  private final void SETREG(int instPtr,int val) { code[instPtr]=LCPUT(code[instPtr],val); }
-  private final int GETREG(int instPtr) { return LCGET(code[instPtr]); }
-  private final void SETLEFT(int instPtr,int val) { code[instPtr]=MCPUT(code[instPtr],val); }
-  private final int GETARG(int instPtr) { return MCGET(code[instPtr]); }
+  private void SETOP(int instPtr,int val) { code[instPtr]=RCPUT(code[instPtr],val); }
+  private int GETOP(int instPtr) { return RCGET(code[instPtr]); }
+  private void SETREG(int instPtr,int val) { code[instPtr]=LCPUT(code[instPtr],val); }
+  private int GETREG(int instPtr) { return LCGET(code[instPtr]); }
+  private void SETLEFT(int instPtr,int val) { code[instPtr]=MCPUT(code[instPtr],val); }
+  private int GETARG(int instPtr) { return MCGET(code[instPtr]); }
   final int GETINSTR(int instrPtr,int step) { return code[instrPtr+step]; }
 
-  private final int GETFUN(int instr) { return code[instr+1]; }
-  private final int SETFUN(int instr,int val) {
+  private int GETFUN(int instr) { return code[instr+1]; }
+  private int SETFUN(int instr,int val) {
     instr++;
     code[instr]=val;
     return instr;
@@ -28,9 +32,9 @@ public final class CodeStore extends Defs {
 
   final int GETLABEL(int instr) { return code[instr+1]; }
 
-  private final void SETLABEL(int instr,int val) { code[instr+1]=val; }
+  private void SETLABEL(int instr,int val) { code[instr+1]=val; }
 
-  private final boolean COMPRESS(int reg,int Simple,int Double,int First,int Triple) {
+  private boolean COMPRESS(int reg,int Simple,int Double,int First,int Triple) {
     //return true;
 
     if (1==prevLen&&Simple==GETOP(codeTop-1)) {
@@ -46,7 +50,7 @@ public final class CodeStore extends Defs {
 
   }
 
-  private final boolean OCOMPRESS(int reg,int Simple,int Double,int First,int Triple) {
+  private boolean OCOMPRESS(int reg,int Simple,int Double,int First,int Triple) {
     return COMPRESS(reg,Simple,Double,First,Triple);
   }
 
@@ -84,9 +88,15 @@ public final class CodeStore extends Defs {
     codeTop++;
   }
 
-  protected CodeStore cloneWith(Prolog prolog) throws CloneNotSupportedException {
+    /**
+     *
+     * @param prolog
+     * @return
+     * @throws CloneNotSupportedException
+     */
+    protected CodeStore cloneWith(Prolog prolog) throws CloneNotSupportedException {
     CodeStore child=(CodeStore)clone();
-    child.code=(int[])code.clone();
+    child.code=code.clone();
     child.atomTable=prolog.atomTable;
     child.dict=prolog.dict;
     return child;
@@ -109,8 +119,9 @@ public final class CodeStore extends Defs {
     //}
     //catch (PrologException ignore) {
     //}
-    if (start==prolog.G_empty)
-      throw new ExistenceException(Interact.NL+"Fatal error: no definition for start point predicate.");
+    if (start==prolog.G_empty) {
+        throw new ExistenceException(Interact.NL+"Fatal error: no definition for start point predicate.");
+        }
     return start;
   }
 
@@ -145,37 +156,52 @@ public final class CodeStore extends Defs {
   }
 
 
-  final private void resize_to(int realsize) {
+  private void resize_to(int realsize) {
     //int l=code.length;
     //Prolog.dump("@"+code.hashCode()+"resizing at:"+codeTop+":("+l+"):"+realsize);
     int[] newstack=new int[realsize];
-    System.arraycopy(code,0,newstack,0,codeTop+1);
+        arraycopy(code,0,newstack,0,codeTop+1);
     this.code=newstack;
-    if (PrologGC.trace>=2) Prolog.dump("@"+this.code.hashCode()+"=@"+newstack.hashCode()+"resized:"+codeTop+":"+code.length);
+    if (PrologGC.trace>=2) {
+            dump("@"+this.code.hashCode()+"=@"+newstack.hashCode()+"resized:"+codeTop+":"+code.length);
+        }
   }
 
-  final private void expand() {
-    if (codeTop+100>code.length) resize_to(code.length<<1);
+  private void expand() {
+    if (codeTop+100>code.length) {
+        resize_to(code.length<<1);
+        }
   }
 
-  final private void shrink() {
+  private void shrink() {
     //if(codeTop+100<code.length>>1) resize_to(code.length>>1);
     //if(Prolog.timeStamp>Prolog.LOADTIME) resize_to(codeTop+2);
-    if (prolog.timeStamp>Prolog.LOADTIME&&codeTop+100<code.length>>1) resize_to(codeTop+2);
+    if (prolog.timeStamp>Prolog.LOADTIME&&codeTop+100<code.length>>1) {
+        resize_to(codeTop+2);
+        }
   }
 
   private boolean skipClause=false;
 
-  public final void loadInstruction(int op,int reg,String name,int arity) throws PrologException {
+    /**
+     *
+     * @param op
+     * @param reg
+     * @param name
+     * @param arity
+     * @throws PrologException
+     */
+    public final void loadInstruction(int op,int reg,String name,int arity) throws PrologException {
     expand();
 
     //Prolog.dump("x"+op+","+reg+","+arity+","+name+"!!!");
     //Interact.halt("end"); 
 
-    if (null==name)
-      Interact.warnmes("unexpected instr:"+codeTop+
-         " Op:"+op+"-->"+getInstructionName(op)+
-         " reg:"+reg+" "+name+"/"+arity);
+    if (null==name) {
+            warnmes("unexpected instr:"+codeTop+
+                    " Op:"+op+"-->"+getInstructionName(op)+
+                    " reg:"+reg+" "+name+"/"+arity);
+        }
 
     // $$ high risk change - ignores clauses when not grouped
     if (skipClause && op!=CLAUSE) {
@@ -189,8 +215,9 @@ public final class CodeStore extends Defs {
           skipClause=false; //$$
           int pred=inputTerm(name,arity);
           boolean isNewPred=dict.setpred(pred,codeTop);
-          if (curPred!=prolog.G_true)
-            SETLABEL(prevInstr,codeTop);
+          if (curPred!=prolog.G_true) {
+              SETLABEL(prevInstr,codeTop);
+            }
           reg++;
           //System.err.println("Prev instr:" + prevInstr);
           if (isNewPred) {
@@ -199,8 +226,9 @@ public final class CodeStore extends Defs {
                 case TRY_ME_ELSE:	/* begin of single cls */
                   //System.err.println("PREV CLAUSE: TRY_ME_ELSE"); 
 
-                  for (int p=prevInstr-2;p<=codeTop-4;p++)
-                    code[p]=code[p+4];
+                  for (int p=prevInstr-2;p<=codeTop-4;p++) {
+                      code[p]=code[p+4];
+                    }
 
                   SETOP(codeTop-4,END);
                   SETOP(codeTop-2,END);
@@ -235,7 +263,7 @@ public final class CodeStore extends Defs {
             //dumpCode(codeTop-5, codeTop+5);
             skipClause=true;
             // $$ abortLoad(
-              Interact.warnmes("Predicate "+name+"/"+arity+" leads other group of clauses. Clause ignored!");
+                warnmes("Predicate "+name+"/"+arity+" leads other group of clauses. Clause ignored!");
             return;
           }
           prevInstr=codeTop;
@@ -244,13 +272,15 @@ public final class CodeStore extends Defs {
         break;
 
       case FIRSTARG:			/* MaxReg-FunFirstarg/Arity */
-        if (reg>=MAXREG)
-          abortLoad("Load instruction: not enough registers"); {
+        if (reg>=MAXREG) {
+            abortLoad("Load instruction: not enough registers");
+        } {
           int funval=inputTerm(name,arity);
           if (name.length()>0&&(name.charAt(0)=='_')||!dict.hdef(curPred,funval,codeTop)) {
             int label=dict.getpred(curPred);
-            if (label==prolog.G_empty)
-              abortLoad("Load instruction, FIRSTARG: current predicate not found");
+            if (label==prolog.G_empty) {
+                abortLoad("Load instruction, FIRSTARG: current predicate not found");
+                }
             SETOP(label,NONDET);
           }
         }
@@ -274,33 +304,50 @@ public final class CodeStore extends Defs {
         break;
 
       case UNIFY_VARIABLE:
-        if (OCOMPRESS(reg,UNIFY_VALUE,UNIFY_VAL_VAR,GET_STRUCTURE,GET_UNIFY_VAL_VAR)) break;
-        if (OCOMPRESS(reg,UNIFY_VARIABLE,UNIFY_VAR_VAR,GET_STRUCTURE,GET_UNIFY_VAR_VAR)) break;
+        if (OCOMPRESS(reg,UNIFY_VALUE,UNIFY_VAL_VAR,GET_STRUCTURE,GET_UNIFY_VAL_VAR)) {
+            break;
+        }
+        if (OCOMPRESS(reg,UNIFY_VARIABLE,UNIFY_VAR_VAR,GET_STRUCTURE,GET_UNIFY_VAR_VAR)) {
+            break;
+        }
         SETREG(codeTop,reg);
         break;
 
       case UNIFY_VALUE:
-        if (OCOMPRESS(reg,UNIFY_VALUE,UNIFY_VAL_VAL,GET_STRUCTURE,GET_UNIFY_VAL_VAL)) break;
-        if (OCOMPRESS(reg,UNIFY_VARIABLE,UNIFY_VAR_VAL,GET_STRUCTURE,GET_UNIFY_VAR_VAL)) break;
+        if (OCOMPRESS(reg,UNIFY_VALUE,UNIFY_VAL_VAL,GET_STRUCTURE,GET_UNIFY_VAL_VAL)) {
+            break;
+        }
+        if (OCOMPRESS(reg,UNIFY_VARIABLE,UNIFY_VAR_VAL,GET_STRUCTURE,GET_UNIFY_VAR_VAL)) {
+            break;
+        }
         SETREG(codeTop,reg);
         break;
 
       case WRITE_VARIABLE:
-        if (OCOMPRESS(reg,WRITE_VALUE,WRITE_VAL_VAR,PUT_STRUCTURE,PUT_WRITE_VAL_VAR)) break;
-        if (OCOMPRESS(reg,WRITE_VARIABLE,WRITE_VAR_VAR,PUT_STRUCTURE,PUT_WRITE_VAR_VAR)) break;
+        if (OCOMPRESS(reg,WRITE_VALUE,WRITE_VAL_VAR,PUT_STRUCTURE,PUT_WRITE_VAL_VAR)) {
+            break;
+        }
+        if (OCOMPRESS(reg,WRITE_VARIABLE,WRITE_VAR_VAR,PUT_STRUCTURE,PUT_WRITE_VAR_VAR)) {
+            break;
+        }
         SETREG(codeTop,reg);
         break;
 
       case WRITE_VALUE:
-        if (OCOMPRESS(reg,WRITE_VALUE,WRITE_VAL_VAL,PUT_STRUCTURE,PUT_WRITE_VAL_VAL)) break;
-        if (OCOMPRESS(reg,WRITE_VARIABLE,WRITE_VAR_VAL,PUT_STRUCTURE,PUT_WRITE_VAR_VAL)) break;
+        if (OCOMPRESS(reg,WRITE_VALUE,WRITE_VAL_VAL,PUT_STRUCTURE,PUT_WRITE_VAL_VAL)) {
+            break;
+        }
+        if (OCOMPRESS(reg,WRITE_VARIABLE,WRITE_VAR_VAL,PUT_STRUCTURE,PUT_WRITE_VAR_VAL)) {
+            break;
+        }
         SETREG(codeTop,reg);
         break;
 
       case MOVE_REG:
         if (1==prevLen&&MOVE_REG==GETOP(codeTop-1)&&
-            !(1==prevPrevLen&&MOVE_REGx2==GETOP(codeTop-2)))
-          SETOP(codeTop-1,MOVE_REGx2);
+            !(1==prevPrevLen&&MOVE_REGx2==GETOP(codeTop-2))) {
+            SETOP(codeTop-1,MOVE_REGx2);
+        }
         SETREG(codeTop,reg);
         SETLEFT(codeTop,arity);
         break;
@@ -387,7 +434,9 @@ public final class CodeStore extends Defs {
   private void linkCode(int instr) throws PrologException {
     //Prolog.dump("linking code starting at: "+instr);
 
-    if (prolog.DEBUG) showLowLevel();
+    if (prolog.DEBUG) {
+        showLowLevel();
+        }
 
     int label=0;
     int f;
@@ -408,7 +457,7 @@ public final class CodeStore extends Defs {
 
           if (dict.do_isEmpty(label)) {
             if(Interact.verbosity>=2) {
-            Interact.warnmes(
+                    warnmes(
                 "Undefined after :-, code["+instr+".."+codeTop+"] ->"+NAME(f)+"/"+GETARITY(f));
             }
             
@@ -473,8 +522,9 @@ public final class CodeStore extends Defs {
         case NONDET: //if first and last -> TRY_ME_ONLY
           label=dict.getpred(GETFUN(instr));
           //System.err.println("here^^^"+NAME(label)+NAME(prolog.G_empty));
-          if (label!=prolog.G_empty) break; //^^^ already linked as a pred, ok as is
-          dict.setpred(GETFUN(instr),label+getInstructionLength(NONDET));
+          if (label!=prolog.G_empty) {
+              break; //^^^ already linked as a pred, ok as is
+            }          dict.setpred(GETFUN(instr),label+getInstructionLength(NONDET));
           SETOP(label,TRY_ME_ONLY); // because it has just this clause
           break;
 
@@ -511,27 +561,46 @@ public final class CodeStore extends Defs {
     throw new LoadException("Load instruction: "+msg+" code=@"+code.hashCode()+"top:"+codeTop);
   }
 
-  public void dumpCode(int instrPtr) throws LoadException {
+    /**
+     *
+     * @param instrPtr
+     * @throws LoadException
+     */
+    public void dumpCode(int instrPtr) throws LoadException {
     dumpCode(instrPtr-10,instrPtr+10);
   }
 
-  public void dumpCode(int instrFrom,int instrTo) throws LoadException {
-    if (instrFrom<0) instrFrom=0;
+    /**
+     *
+     * @param instrFrom
+     * @param instrTo
+     * @throws LoadException
+     */
+    public void dumpCode(int instrFrom,int instrTo) throws LoadException {
+    if (instrFrom<0) {
+        instrFrom=0;
+        }
 
-    Prolog.dump("CODE: from:"+instrFrom+" to:"+instrTo+" used:"+codeTop+" of:"+code.length+".");
+        dump("CODE: from:"+instrFrom+" to:"+instrTo+" used:"+codeTop+" of:"+code.length+".");
 
-    for (int i=instrFrom;i<instrTo&&i<codeTop;i+=getInstructionLength(GETOP(i)))
-      dumpInstruction(i,i);
+    for (int i=instrFrom;i<instrTo&&i<codeTop;i+=getInstructionLength(GETOP(i))) {
+        dumpInstruction(i,i);
+        }
 
-    Prolog.dump("end of dump");
+        dump("end of dump");
   }
 
-  public void dumpInstruction(int instrCount,int i) {
+    /**
+     *
+     * @param instrCount
+     * @param i
+     */
+    public void dumpInstruction(int instrCount,int i) {
     int op=GETOP(i);
     String name=getInstructionName(op);
     switch (op) {
       case END:
-        Prolog.dump("#"+instrCount+"\t<"+i+"> op:"+op+"/"+name);
+        dump("#"+instrCount+"\t<"+i+"> op:"+op+"/"+name);
         break;
       case EXECUTE:
       case NONDET:
@@ -540,11 +609,11 @@ public final class CodeStore extends Defs {
       case JUMP_IF:
       case EXEC_JUMP_IF:
       case EXEC_TRY:
-        Prolog.dump("");
+        dump("");
       case TRY_ME_ELSE:
       case RETRY_ME_ELSE:
       case TRUST_ME_ELSE:
-        Prolog.dump("#"+instrCount+"\t<"+i+"> op:"+op+"/"+name+" "+GETREG(i)+"->["+GETLABEL(i)+"]");
+        dump("#"+instrCount+"\t<"+i+"> op:"+op+"/"+name+" "+GETREG(i)+"->["+GETLABEL(i)+"]");
         break;
       case MOVE_REG: 			// MOVE INSTRUCTIONS:
       case PUT_VARIABLE:
@@ -561,31 +630,37 @@ public final class CodeStore extends Defs {
       case MOVE_REGx2:
       case LOAD_VALUEx2:
       case LOAD_VAL_SHORT:
-        Prolog.dump("#"+instrCount+"\t<"+i+"> op:"+op+"/"+name+" X"+GETREG(i)+",A"+GETARG(i));
+        dump("#"+instrCount+"\t<"+i+"> op:"+op+"/"+name+" X"+GETREG(i)+",A"+GETARG(i));
         break;
       default:
-        Prolog.dump("#"+instrCount+"\t<"+i+"> op:"+op+"/"+name);
-        if (0!=GETREG(i))
-          Prolog.dump(" X"+GETREG(i));
+        dump("#"+instrCount+"\t<"+i+"> op:"+op+"/"+name);
+        if (0!=GETREG(i)) {
+            dump(" X"+GETREG(i));
+        }
         if (2==getInstructionLength(op)) {
           int f=GETFUN(i);
           //FIXMESystem.err.print(" %s",smartref());
           //if (isINTEGER(f))
           //	System.err.print(" " + OUTPUT_INT(f));
           //else
-          Prolog.dump(" "+NAME(f)+"/"+GETARITY(f));
+            dump(" "+NAME(f)+"/"+GETARITY(f));
         }
-        Prolog.dump("");
+        dump("");
     }
   }
 
-  private static final int getInstructionLength(int op) {
-    if (op<0||(op>NOP&&op<CLAUSE)||op>=MAXOP)
-      Interact.warnmes("warning - bad operation: "+op);
+  private static int getInstructionLength(int op) {
+    if (op<0||(op>NOP&&op<CLAUSE)||op>=MAXOP) {
+            warnmes("warning - bad operation: "+op);
+        }
     return instructionLength[op];
   }
 
-  public static byte[] initInstructionLengths() {
+    /**
+     *
+     * @return
+     */
+    public static byte[] initInstructionLengths() {
     byte[] ilen=new byte[MAXOP];
 
     // set instruction lengths to 1
@@ -627,7 +702,12 @@ public final class CodeStore extends Defs {
     return ilen;
   }
 
-  public static String getInstructionName(int c) {
+    /**
+     *
+     * @param c
+     * @return
+     */
+    public static String getInstructionName(int c) {
     return "op_"+c;
   }
 

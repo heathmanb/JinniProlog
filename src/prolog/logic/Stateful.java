@@ -8,5 +8,8 @@ import java.io.Serializable;
  */
 public interface Stateful extends Serializable, Cloneable {
 
+    /**
+     *
+     */
     public static final long serialVersionUID = 900L;
 }

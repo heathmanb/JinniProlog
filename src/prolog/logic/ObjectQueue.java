@@ -1,5 +1,8 @@
 package prolog.logic;
 
+import static prolog.logic.Interact.warnmes;
+import static prolog.logic.Prolog.dump;
+
 /**
   Generic dynamic Queue with (amortized) O(1)
   enq/deq (add and remove) operations.
@@ -12,45 +15,66 @@ public class ObjectQueue implements Stateful {
   private Object[] queue;
   private int current;
   
-  
-  public ObjectQueue(int size) { 
+    /**
+     *
+     * @param size
+     */
+    public ObjectQueue(int size) { 
     makeIt(size);
   }
          
-  public ObjectQueue() {
+    /**
+     *
+     */
+    public ObjectQueue() {
     this(0);
   }
  
-  public ObjectQueue(Object[] os) {
+    /**
+     *
+     * @param os
+     */
+    public ObjectQueue(Object[] os) {
     this(os.length);
-    for(int i=0; i<os.length; i++)
-      enq(os[i]);
+        for (Object o : os) {
+            enq(o);
+        }
   }        
  
-  synchronized public final void clear() {
+    /**
+     *
+     */
+    synchronized public final void clear() {
     makeIt(0);
   }
           
-  synchronized private final void makeIt(int size) {
+  private synchronized void makeIt(int size) {
     size=(size<MINSIZE)?MINSIZE:size;
     queue = new Object[size];
     head = tail = current = 0;
   }
 
-  public final int size() {
+    /**
+     *
+     * @return
+     */
+    public final int size() {
     return (head<=tail)?tail-head:queue.length-head+tail;
   }
 
   /**
    Dynamically resizes the queue
    */
-  private final boolean requeue(String Mes) {
+  private boolean requeue(String Mes) {
     int newSize=2*size();
-    if(newSize>MAX_QUEUE || newSize<MINSIZE) return false;
+    if(newSize>MAX_QUEUE || newSize<MINSIZE) {
+        return false;
+        }
     Object[] nqueue=new Object[newSize];
     int j=0;
-    for(int i=head; i!=tail; i=inc(i))
-      nqueue[j++]=queue[i];
+    for(int i=head; i!=tail; i=inc(i)) {
+        nqueue[j++]=queue[i];
+        }
     queue=nqueue;
     head=0;
     tail=j;
@@ -61,12 +85,13 @@ public class ObjectQueue implements Stateful {
 
   /**
    Adds an element to the end of the queue
+     * @return 
    */
   synchronized public final boolean enq(Object V) { 
       
     if(inc(tail) == head) { // full !!!
       if(!requeue("expanding")) {
-        Interact.warnmes("queue overflow at:"+V);
+                warnmes("queue overflow at:"+V);
         return false;
       }
     }     
@@ -79,13 +104,16 @@ public class ObjectQueue implements Stateful {
           
   /**
    Removes the first element of the queue 
+     * @return 
    */
   synchronized public final Object deq() {    
              
-    if (tail == head) // empty !!!
-      return null;
-    if(4*size()<queue.length)
-      requeue("shrinking");
+    if (tail == head) { // empty !!!
+        return null;
+        }
+    if(4*size()<queue.length) {
+        requeue("shrinking");
+        }
     Object V = queue[head];
     queue[head]=null;
     head  = inc(head);
@@ -95,12 +123,13 @@ public class ObjectQueue implements Stateful {
 
   /**
    Adds an element to the beginning of the queue
+     * @return 
    */
   synchronized public final boolean pushq(Object V) { 
            
     if(dec(head) == tail) { // full !!!
       if(!requeue("expanding")) {
-        Interact.warnmes("queue overflow at:"+V);
+                warnmes("queue overflow at:"+V);
         return false;
       }
     }  
@@ -110,53 +139,93 @@ public class ObjectQueue implements Stateful {
     return true;
   }
           
-  private final int inc(int val) {         
+  private int inc(int val) {         
     return (val + 1) % queue.length; 
   }
 
-  private final int dec(int val) {
+  private int dec(int val) {
     return (0==val)? queue.length-1:val-1;
   }
           
-  synchronized public final boolean isEmpty() {
+    /**
+     *
+     * @return
+     */
+    synchronized public final boolean isEmpty() {
     return tail == head;
   }
           
-  synchronized public final Object[] toArray() {
+    /**
+     *
+     * @return
+     */
+    synchronized public final Object[] toArray() {
     Object[] Os=new Object[size()];
     int j=0;
-    for(int i=head; i!=tail; i=inc(i))
-      Os[j++]=queue[i];
+    for(int i=head; i!=tail; i=inc(i)) {
+        Os[j++]=queue[i];
+        }
     return Os;
   }      
  
-  public ObjectQueue toClone() {
+    /**
+     *
+     * @return
+     */
+    public ObjectQueue toClone() {
     Object[] os=toArray();
     return new ObjectQueue(os);
   }     
   
-  synchronized public final Object elementAt(int i) {
+    /**
+     *
+     * @param i
+     * @return
+     */
+    synchronized public final Object elementAt(int i) {
     return queue[(head+i) % queue.length];
   }
   
-  synchronized public final void updateAt(int i,Object O) {
+    /**
+     *
+     * @param i
+     * @param O
+     */
+    synchronized public final void updateAt(int i,Object O) {
     queue[(head+i) % queue.length]=O;
   }
           
-  synchronized public final int contains(Object O) {
+    /**
+     *
+     * @param O
+     * @return
+     */
+    synchronized public final int contains(Object O) {
     for(int i=head; i!=tail; i=inc(i)) {
-      if(O.equals(queue[i])) return i;
+      if(O.equals(queue[i])) {
+          return i;
+            }
     }
     return -1;
   }
           
-  synchronized public final void delq(Object O) {
+    /**
+     *
+     * @param O
+     */
+    synchronized public final void delq(Object O) {
     int k=contains(O);
-    if(k<0) return;
+    if(k<0) {
+        return;
+        }
     deleteAt(k);
   }
   
-  synchronized public final void deleteAt(int k) {
+    /**
+     *
+     * @param k
+     */
+    synchronized public final void deleteAt(int k) {
     /* buggy
     for(int i=head; i!=k; i=inc(i)) {
       queue[i]=queue[inc(i)];
@@ -179,22 +248,39 @@ public class ObjectQueue implements Stateful {
   
   // queue_iterator ops
   
+    /**
+     *
+     */
+      
   synchronized public void reset() {
     current=head;
   }
   
-  synchronized public Object next() {
-    if(!hasNext()) return null;
+    /**
+     *
+     * @return
+     */
+    synchronized public Object next() {
+    if(!hasNext()) {
+        return null;
+        }
     Object O=queue[current];
     current=inc(current);
     return O;
   }
   
-  synchronized public boolean hasNext() {
+    /**
+     *
+     * @return
+     */
+    synchronized public boolean hasNext() {
     return !isEmpty() && inc(current)!=head;
   }
   
-  synchronized public void del() { // TODO:  $BUGGY
+    /**
+     *
+     */
+    synchronized public void del() { // TODO:  $BUGGY
     //System.err.println("current_bef="+current+" ,head="+head+", tail="+tail);
 
     deleteAt(dec(current));
@@ -205,23 +291,33 @@ public class ObjectQueue implements Stateful {
     //System.err.println("queue="+toString()); 
   }
   
-  public Object queue_op4(int op,int i) {
+    /**
+     *
+     * @param op
+     * @param i
+     * @return
+     */
+    public Object queue_op4(int op,int i) {
     Object R=null;
     switch(op) {
-      case 0: if(i>=0 && i<size()) R=elementAt(i);break;
+      case 0: if(i>=0 && i<size()) {
+          R=elementAt(i);
+        }break;
       case 1: reset(); break;
       case 2: R=next();break;
       case 3: del(); break; // buggy
-      default: Prolog.dump("warning - bad queue operation: op="+op+",i="+i);
+      default: dump("warning - bad queue operation: op="+op+",i="+i);
     }
     return R;
   }
           
   public String toString() {
     //return "queue:"+size()+"/"+queue.length;
-    StringBuffer buf=new StringBuffer();
+    StringBuilder buf=new StringBuilder();
     for(int i=head; i!=tail; i=inc(i)) {
-      if(i!=head) buf.append(",");
+      if(i!=head) {
+          buf.append(",");
+            }
       buf.append(elementAt(i));
     }
     return buf.toString();

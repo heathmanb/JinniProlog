@@ -1,14 +1,22 @@
 package prolog.core;
 
+import static java.lang.Class.forName;
 import prolog.kernel.*;
 import java.lang.reflect.*;
+import static prolog.kernel.JavaIO.traceln;
 import prolog.logic.*;
+import static prolog.logic.Interact.errmes;
+import static prolog.logic.Interact.warnmes;
 
 /**
  * Adds reflection based Built-ins
  */
 public class ExtenderFactory implements ITerm, Stateful {
 
+    /**
+     *
+     * @param M
+     */
     public ExtenderFactory(Machine M) {
         this.M = M;
     }
@@ -19,52 +27,113 @@ public class ExtenderFactory implements ITerm, Stateful {
         return M.removeObject(O);
     }
 
+    /**
+     *
+     * @param o
+     * @return
+     * @throws TypeException
+     */
     @Override
     public final int putVar(Object o) throws TypeException {
         //throw new TypeException("attempt to pass Prolog variable to Java");
         return M.termReader.putVar(o);
     }
 
+    /**
+     *
+     * @param c
+     * @return
+     * @throws PrologException
+     */
     @Override
     public final int putConst(String c) throws PrologException {
         return M.termReader.putConst(c);
     }
 
+    /**
+     *
+     * @param s
+     * @return
+     * @throws PrologException
+     */
     @Override
     public final int putString(String s) throws PrologException {
         return M.termReader.putString(s);
     }
 
+    /**
+     *
+     * @param i
+     * @return
+     */
     @Override
     public final int putInt(int i) {
         return M.termReader.putInt(i);
     }
 
+    /**
+     *
+     * @param d
+     * @return
+     */
     @Override
     public final int putFloat(double d) {
         return M.termReader.putFloat(d);
     }
 
+    /**
+     *
+     * @param f
+     * @param args
+     * @return
+     * @throws PrologException
+     */
     @Override
     public final int putFun(String f, int[] args) throws PrologException {
         return M.termReader.putFun(f, args);
     }
 
+    /**
+     *
+     * @param o
+     * @return
+     * @throws PrologException
+     */
     @Override
     public final int putObject(Object o) throws PrologException {
         return M.termReader.putObject(o);
     }
 
+    /**
+     *
+     * @param xref
+     * @param O
+     * @return
+     * @throws PrologException
+     */
     @Override
     public Object getTerm(int xref, OTerm O) throws PrologException {
         return getTerm(xref);
     }
 
+    /**
+     *
+     * @param xref
+     * @return
+     * @throws PrologException
+     */
     final public Object getTerm(int xref) throws PrologException {
         return M.termReader.getTerm(xref);
     }
 
     /* Reflection related */
+
+    /**
+     *
+     * @param xref
+     * @return
+     */
+    
     public final int new_java_class(int xref) {
         int res = 0;
         String className = null;
@@ -74,12 +143,13 @@ public class ExtenderFactory implements ITerm, Stateful {
             if (null == className) {
                 return res;
             }
-            C = Class.forName(className);
+            C = forName(className);
         } catch (ClassNotFoundException | PrologException e) {
-            if (null != className) switch (className) {
-                case "boolean":
-                    C = Boolean.TYPE;
-                    break;
+            if (null != className) {
+                switch (className) {
+                    case "boolean":
+                        C = Boolean.TYPE;
+                        break;
                 case "char":
                     C = Character.TYPE;
                     break;
@@ -104,15 +174,16 @@ public class ExtenderFactory implements ITerm, Stateful {
                 case "void":
                     C = Void.TYPE;
                     break;
-                default:
-                    JavaIO.errmes("cannot create class:" + className, e);
-                    return res;
+                    default:
+                        errmes("cannot create class:" + className, e);
+                        return res;
+                }
             }
         }
         try {
             res = putObject(C);
         } catch (PrologException e) {
-            JavaIO.errmes("cannot internalize class object:" + className, e);
+            errmes("cannot internalize class object:" + className, e);
         }
         return res;
     }
@@ -155,6 +226,12 @@ public class ExtenderFactory implements ITerm, Stateful {
         return args;
     }
 
+    /**
+     *
+     * @param xref
+     * @param xargs
+     * @return
+     */
     public final int new_java_object(int xref, int xargs) {
         Class cls = null;
         try {
@@ -171,11 +248,19 @@ public class ExtenderFactory implements ITerm, Stateful {
             }
             return putObject(O);
         } catch (Exception e) {
-            JavaIO.errmes("cannot create object in: " + cls, e);
+            errmes("cannot create object in: " + cls, e);
             return 0;
         }
     }
 
+    /**
+     *
+     * @param classref
+     * @param xref
+     * @param xmeth
+     * @param xargs
+     * @return
+     */
     public final int invoke_java_method(int classref, int xref, int xmeth, int xargs) {
         Object obj = null;
         Class cls = null;
@@ -210,11 +295,17 @@ public class ExtenderFactory implements ITerm, Stateful {
             Object res = invokeTheMethod(cls, obj, methodName, args, parameterTypes);
             return putResult(res);
         } catch (Exception e) {
-            JavaIO.errmes("exception invoking method: " + methodName + "() on: " + obj, e);
+            errmes("exception invoking method: " + methodName + "() on: " + obj, e);
             return 0;
         }
     }
 
+    /**
+     *
+     * @param xref
+     * @param xfield
+     * @return
+     */
     public final int get_java_field_handle(int xref, int xfield) {
         Object obj = null;
         String fieldName = null;
@@ -238,28 +329,38 @@ public class ExtenderFactory implements ITerm, Stateful {
             Object res = F;
             return putResult(res);
         } catch (NoSuchFieldException | SecurityException | PrologException e) {
-            JavaIO.errmes("cannot find field: " + fieldName + "() of: " + obj, e);
+            errmes("cannot find field: " + fieldName + "() of: " + obj, e);
             return 0;
         }
     }
 
+    /**
+     *
+     * @param xref
+     * @return
+     */
     public final boolean delete_java_class(int xref) {
         /* should scan all obs of the class and delete them? */
         try {
             Class cls = (Class) getTerm(xref);
             return null != cls && removeObject(cls);
         } catch (PrologException e) {
-            JavaIO.errmes("cannot delete class", e);
+            errmes("cannot delete class", e);
             return false;
         }
     }
 
+    /**
+     *
+     * @param xref
+     * @return
+     */
     public final boolean delete_java_object(int xref) {
         try {
             Object O = getTerm(xref);
             return null != O && removeObject(O);
         } catch (PrologException e) {
-            JavaIO.errmes("cannot delete object", e);
+            errmes("cannot delete object", e);
             return false;
         }
     }
@@ -291,7 +392,7 @@ public class ExtenderFactory implements ITerm, Stateful {
                 Constructor[] theConstructors = currentClass.getConstructors();
                 for (Constructor theConstructor1 : theConstructors) {
                     if (theConstructor1.getParameterTypes().length == parameterTypes.length) {
-                        JavaIO.traceln("length: " + theConstructor1.getParameterTypes().length);
+                        traceln("length: " + theConstructor1.getParameterTypes().length);
                         Constructor theConstructor = theConstructor1;
                         try {
                             res = theConstructor.newInstance(args);
@@ -334,7 +435,7 @@ public class ExtenderFactory implements ITerm, Stateful {
                 }
             } catch (Exception ce) {
             }
-            JavaIO.warnmes("method invocation error: CLASS=>" + theClass
+            warnmes("method invocation error: CLASS=>" + theClass
                     + ", OBJECT=>" + theCurrent + ", method: " + methodName);
             throw e;
         }
@@ -370,7 +471,7 @@ public class ExtenderFactory implements ITerm, Stateful {
                             // trying more
                             //Prolog.dump("Bad arguments trying to invoke ...."+theMethod+"=>"+iae);
                         } catch (InvocationTargetException te) {
-                            JavaIO.errmes("error in trying Java method: ", te.getTargetException());
+                            errmes("error in trying Java method: ", te.getTargetException());
                             return res;
                         }
                     }
@@ -379,7 +480,7 @@ public class ExtenderFactory implements ITerm, Stateful {
                     throw e;
                 }
             } catch (InvocationTargetException te) {
-                JavaIO.errmes("error in calling Java method: ", te.getTargetException());
+                errmes("error in calling Java method: ", te.getTargetException());
                 return res;
             }
         }

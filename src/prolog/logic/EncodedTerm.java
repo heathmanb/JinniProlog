@@ -1,5 +1,8 @@
 package prolog.logic;
 
+import static prolog.logic.Defs.isVAR;
+import static prolog.logic.Defs.showCell;
+
 /**
  * Contains a relocatable term obtained by extracting from a
  * HeapStack a segment <from>..<to> resulting from a copy_term operation.
@@ -56,7 +59,7 @@ public final class EncodedTerm implements Stateful {
    * returns the array of cells
    */
   final int[] getCells() {
-    return (int[])cells.clone(); //could be a copy !!!
+    return cells.clone(); //could be a copy !!!
   }
   
   final int size() {
@@ -64,11 +67,11 @@ public final class EncodedTerm implements Stateful {
   }
   
   static final int encodeCell(int from,int v) {
-    return	(Defs.isVAR(v))?v-from+1:v;
+    return	(isVAR(v))?v-from+1:v;
   }
    
   static final int decodeCell(int from,int v) {
-    return	(Defs.isVAR(v))?v+from-1:v;
+    return	(isVAR(v))?v+from-1:v;
   }
   
   void destroy() {
@@ -76,12 +79,14 @@ public final class EncodedTerm implements Stateful {
   }
   
   public String toString() {
-    if(size()==0) return "[]";
-    StringBuffer buf=new StringBuffer(4*size());
-    buf.append("["+Defs.showCell(cells[0]));
+    if(size()==0) {
+        return "[]";
+        }
+    StringBuilder buf=new StringBuilder(4*size());
+    buf.append("[").append(showCell(cells[0]));
     for(int i=1;i<size();i++) {
       buf.append(",");
-      buf.append(Defs.showCell(cells[i]));
+      buf.append(showCell(cells[i]));
     }
     buf.append("]");
     return buf.toString();

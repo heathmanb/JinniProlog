@@ -16,6 +16,12 @@ public class PrologClauseStringReader extends PrologReader {
         super(reader);
     }
 
+    /**
+     *
+     * @param M
+     * @return
+     * @throws PrologException
+     */
     @Override
     public int get(Machine M) throws PrologException {
         String c = nextClauseString();

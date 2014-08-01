@@ -3,6 +3,10 @@ package prolog3d;
 import javax.media.j3d.*;
 import javax.vecmath.*;
 
+/**
+ *
+ * @author Brad
+ */
 public class Line extends Simple {
   Line() {
     super(new LineShape(),Simple.defApp);
@@ -16,7 +20,12 @@ public class Line extends Simple {
     super(new LineShape(c),makeApp(c,t));
   }
   
-  public void draw(Tuple3f dif,float ignore) {
+    /**
+     *
+     * @param dif
+     * @param ignore
+     */
+    public void draw(Tuple3f dif,float ignore) {
     ((LineShape)shape3d).geom.draw(dif);
   }
 }
@@ -48,7 +57,9 @@ class LineGeom extends LineArray {
     
     setCoordinates(0, verts);  
     
-    if(null==color) color=Simple.defCol; 
+    if(null==color) { 
+        color=Simple.defCol;
+        } 
     {
       Color3f colors[] = new Color3f[2];
       colors[0] = color;

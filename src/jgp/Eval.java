@@ -1,35 +1,72 @@
 package jgp;
 
 import java.math.*;
+import static java.math.BigInteger.valueOf;
+import static jgp.Ind.big2string;
 
 import prolog.core.BigMath;
 import prolog.logic.Fun;
 import prolog.logic.Var;
 
+/**
+ *
+ * @author Brad
+ */
 public class Eval extends BigMath {
   
-  public final BigInteger nand(BigInteger X,BigInteger Y) {
+    /**
+     *
+     * @param X
+     * @param Y
+     * @return
+     */
+    public final BigInteger nand(BigInteger X,BigInteger Y) {
     X=X.and(Y);
     return bignot(npowers,X);
   }
   
-  public final BigInteger nor(BigInteger X,BigInteger Y) {
+    /**
+     *
+     * @param X
+     * @param Y
+     * @return
+     */
+    public final BigInteger nor(BigInteger X,BigInteger Y) {
     X=X.or(Y);
     return bignot(npowers,X);
   }
   
-  public final BigInteger impl(BigInteger X,BigInteger Y) {
+    /**
+     *
+     * @param X
+     * @param Y
+     * @return
+     */
+    public final BigInteger impl(BigInteger X,BigInteger Y) {
     X=bignot(npowers,X);
     return X.or(Y);
   }
   
-  public static final BigInteger negate(BigInteger X,int nbits) {
+    /**
+     *
+     * @param X
+     * @param nbits
+     * @return
+     */
+    public static final BigInteger negate(BigInteger X,int nbits) {
     X=bignot(nbits,X);
     return X;
   }
   
   //GROWING:11101000 11010101=>11010101 00101010
-  public static final BigInteger grow(BigInteger X,int nbits) {
+
+    /**
+     *
+     * @param X
+     * @param nbits
+     * @return
+     */
+      public static final BigInteger grow(BigInteger X,int nbits) {
     int halfpow=nbits>>1;
     BigInteger lmask=bigones(halfpow);
     BigInteger low=lmask.and(X);
@@ -44,23 +81,46 @@ public class Eval extends BigMath {
     return R;
   }
   
-  public static final BigInteger half_xor(BigInteger X,BigInteger Y) {
+    /**
+     *
+     * @param X
+     * @param Y
+     * @return
+     */
+    public static final BigInteger half_xor(BigInteger X,BigInteger Y) {
     Y=Y.or(X);
     return X.xor(Y);
   }
  
-  public final BigInteger eq(BigInteger X,BigInteger Y) {
+    /**
+     *
+     * @param X
+     * @param Y
+     * @return
+     */
+    public final BigInteger eq(BigInteger X,BigInteger Y) {
     return bignot(npowers,X.xor(Y));
   }
   
-  public final BigInteger ite(BigInteger IF,BigInteger THEN,BigInteger ELSE) {
+    /**
+     *
+     * @param IF
+     * @param THEN
+     * @param ELSE
+     * @return
+     */
+    public final BigInteger ite(BigInteger IF,BigInteger THEN,BigInteger ELSE) {
     BigInteger YES=IF.and(THEN);
     BigInteger NO=bignot(npowers,IF).and(ELSE);
     return YES.or(NO);
   }
   
   private final int nvars;
-  protected final int npowers;
+
+    /**
+     *
+     */
+    protected final int npowers;
   
   //private final BigInteger NVARS;
   private final BigInteger NVARS2;
@@ -68,25 +128,39 @@ public class Eval extends BigMath {
     
   private final String name;
   
-  public Eval(String name,int nvars){
+    /**
+     *
+     * @param name
+     * @param nvars
+     */
+    public Eval(String name,int nvars){
     this.name=name;
     this.nvars=nvars;
     this.npowers=1<<nvars;
     //this.NVARS=BigInteger.valueOf(nvars);
-    this.NVARS2=BigInteger.valueOf(nvars+2);
+    this.NVARS2=valueOf(nvars+2);
     this.BigOne=bigones(npowers);
   }
 
-  public int getArity() {
+    /**
+     *
+     * @return
+     */
+    public int getArity() {
     return 2;
   }
   
-  public int getNvars() {
+    /**
+     *
+     * @return
+     */
+    public int getNvars() {
     return nvars;
   }
   
   /**
    * applies the primitive operation during synthesis
+     * @return 
    */
   public BigInteger applyOp(BigInteger[] Bs) {
     //return Bs[0].add(Bs[Bs.length-1]);
@@ -95,7 +169,12 @@ public class Eval extends BigMath {
      return zero;
   }
 
-  public BigInteger eval(BigInteger B) {
+    /**
+     *
+     * @param B
+     * @return
+     */
+    public BigInteger eval(BigInteger B) {
     int order=B.compareTo(one);
     if(order<0) { // 0 represents constant 0
       return zero;
@@ -115,13 +194,18 @@ public class Eval extends BigMath {
     }
   }
   
-  public Object toExpr(BigInteger B) {
+    /**
+     *
+     * @param B
+     * @return
+     */
+    public Object toExpr(BigInteger B) {
     int order=B.compareTo(one);
     if(order<0) {
-      return new Integer(0);
+      return 0;
     }
     else if(order==0) {
-      return new Integer(1);
+      return 1;
     }
     else if(B.compareTo(NVARS2)<0) {
       return new Var(B.intValue()-2);
@@ -136,14 +220,18 @@ public class Eval extends BigMath {
     }
   }
   
-  public String showVars() {
-    StringBuffer buf=new StringBuffer();
-    buf.append("zero="+Ind.big2string(zero,npowers)+':'+zero+'\n');
+    /**
+     *
+     * @return
+     */
+    public String showVars() {
+    StringBuilder buf=new StringBuilder();
+    buf.append("zero=").append(big2string(zero, npowers)).append(':').append(zero).append('\n');
     for(int i=0;i<nvars;i++) {
       BigInteger V=lvar2bigint(nvars,i);
-      buf.append("V"+i+"="+Ind.big2string(V,npowers)+':'+V+'\n');
+      buf.append("V").append(i).append("=").append(big2string(V, npowers)).append(':').append(V).append('\n');
     }
-    buf.append("one="+Ind.big2string(BigOne,npowers)+':'+BigOne+'\n');
+    buf.append("one=").append(big2string(BigOne, npowers)).append(':').append(BigOne).append('\n');
     return buf.toString();
   }
 }

@@ -1,19 +1,41 @@
 package agentgui;
 
+import static agentgui.VFrame.startGUI;
+
+/**
+ *
+ * @author Brad
+ */
 public class Main {
-  public static VFrame vframe;
+
+    /**
+     *
+     */
+    public static VFrame vframe;
   
-  synchronized public static InnerFrame new_inner_frame(String title) {
+    /**
+     *
+     * @param title
+     * @return
+     */
+    synchronized public static InnerFrame new_inner_frame(String title) {
 	InnerFrame iframe=new InnerFrame(title);
 	vframe.addInnerFrame(iframe);
 	return iframe;
   }
   
-  public static void startgui() {
-	VFrame.startGUI(new VFrame());
+    /**
+     *
+     */
+    public static void startgui() {
+	startGUI(new VFrame());
   }
   
-  public static void main(String[] args) {
+    /**
+     *
+     * @param args
+     */
+    public static void main(String[] args) {
 	  startgui();
   }
 }

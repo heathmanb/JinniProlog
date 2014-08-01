@@ -1,6 +1,8 @@
 package jgp;
 
 import java.math.BigInteger;
+import static java.math.BigInteger.valueOf;
+import static jgp.Ind.big2string;
 
 import prolog.core.Cat;
 import prolog.logic.Stateful;
@@ -14,7 +16,9 @@ class TruthTable implements Stateful {
   }
   
   public boolean equals(Object that) {
-    if(!(that instanceof TruthTable)) return false;
+    if(!(that instanceof TruthTable)) {
+        return false;
+        }
     TruthTable TT=(TruthTable)that;
     return (TT.nvars==nvars) && (TT.tt==tt);
   }
@@ -25,7 +29,7 @@ class TruthTable implements Stateful {
   }
   
   public String toString() {
-    return nvars+":"+Ind.big2string(BigInteger.valueOf(tt),1<<nvars);
+    return nvars+":"+big2string(valueOf(tt),1<<nvars);
   }
   
 }

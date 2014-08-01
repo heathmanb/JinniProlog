@@ -15,6 +15,10 @@ public class AndHub implements Stateful {
 
     private static final Object empty = new Object();
 
+    /**
+     *
+     * @param max
+     */
     public AndHub(int max) {
         this.dict = new Object[max];
         for (int i = 0; i < max; i++) {
@@ -43,10 +47,21 @@ public class AndHub implements Stateful {
      //System.err.println("!! "+s+",p="+putCount+",g="+getCount+"a="+addCount+",r="+removeCount);
      }
      */
+
+    /**
+     *
+     * @param val
+     */
+    
     public void add(Object val) {
         set(this.addCount++, val);
     }
 
+    /**
+     *
+     * @param key
+     * @param val
+     */
     public synchronized void set(int key, Object val) {
         //t(">set:"+key+":"+val);
         while (putCount == max || empty != dict[key]) {
@@ -62,12 +77,22 @@ public class AndHub implements Stateful {
         notifyAll();
     }
 
+    /**
+     *
+     * @return
+     */
     public Object remove() {
         return get(this.removeCount++);
     }
 
     // wait for others but only get once
-    public synchronized Object get(int key) {
+
+    /**
+     *
+     * @param key
+     * @return
+     */
+        public synchronized Object get(int key) {
         //t(">get:"+key); 
         while (putCount < max || empty == dict[key]) {
             try {
@@ -86,6 +111,10 @@ public class AndHub implements Stateful {
         return result;
     }
 
+    /**
+     *
+     * @return
+     */
     public synchronized Object[] getAll() {
         while (putCount < max || getCount > 0) {
             try {
@@ -103,10 +132,17 @@ public class AndHub implements Stateful {
         return result;
     }
 
+    /**
+     *
+     * @return
+     */
     public Fun collectAll() {
         return new Fun("all", getAll());
     }
 
+    /**
+     *
+     */
     public void stop() {
         this.dict = null;
     }

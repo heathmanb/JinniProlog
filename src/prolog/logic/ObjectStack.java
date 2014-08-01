@@ -1,5 +1,8 @@
 package prolog.logic;
 
+import static java.lang.System.arraycopy;
+import static prolog.logic.Prolog.dump;
+
 /**
 Generic Dynamic Stack.
  */
@@ -7,28 +10,49 @@ public class ObjectStack implements Stateful {
   private Object stack[];
   private int top;
   
-  public static final int SIZE=16; // power of 2
-  public static final int MINSIZE=1<<15; // power of 2
+    /**
+     *
+     */
+    public static final int SIZE=16; // power of 2
+
+    /**
+     *
+     */
+    public static final int MINSIZE=1<<15; // power of 2
                             
-  public ObjectStack() {
+    /**
+     *
+     */
+    public ObjectStack() {
     this(SIZE);
   }
   
-  public ObjectStack(int size) {
+    /**
+     *
+     * @param size
+     */
+    public ObjectStack(int size) {
     reset();
     stack=new Object[size];
   }
   
-  public ObjectStack(Object[] os) {
+    /**
+     *
+     * @param os
+     */
+    public ObjectStack(Object[] os) {
     reset();
     stack=os;
   }
    
-  final private void reset() {
+  private void reset() {
     top= -1;
   }
   
-  public void clear() {
+    /**
+     *
+     */
+    public void clear() {
     reset();
     // stack=new Object[stack.length]; // introduces bug at end of bm2
   }
@@ -39,11 +63,19 @@ public class ObjectStack implements Stateful {
     stack=null;
   }
    
-  public final boolean isEmpty() {
+    /**
+     *
+     * @return
+     */
+    public final boolean isEmpty() {
     return top<0;
   }
   
-  public final void push(Object i) {
+    /**
+     *
+     * @param i
+     */
+    public final void push(Object i) {
     ++top;
     try {
       stack[top]=i;  
@@ -54,13 +86,22 @@ public class ObjectStack implements Stateful {
     }
   }
 
-  public final Object pop() {
+    /**
+     *
+     * @return
+     */
+    public final Object pop() {
     Object o=stack[top];
     stack[top--]=null;
     return o;
   }
   
-  public final Object at(int i) {
+    /**
+     *
+     * @param i
+     * @return
+     */
+    public final Object at(int i) {
     return stack[i];
   }
   
@@ -68,7 +109,11 @@ public class ObjectStack implements Stateful {
     return stack[top];
   }
   
-  public final int size() {
+    /**
+     *
+     * @return
+     */
+    public final int size() {
     return top+1;
   }
   
@@ -81,15 +126,21 @@ public class ObjectStack implements Stateful {
   }
   
   final void setTop(int top) {
-    for(int i=top+1;i<this.top;i++) stack[i]=null; // DO THIS - it prevents memory leak
-    this.top=top;
+    for(int i=top+1;i<this.top;i++) {
+        stack[i]=null; // DO THIS - it prevents memory leak
+        }    this.top=top;
   }
   
-  protected void expand() {
+    /**
+     *
+     */
+    protected void expand() {
     int l=stack.length;
     Object[] newstack=new Object[l<<1];
-    if(PrologGC.trace>=2) Prolog.dump("ObjectStack shrinking: "+(l<<1));
-    System.arraycopy(stack,0,newstack,0,l);
+    if(PrologGC.trace>=2) {
+            dump("ObjectStack shrinking: "+(l<<1));
+        }
+        arraycopy(stack,0,newstack,0,l);
     stack=newstack;
   }
   
@@ -98,28 +149,43 @@ public class ObjectStack implements Stateful {
   */
   final void shrink() {
     int l=stack.length;
-    if(l<=MINSIZE || top<<2>=l) return;
+    if(l<=MINSIZE || top<<2>=l) {
+        return;
+        }
     l=1+(top<<1);
-    if(top<MINSIZE) l=MINSIZE;
-    if(PrologGC.trace>=2) Prolog.dump("ObjectStack shrinking: "+l);
+    if(top<MINSIZE) {
+        l=MINSIZE;
+        }
+    if(PrologGC.trace>=2) {
+            dump("ObjectStack shrinking: "+l);
+        }
     Object[] newstack=new Object[l];
-    System.arraycopy(stack,0,newstack,0,top+1);
+        arraycopy(stack,0,newstack,0,top+1);
     stack=newstack;
   }
   
-  public final Object[] toArray() {
+    /**
+     *
+     * @return
+     */
+    public final Object[] toArray() {
     Object[] newstack=new Object[top+1];
-    System.arraycopy(stack,0,newstack,0,top+1);
+        arraycopy(stack,0,newstack,0,top+1);
     return newstack;
   }
   
   public String toString() {
-    if(isEmpty()) return "[]";
-    StringBuffer b=new StringBuffer(top<<2);
+    if(isEmpty()) {
+        return "[]";
+        }
+    StringBuilder b=new StringBuilder(top<<2);
     b.append("[");
     for(int i=0; i<=top; i++) {
-      if(i==0) b.append(""+stack[i]);
-      else b.append(","+stack[i]);
+      if(i==0) {
+          b.append("").append(stack[i]);
+            } else {
+          b.append(",").append(stack[i]);
+            }
     }
     b.append("]");
     return b.toString();

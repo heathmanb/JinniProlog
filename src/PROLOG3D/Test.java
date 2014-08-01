@@ -17,19 +17,37 @@ import prolog3d.Cube;
 import prolog.logic.ObjectStack;
 import prolog3d.*;
 import java.io.*;
+import static java.lang.Math.round;
 
 import javax.media.j3d.*;
 import javax.vecmath.*;
 import prolog.core.Cat;
+import static prolog.core.RankedGraph.showInfo;
 import prolog.logic.*;
 import prolog.kernel.*;
+import static prolog3d.Params.randomCat;
+import static prolog3d.Params.randomRanked;
+import static prolog3d.Params.ri;
+import static prolog3d.Params.sleep;
+import static prolog3d.Prolog3D.drawGraph;
+import static prolog3d.Prolog3D.drawGraph;
+import static prolog3d.Prolog3D.drawGraph;
+import static prolog3d.Prolog3D.drawGraph;
+import static prolog3d.Prolog3D.drawGraph;
+import static prolog3d.Prolog3D.drawGraph;
+import static prolog3d.Prolog3D.drawTree;
+import static prolog3d.Prolog3D.pp;
 
 /**
    Various test methods
  */
 public class Test {
   
-  public static void main(String[] args) {
+    /**
+     *
+     * @param args
+     */
+    public static void main(String[] args) {
     //mtest();
     //vrmltest();
     //htest();
@@ -49,7 +67,10 @@ public class Test {
     //hyp();
   }
 
-   public static void mtest() {
+    /**
+     *
+     */
+    public static void mtest() {
     Prolog3D M=new Prolog3D();
     World world=M.getWorld();
     Model 
@@ -60,12 +81,15 @@ public class Test {
     M.addControls();
     M.showWorld(400,400);
     aModel.animate();
-    Params.sleep(20000);
+        sleep(20000);
     M.stopWorld();
     M.exit();
   }
 
-  public static void vrmltest() {
+    /**
+     *
+     */
+    public static void vrmltest() {
     Prolog3D M=new Prolog3D();
     World world=M.getWorld();
     Body 
@@ -76,7 +100,7 @@ public class Test {
     M.addControls();
     M.showWorld(400,400);
     aModel.setAuto(1);
-    Params.sleep(20000);
+        sleep(20000);
     M.stopWorld();
     M.exit();
   }
@@ -87,10 +111,10 @@ public class Test {
   public static void htest()  {
     Prolog3D M=new Prolog3D();
     World W=M.getWorld();
-    Man aMan=new Man(W);Prolog3D.pp("model="+aMan);
-    Woman aWoman=new Woman(W); Prolog3D.pp("model="+aWoman);
-    Human aCyborg=new Human(W,"cyborg");  Prolog3D.pp("model="+aCyborg);
-    Human aRobot=new Human(W,"robot");  Prolog3D.pp("model="+aRobot);
+    Man aMan=new Man(W);pp("model="+aMan);
+    Woman aWoman=new Woman(W); pp("model="+aWoman);
+    Human aCyborg=new Human(W,"cyborg");  pp("model="+aCyborg);
+    Human aRobot=new Human(W,"robot");  pp("model="+aRobot);
     M.addControls();
     M.showWorld(600,600);
     aMan.setX(0.5);
@@ -101,9 +125,9 @@ public class Test {
     aWoman.animate();
     //aCyborg.animate();
     //aRobot.animate();
-    Params.sleep(10000);
+        sleep(10000);
     //aWoman.setAuto(1);
-    Params.sleep(10000);
+        sleep(10000);
     M.stopWorld();
     M.exit();
   }
@@ -120,7 +144,7 @@ public class Test {
     M.addControls();
     M.showWorld(500,500); 
     A.center();
-    Prolog3D.pp("agent:"+A);
+        pp("agent:"+A);
     //A.setTurn(60);
     //M.setView(0,0,2); 
     /*for(int i=0;i<16;i++) {
@@ -128,17 +152,17 @@ public class Test {
       Params.sleep(100);
     }*/ 
     //A.turn_left();
-    Params.sleep(1000);
+        sleep(1000);
     A.turn_left(); A.turn_left(); A.turn_left();
     A.turn_up();
     A.walk();
     A.walk();
-    Params.sleep(1000);
+        sleep(1000);
     //A.turn_up();
     A.walk();
     A.walk();
   
-    Params.sleep(30000);
+        sleep(30000);
     M.stopWorld();
     M.exit();
   }
@@ -150,7 +174,7 @@ public class Test {
     Prolog3D M=new Prolog3D();
     World W=M.getWorld();
     Vertex3D A=null;
-    int choice=Params.ri(4);
+    int choice=ri(4);
     choice=3;
     switch(choice) {
       case(0):A=new Vertex3D(W,Shape.CCUBE,1.0,0.0,0.0,0.2,"Cube");A.scaleTo(1,2,0.5);break;
@@ -161,27 +185,27 @@ public class Test {
     M.addControls();
     M.showWorld(600,600); 
     A.center();
-    Prolog3D.pp("agent:"+A);
+        pp("agent:"+A);
     int n=3;
-    for(int i=0;i<n;i++){Prolog3D.pp("turn_left:");Params.sleep(1000);A.turn_left();}
-    for(int i=0;i<n;i++){Prolog3D.pp("turn_right:");Params.sleep(1000);A.turn_right();}
-    for(int i=0;i<n;i++){Prolog3D.pp("turn_up:");Params.sleep(1000);A.turn_up();}
-    for(int i=0;i<n;i++){Prolog3D.pp("turn_down:");Params.sleep(1000);A.turn_down();}
-    for(int i=0;i<n;i++){Prolog3D.pp("tilt_left:");Params.sleep(1000);A.tilt_left();}
-    for(int i=0;i<n;i++){Prolog3D.pp("tilt_right:");Params.sleep(1000);A.tilt_right();}
+    for(int i=0;i<n;i++){pp("turn_left:");sleep(1000);A.turn_left();}
+    for(int i=0;i<n;i++){pp("turn_right:");sleep(1000);A.turn_right();}
+    for(int i=0;i<n;i++){pp("turn_up:");sleep(1000);A.turn_up();}
+    for(int i=0;i<n;i++){pp("turn_down:");sleep(1000);A.turn_down();}
+    for(int i=0;i<n;i++){pp("tilt_left:");sleep(1000);A.tilt_left();}
+    for(int i=0;i<n;i++){pp("tilt_right:");sleep(1000);A.tilt_right();}
     M.setView(0,0,12); 
     for(int i=0;i<n;i++){
-       Prolog3D.pp("walk left right:");Params.sleep(1000);
+            pp("walk left right:");sleep(1000);
        A.turn_left();A.walk();A.turn_right();A.turn_right();A.walk();A.turn_left();
     }
     A.center();A.turn_left();
     for(int i=0;i<n;i++){
-       Prolog3D.pp("walk up down:");Params.sleep(1000);
+            pp("walk up down:");sleep(1000);
        A.turn_up();A.walk();A.turn_down();A.turn_down();A.walk();A.turn_up();
     }
     A.turn_right();
     A.setAuto(1);
-    Params.sleep(10000);
+        sleep(10000);
     M.stopWorld();
     M.exit();
   }
@@ -189,6 +213,7 @@ public class Test {
   /**
      Generates a random graph depending on given parameters
      for testing various algorithms.
+     * @return 
    */
   public static Cat ranGraph() {
     int seed=0;
@@ -199,7 +224,7 @@ public class Test {
     int g=0;
     int m=15;
     Cat RG=
-      Params.randomRanked(seed,v0,v,e0,e,g,m);
+        randomRanked(seed,v0,v,e0,e,g,m);
     return RG;
   }
  
@@ -213,12 +238,13 @@ public class Test {
     int r=400;
     int w=400;
     int h=400;
-    Prolog3D.drawGraph(ranGraph(),time,r,w,h);
+        drawGraph(ranGraph(),time,r,w,h);
   }
 
 
  /**
     Tests trimming algorithm on a random graph.
+     * @return 
    */
   public static ObjectStack trimtest() {   
     int time=10;  
@@ -232,7 +258,7 @@ public class Test {
     int e0=2;
     int e=4;
     
-    Cat RG=Params.randomCat(seed,v0,v,e0,e);
+    Cat RG=randomCat(seed,v0,v,e0,e);
     ObjectStack S=new ObjectStack();
     do {  
       RG.runGraphRanker();RG.markComponents();RG.rankSort();
@@ -240,13 +266,13 @@ public class Test {
       
       S.push(RG);
 
-      Prolog3D.pp("\nas saved:"+RG);
-      Prolog3D.pp("cycles="+cycles+",size="+RG.size());
+            pp("\nas saved:"+RG);
+            pp("cycles="+cycles+",size="+RG.size());
     
 
-      Prolog3D.drawGraph(RG,time,r,w,h);
+            drawGraph(RG,time,r,w,h);
       
-      RG=(Cat)RG.trim(false,Math.round(RG.size()/2));
+      RG=(Cat)RG.trim(false,round(RG.size()/2));
 
      
     } 
@@ -255,7 +281,10 @@ public class Test {
     return S;
   }
 
-  public static void treetest() {   
+    /**
+     *
+     */
+    public static void treetest() {   
     int r=400;
     int w=400;
     int h=400;
@@ -266,14 +295,14 @@ public class Test {
     int e0=4;
     int e=6;
     
-    Cat RG=Params.randomCat(seed,v0,v,e0,e);
+    Cat RG=randomCat(seed,v0,v,e0,e);
 
-    Prolog3D.pp("\nas saved:"+RG);
+        pp("\nas saved:"+RG);
     //Prolog3D.pp("cycles="+cycles+",size="+RG.size());
     
     Prolog3D M=new Prolog3D("TreeTest");
 
-    Prolog3D.drawTree(M,r,RG);
+        drawTree(M,r,RG);
 
     M.showWorld(w,h);
   }
@@ -292,7 +321,7 @@ public class Test {
     Vertex3D V=new Vertex3D(U.getWorld(),4,0,0,1,0,"colors");
     U.showWorld(w,h);
     V.setAuto(2);
-    Params.sleep(time*1000);
+        sleep(time*1000);
     U.stopWorld();
   }
 
@@ -319,10 +348,10 @@ public class Test {
       //T.setEuler(new Vector3d(0.1,0,0));
       //Sun.getGroup().setTransform(T);
       Sun.setZ(1-i/50.0);
-      Params.sleep(200);
+            sleep(200);
     }
     
-    Params.sleep(2000);
+        sleep(2000);
     M.stopWorld();
   }
   
@@ -358,13 +387,16 @@ public class Test {
    
     M.showWorld(400,400);
     M.runLayout(400);
-    Params.sleep(10000);
+        sleep(10000);
     V1.setAuto(1);
-    Params.sleep(5000);
+        sleep(5000);
     M.stopWorld();
   }
 
-  public static void dhyp() {
+    /**
+     *
+     */
+    public static void dhyp() {
     Params.bgfile="";
     Params.bgColor=new Color3f(0,0,0);
     Cat G=new Cat();
@@ -375,15 +407,18 @@ public class Test {
     G.addHyperArrow("BG->DF",new Object[]{"B","G"},new Object[]{"D","F"});
     G.addHyperArrow("FG->ABCD",new Object[]{"F","G"},new Object[]{"A","B","C","D"});
     //G.dualize();
-    Prolog3D.pp(Cat.showInfo(G));
+        pp(showInfo(G));
      
     int r=400;
     int w=600;
     int h=600;
-    Prolog3D.drawGraph(G,0,r,w,h);
+        drawGraph(G,0,r,w,h);
   }
   
-   public static void hyp0() {
+    /**
+     *
+     */
+    public static void hyp0() {
     Params.bgfile="";
     Params.bgColor=new Color3f(0,0,0);
     Cat G=new Cat();
@@ -394,15 +429,18 @@ public class Test {
     G.addHyperEdge("BCD",new Object[]{"B","C","D"});
     
     //G.dualize();
-    Prolog3D.pp(Cat.showInfo(G));
+        pp(showInfo(G));
      
     int r=400;
     int w=600;
     int h=600;
-    Prolog3D.drawGraph(G,0,r,w,h);
+        drawGraph(G,0,r,w,h);
   }
   
-  public static void hyp() {
+    /**
+     *
+     */
+    public static void hyp() {
     Params.bgfile="";
     Params.bgColor=new Color3f(0,0,0);
     Cat G=new Cat();
@@ -412,15 +450,18 @@ public class Test {
     G.addHyperEdge("CA",new Object[]{"C","A"});
     
     //G.dualize();
-    Prolog3D.pp(Cat.showInfo(G));
+        pp(showInfo(G));
      
     int r=400;
     int w=600;
     int h=600;
-    Prolog3D.drawGraph(G,0,r,w,h);
+        drawGraph(G,0,r,w,h);
   }
 
-  public static void tet() {
+    /**
+     *
+     */
+    public static void tet() {
     Prolog3D M=new Prolog3D();
     // 000 011 101 110
     double l=0.5;
@@ -439,19 +480,19 @@ public class Test {
     //MobileEdge3D ME12=M.addMobileEdge(V1,V2,"12");
     M.addControls();
     M.showWorld(400,400);
-    for(int i=0;i<5;i++) {M.setView(0,1,i+2);Params.sleep(1000);}
-    Params.sleep(10000);
+    for(int i=0;i<5;i++) {M.setView(0,1,i+2);sleep(1000);}
+        sleep(10000);
     V1.setAuto(3);
     V2.setAuto(3);
     V3.setAuto(3);
     V4.setAuto(3);
-    Params.sleep(10000);
+        sleep(10000);
     V1.setAuto(2);
     V2.setAuto(2);
     V3.setAuto(2);
     V4.setAuto(2);
     //M.runLayout(400);
-    Params.sleep(10000);
+        sleep(10000);
     M.stopWorld();
     M.exit();
   }
@@ -467,7 +508,7 @@ public class Test {
     Morph3D A=M.addMorph(shapes,"Murphy");
     M.showWorld(400,400);
     A.setAuto(1);
-    Params.sleep(10000);
+        sleep(10000);
     M.stopWorld();
   }
   
@@ -482,12 +523,13 @@ public class Test {
     C.setMorphism("one","two","dir","12");
     C.setMorphism("two","one","dir","21");
     C.setMorphism("one","two","color","blue");
-    Prolog3D.pp(Cat.showInfo(C));
-    Prolog3D.drawGraph(C,10,400,400,400);
+        pp(showInfo(C));
+        drawGraph(C,10,400,400,400);
   }
   
   /**
      Generates random number from -f to f
+     * @return 
    */
   public static float rf(float f) {
     return Params.rf(f);
@@ -699,9 +741,9 @@ class Animal extends Body implements Runnable,Serializable {
   public static boolean save(Animal A,String file) {
     try {
       FileOutputStream fs=new FileOutputStream(file);
-      ObjectOutputStream os=new ObjectOutputStream(fs);
-      os.writeObject(A);
-      os.close();
+            try (ObjectOutputStream os = new ObjectOutputStream(fs)) {
+                os.writeObject(A);
+            }
       return true;
     }
     catch(Exception e) {
@@ -712,9 +754,10 @@ class Animal extends Body implements Runnable,Serializable {
   public static Animal load(String file) {
     try {
       FileInputStream fs=new FileInputStream(file);
-      ObjectInputStream is=new ObjectInputStream(fs);
-      Animal A=(Animal)is.readObject();
-      is.close();
+      Animal A;
+            try (ObjectInputStream is = new ObjectInputStream(fs)) {
+                A = (Animal)is.readObject();
+            }
       return A;
     }
     catch(Exception e) {

@@ -3,6 +3,10 @@ package prolog3d;
 import javax.media.j3d.*;
 import javax.vecmath.*;
 import java.util.*;
+import static prolog3d.Convert.file2bgroup;
+import static prolog3d.Convert.fixMap;
+import static prolog3d.Params.ri;
+import static prolog3d.Prolog3D.pp;
 
 /**
  * A Body is a Vertex3D Agent providing individual control on a set of joints.
@@ -13,30 +17,50 @@ import java.util.*;
  */
 public class Body extends Vertex3D {
   
-  public Body(World world,String[] FileOrURLs,Object data) {
-    super(world,Convert.file2bgroup(FileOrURLs),data);
+    /**
+     *
+     * @param world
+     * @param FileOrURLs
+     * @param data
+     */
+    public Body(World world,String[] FileOrURLs,Object data) {
+    super(world,file2bgroup(FileOrURLs),data);
     
     HashMap H=null;
     try {
-      H=(HashMap)(((BranchGroup)shape).getUserData());
+      H=(HashMap)(shape.getUserData());
     }
     catch(Exception e) {
-      Prolog3D.pp("warning: not a humanoid:"+e);
+            pp("warning: not a humanoid:"+e);
     }
     
-    if(null==H) H=new HashMap();
-    else Convert.fixMap(H);
+    if(null==H) {
+        H=new HashMap();
+        } else {
+            fixMap(H);
+        }
     
     this.transforms=H;
     this.focus=null; 
   }
   
-  public Body(World world,String FileOrURL,Object data) {
+    /**
+     *
+     * @param world
+     * @param FileOrURL
+     * @param data
+     */
+    public Body(World world,String FileOrURL,Object data) {
     //this(world,toStrings(FileOrURL),data);
     this(world,new String[]{FileOrURL},data);
   }
   
-  public Body(World world,String FileOrURL) {
+    /**
+     *
+     * @param world
+     * @param FileOrURL
+     */
+    public Body(World world,String FileOrURL) {
     //this(world,toStrings(FileOrURL),data);
     this(world,new String[]{FileOrURL},FileOrURL);
   }
@@ -45,15 +69,26 @@ public class Body extends Vertex3D {
   
   private TransformGroup focus;
   
-  public boolean isAlive() {
+    /**
+     *
+     * @return
+     */
+    public boolean isAlive() {
     return !(transforms.isEmpty());
   }
  
-  public void clearTransforms() {
+    /**
+     *
+     */
+    public void clearTransforms() {
     transforms.clear();
   }
   
-  public boolean isFocused() {
+    /**
+     *
+     * @return
+     */
+    public boolean isFocused() {
     return null!=this.focus;
   }
   
@@ -64,6 +99,7 @@ public class Body extends Vertex3D {
      agent as a whole becomes the focus of the transforms -
      which is, in fact, the default behavior inherited
      from its superclass.     
+     * @return 
   */
   
   public TransformGroup getFocus() {
@@ -82,8 +118,9 @@ public class Body extends Vertex3D {
         this.focus=(TransformGroup)val;
         initFromTG(this.focus);
        }
-       else
-         this.focus=null;
+       else {
+          this.focus=null;
+            }
     }
     sleep();     
     return null!=this.focus;
@@ -95,8 +132,11 @@ public class Body extends Vertex3D {
    */
   public void transformFocus() {
     //Prolog3D.pp(this.data+"=>focus="+focus);
-    if(null==this.focus) super.transformFocus();
-    else applyTransformTo(focus);
+    if(null==this.focus) {
+        super.transformFocus();
+        } else {
+        applyTransformTo(focus);
+        }
   }
     
   public void runAuto() {
@@ -108,7 +148,7 @@ public class Body extends Vertex3D {
       super.runAuto();
       return;
     }
-    int n=Params.ri(l);
+    int n=ri(l);
     int i=0;
     while(I.hasNext()) {
       String K=(String)I.next();
@@ -123,7 +163,7 @@ public class Body extends Vertex3D {
   
   private void rotAuto() {
     //Prolog3D.pp(this.data+".focus="+this.focus);
-    int choice=Params.ri(3);
+    int choice=ri(3);
     double d=rf(0.5);
     switch(choice) {
       case 0:

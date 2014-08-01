@@ -7,12 +7,21 @@ import javax.vecmath.*;
    Plain Cube
  */
 public class Cube extends Simple {
-  public Cube() {
+
+    /**
+     *
+     */
+    public Cube() {
     super(new CubeShape());
     transformScale(defScale);
   }
 
-  public Cube(Color3f c,float t) 
+    /**
+     *
+     * @param c
+     * @param t
+     */
+    public Cube(Color3f c,float t) 
   {
     super(new CubeShape(),makeApp(c,t));
     transformScale(defScale);

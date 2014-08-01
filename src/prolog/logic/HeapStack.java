@@ -1,5 +1,11 @@
 package prolog.logic;
 
+import static java.lang.Math.abs;
+import static java.lang.System.arraycopy;
+import static java.lang.System.currentTimeMillis;
+import static prolog.logic.AtomTable.string_hash;
+import static prolog.logic.Interact.warnmes;
+
 /** The Prolog Heap.
 *<p><b>Term Representation</b>
 *<p>Terms are represented as single integers in the following format.
@@ -24,7 +30,10 @@ public class HeapStack extends Defs implements OTerm {
   /** Access to the current Prolog Shared data. */
   public Prolog prolog;
 
-  public TermConverter termReader;
+    /**
+     *
+     */
+    public TermConverter termReader;
 
   /** The heap storage. */
   protected int[] cells;
@@ -43,10 +52,18 @@ public class HeapStack extends Defs implements OTerm {
 
   /** ref/val pair used for dereferencing terms. */
   protected int xref;
-  protected int xval;
+
+    /**
+     *
+     */
+    protected int xval;
 
   //private HRef hRef = new HRef();
 
+    /**
+     *
+     */
+    
   public static final int MINSIZE = 1 << 16; // no shrinking to smaller size
 
   /**
@@ -64,19 +81,33 @@ public class HeapStack extends Defs implements OTerm {
     termReader = newTermConverter(prolog);
   }
 
-  protected TermConverter newTermConverter(Prolog prolog) {
+    /**
+     *
+     * @param prolog
+     * @return
+     */
+    protected TermConverter newTermConverter(Prolog prolog) {
     return new TermConverter(prolog, this);
   }
 
-  public static long mmTIME = 0;
+    /**
+     *
+     */
+    public static long mmTIME = 0;
   private long oneMMtime = 0;
 
-  final public void startMMtimer() {
-    oneMMtime = System.currentTimeMillis();
+    /**
+     *
+     */
+    final public void startMMtimer() {
+    oneMMtime = currentTimeMillis();
   }
 
-  final public void endMMtimer() {
-    oneMMtime = System.currentTimeMillis() - oneMMtime;
+    /**
+     *
+     */
+    final public void endMMtimer() {
+    oneMMtime = currentTimeMillis() - oneMMtime;
     mmTIME += oneMMtime;
   }
 
@@ -88,8 +119,10 @@ public class HeapStack extends Defs implements OTerm {
     //Prolog.dump("heap expanding: "+heapTop);
     int l = cells.length;
     int[] newstack = new int[l<<1];
-    if (PrologGC.trace >= 2) Prolog.dump("heap shrinking: " + (l << 1));
-    System.arraycopy(cells, 0, newstack, 0, l);
+    if (PrologGC.trace >= 2) {
+        Prolog.dump("heap shrinking: " + (l << 1));
+        }
+        arraycopy(cells, 0, newstack, 0, l);
     cells = newstack;
     endMMtimer();
   }
@@ -99,12 +132,18 @@ public class HeapStack extends Defs implements OTerm {
    */
   protected void shrink() {
     int l = cells.length;
-    if (l <= MINSIZE || heapTop << 2 >= l) return;
+    if (l <= MINSIZE || heapTop << 2 >= l) {
+        return;
+        }
     l = 1 + (heapTop << 1); //this still means shrink to 1/2 of the heap or less
-    if (heapTop < MINSIZE) l = MINSIZE;
-    if (PrologGC.trace >= 2) Prolog.dump("heap shrinking: " + l);
+    if (heapTop < MINSIZE) {
+        l = MINSIZE;
+        }
+    if (PrologGC.trace >= 2) {
+        Prolog.dump("heap shrinking: " + l);
+        }
     int[] newstack = new int[l];
-    System.arraycopy(cells, 0, newstack, 0, heapTop + 1);
+        arraycopy(cells, 0, newstack, 0, heapTop + 1);
     cells = newstack;
   }
 
@@ -112,6 +151,7 @@ public class HeapStack extends Defs implements OTerm {
   * Push a term value onto the heap. First it increments and 
   * then it assigns - this means that heapTop points to the last assigned cell
   * and that the next available cell will be at heapTop+1.
+     * @param t
   * @param term The term to be added.
   * @return The heap index of the added term.
   */
@@ -159,8 +199,10 @@ public class HeapStack extends Defs implements OTerm {
    * Pushes subarray of cells to heap
    */
   final void pushCells(int source[], int from, int arity) {
-    if (arity + heapTop >= cells.length - 1) expand();
-    System.arraycopy(source, from, cells, heapTop + 1, arity);
+    if (arity + heapTop >= cells.length - 1) {
+        expand();
+        }
+        arraycopy(source, from, cells, heapTop + 1, arity);
     heapTop += arity;
   }
 
@@ -184,17 +226,22 @@ public class HeapStack extends Defs implements OTerm {
     heapTop = heapBase; //this points to invalid data: a var can never be 0;
   }
 
-  public void destroy() {
+    /**
+     *
+     */
+    public void destroy() {
     clear();
     cells = null;
     termReader.destroy();
   }
 
-  /** Return the count of entries.*/
+  /** Return the count of entries
+     * @return .*/
   public final int getUsed() { return heapTop + 1; }
 
 
-  /** Return available heap entries.*/
+  /** Return available heap entries
+     * @return .*/
   public final int getFree() { return cells.length - heapTop - 1; }
 
   /*
@@ -209,9 +256,9 @@ public class HeapStack extends Defs implements OTerm {
   final void fullDeref() { FDEREF(); }
 
   final void FDEREF() {
-    if (isNONVAR(xref))
-      xval = xref;
-    else {
+    if (isNONVAR(xref)) {
+        xval = xref;
+        } else {
       deref();
     }
   }
@@ -225,7 +272,11 @@ public class HeapStack extends Defs implements OTerm {
     // in any case, cell[xref] contains the same thing as xval
   }
 
-  public final void deref(int xref) {
+    /**
+     *
+     * @param xref
+     */
+    public final void deref(int xref) {
     this.xref = xref;
     this.xval = xref;
     // ASSERT isVAR(xref)
@@ -239,17 +290,23 @@ public class HeapStack extends Defs implements OTerm {
     return t;
   }
 
-  public EncodedTerm encodedCopy(int t) {
+    /**
+     *
+     * @param t
+     * @return
+     */
+    public EncodedTerm encodedCopy(int t) {
     int h = heapTop;
     //Prolog.dump(heapTop+":orig to encode:"+termToString(t));
     int ct = copyTerm(t);
     //Prolog.dump(heapTop+":copy to encode:"+termToString(ct));
     EncodedTerm T;
-    if (isATOMIC(ct))
-      T = new EncodedTerm(ct);
-    else
-      T = new EncodedTerm(cells, ct, heapTop + 1);
-    //Prolog.dump("encodedTerm:"+T+"size:"+T.size()+"="+(heapTop-h));
+    if (isATOMIC(ct)) {
+        T = new EncodedTerm(ct);
+        } else {
+        T = new EncodedTerm(cells, ct, heapTop + 1);
+        //Prolog.dump("encodedTerm:"+T+"size:"+T.size()+"="+(heapTop-h));
+        }
 
     heapTop = h;
     return T;
@@ -257,7 +314,9 @@ public class HeapStack extends Defs implements OTerm {
 
   int decodedCopy(EncodedTerm T) {
     //if(T.size()==2) return T.getRef(1);
-    while (getFree() <= T.size()) expand();
+    while (getFree() <= T.size()) {
+        expand();
+        }
     //expand
     int ct = heapTop + 1;
     heapTop = T.decodeTerm(ct, cells);
@@ -267,7 +326,9 @@ public class HeapStack extends Defs implements OTerm {
   private ObjectDict varTable;
 
   final int copyTerm(int t) {
-    if (getFree() <= getUsed()) expand();
+    if (getFree() <= getUsed()) {
+        expand();
+        }
     int currentTop = heapTop;
     varTable = new ObjectDict();
 
@@ -278,7 +339,7 @@ public class HeapStack extends Defs implements OTerm {
     }
     catch (ResourceException e) {
       heapTop = currentTop;
-      Interact.warnmes("copy_term warning: recursion overflow, returned: " + prolog.S_null);
+            warnmes("copy_term warning: recursion overflow, returned: " + prolog.S_null);
       ct = prolog.G_null;
     }
     varTable = null;
@@ -286,7 +347,7 @@ public class HeapStack extends Defs implements OTerm {
     return ct;
   }
 
-  private final int xcp(int xref) throws ResourceException {
+  private int xcp(int xref) throws ResourceException {
     IntStack copyStack = new IntStack();
 
     int handle = newVar();
@@ -307,8 +368,9 @@ public class HeapStack extends Defs implements OTerm {
         xref = this.xref;
         xval = this.xval;
       }
-      else
-        xval = xref;
+      else {
+          xval = xref;
+            }
 
       // handle simple terms
 
@@ -335,7 +397,9 @@ public class HeapStack extends Defs implements OTerm {
           copyStack.push(h + i);  // where to put the copy
         }
         heapTop += arity;
-        if (heapTop + 1 >= cells.length) expand();
+        if (heapTop + 1 >= cells.length) {
+            expand();
+                }
       }
     }
     return handle;
@@ -345,24 +409,30 @@ public class HeapStack extends Defs implements OTerm {
 
     // handle variables
     if (isVAR(xval)) {
-      Integer Key = new Integer(xval);
+      Integer Key = xval;
       Object XVal = varTable.get(Key);
       Integer Val;
       if (null == XVal) {
         int newvar = newVar();
-        Val = new Integer(newvar);
+        Val = newvar;
         varTable.put(Key, Val);
       }
-      else Val = (Integer)XVal;
-      return Val.intValue();
+      else {
+          Val = (Integer)XVal;
+            }
+      return Val;
     }
 
     //handle integers
-    if (isINTEGER(xval)) return xval;
+    if (isINTEGER(xval)) {
+        return xval;
+        }
 
     // handle atoms
     int arity = GETARITY(xval);
-    if (arity == 0) return xval;
+    if (arity == 0) {
+        return xval;
+        }
 
     return 0;
   }
@@ -376,13 +446,13 @@ public class HeapStack extends Defs implements OTerm {
       h = xh(t);
     }
     catch (ResourceException e) {
-      Interact.warnmes("term_hash warning: resource overflow on very large term");
+            warnmes("term_hash warning: resource overflow on very large term");
     }
 
-    return Defs.INPUT_INT(h);
+    return INPUT_INT(h);
   }
 
-  private final int xh(int xref) throws ResourceException {
+  private int xh(int xref) throws ResourceException {
     IntStack copyStack = new IntStack();
     copyStack.push(xref);    // term to be hashed
     int hcode = 0;
@@ -399,34 +469,35 @@ public class HeapStack extends Defs implements OTerm {
         xref = this.xref;
         xval = this.xval;
       }
-      else
-        xval = xref;
+      else {
+          xval = xref;
+            }
 
       // Prolog.dump("hash_term: "+dumpCell(xval));
 
-      if (Defs.isVAR(xval)) {
+      if (  isVAR(xval)) {
         return -1;
       }
 
       int k = 0;
 
-      if (Defs.isINTEGER(xval)) {
-        k = Defs.OUTPUT_INT(xval);
+      if (  isINTEGER(xval)) {
+        k =     OUTPUT_INT(xval);
       }
-      else if (Defs.isIDENTIFIER(xval)) {
+      else if (isIDENTIFIER(xval)) {
         int arity = GETARITY(xval);
         String s = getAtomName(xval);
-        k = AtomTable.string_hash(s, arity);
+        k =     string_hash(s, arity);
         for (int i = arity; i > 0; i--) {
           copyStack.push(xref + i); // term to be hashed
         }
       }
       else {
-        Interact.warnmes("hash_term BAD TAG: " + dumpCell(xval));
+                warnmes("hash_term BAD TAG: " + dumpCell(xval));
         return -2;
       }
 
-      k = Math.abs(k);
+      k =   abs(k);
       k = k & ((1 << 29) - 1);
 
       hcode = (hcode << 4) + k;
@@ -434,15 +505,23 @@ public class HeapStack extends Defs implements OTerm {
     }
 
     hcode = hcode & ((1 << 29) - 1);
-    hcode = Math.abs(hcode);
+    hcode = abs(hcode);
     return hcode;
   }
 
-  public static final int checkDepth(int depth) throws ResourceException {
-    if (depth > Interact.RECURSION_DEPTH) throw
-         new ResourceException("recursion depth limit reached in I/O opertion, max=" + Interact.RECURSION_DEPTH);
-    else
-      return depth + 1;
+    /**
+     *
+     * @param depth
+     * @return
+     * @throws ResourceException
+     */
+    public static final int checkDepth(int depth) throws ResourceException {
+    if (depth > Interact.RECURSION_DEPTH) {
+        throw
+                new ResourceException("recursion depth limit reached in I/O opertion, max=" + Interact.RECURSION_DEPTH);
+        } else {
+        return depth + 1;
+        }
   }
 
   final String list2buf(int l, int vl) {
@@ -451,9 +530,9 @@ public class HeapStack extends Defs implements OTerm {
     while (vl == prolog.G_DOT) {
       deref(++l);
       int carVal = xval;
-      if (isINTEGER(carVal))
-        sbuf = sbuf.append((char)OUTPUT_INT(carVal));
-      else {
+      if (isINTEGER(carVal)) {
+          sbuf = sbuf.append((char)OUTPUT_INT(carVal));
+            } else {
         return null;
       }
       deref(++l);
@@ -475,7 +554,12 @@ public class HeapStack extends Defs implements OTerm {
     return r;
   }
 
-  public final String getAtomName(int getAtomName) {
+    /**
+     *
+     * @param getAtomName
+     * @return
+     */
+    public final String getAtomName(int getAtomName) {
     return prolog.atomTable.getAtomName(getAtomName);
   }
 
@@ -484,14 +568,20 @@ public class HeapStack extends Defs implements OTerm {
  */
   private String dumpCell0(int x) {
     String sbuf;
-    if (Defs.isIDENTIFIER(x))
-      sbuf = termReader.toQuoted(x) + "/" + GETARITY(x);
-    else
-      sbuf = Defs.showCell(x);
+    if (isIDENTIFIER(x)) {
+        sbuf = termReader.toQuoted(x) + "/" + GETARITY(x);
+        } else {
+        sbuf = showCell(x);
+        }
     return sbuf;
   }
 
-  public String dumpCell(int x) {
+    /**
+     *
+     * @param x
+     * @return
+     */
+    public String dumpCell(int x) {
     try {
       return dumpCell0(x);
     }
@@ -519,16 +609,31 @@ public class HeapStack extends Defs implements OTerm {
   /*  simple representation of a reference as String 
    *  overridden in Machine with a recursive printing of a term
    */
+
+    /**
+     *
+     * @param xref
+     * @return
+     */
+    
   public String termToString(int xref) {
     return cellToString(xref);
   }
 
-  public void dump() {
+    /**
+     *
+     */
+    public void dump() {
     int limit = 20;
     dump((heapTop > limit) ? (heapTop - limit) : 0, heapTop);
   }
 
-  public void dump(int from, int to) {
+    /**
+     *
+     * @param from
+     * @param to
+     */
+    public void dump(int from, int to) {
     if (Prolog.DEBUG) {
       Prolog.dump("HEAP used:" + heapTop + " max:" + cells.length);
       for (int i = from; i < to && i <= heapTop; i++) {
@@ -542,6 +647,12 @@ public class HeapStack extends Defs implements OTerm {
 
   // ITerm operations: for portable prolog to Prolog translation
 
+    /**
+     *
+     * @param ref
+     * @return
+     */
+    
   public Object toExternal(int ref) {
     try {
       return termReader.getTerm(ref, this);
@@ -551,26 +662,61 @@ public class HeapStack extends Defs implements OTerm {
     }
   }
 
-  public Object putVar(int i) throws PrologException {
+    /**
+     *
+     * @param i
+     * @return
+     * @throws PrologException
+     */
+    public Object putVar(int i) throws PrologException {
     return new Var(i);
   }
-  public Object putConst(String c) {
+
+    /**
+     *
+     * @param c
+     * @return
+     */
+    public Object putConst(String c) {
     return c;
   }
 
-  public Object putInt(int i) {
-    return new Integer(i);
+    /**
+     *
+     * @param i
+     * @return
+     */
+    public Object putInt(int i) {
+    return i;
   }
 
-  public Object putFun(String f, Object[] args) {
+    /**
+     *
+     * @param f
+     * @param args
+     * @return
+     */
+    public Object putFun(String f, Object[] args) {
     return new Fun(f, args);
   }
 
-  public Object putFloat(double d) {
-    return new Double(d);
+    /**
+     *
+     * @param d
+     * @return
+     */
+    public Object putFloat(double d) {
+    return d;
   }
 
-  public int getTerm(Object t, ITerm I) throws PrologException {
+    /**
+     *
+     * @param t
+     * @param I
+     * @return
+     * @throws PrologException
+     */
+    public int getTerm(Object t, ITerm I) throws PrologException {
     throw new SystemException("unexpected/unimplemented getTerm in HeapStack");
   }
 } // End class HeapStack

@@ -62,16 +62,34 @@ import javax.media.j3d.*;
 import javax.vecmath.*;
 import com.sun.j3d.utils.behaviors.mouse.*;
 import com.sun.j3d.utils.universe.*;
+import static com.sun.j3d.utils.universe.SimpleUniverse.getPreferredConfiguration;
+import static java.awt.print.PrinterJob.getPrinterJob;
 
 import java.io.*;
+import static java.lang.Math.min;
 import javax.imageio.*;
+import static javax.imageio.ImageIO.write;
+import static javax.swing.JPopupMenu.setDefaultLightWeightPopupEnabled;
+import static prolog3d.Prolog3D.pp;
 
+/**
+ *
+ * @author Brad
+ */
 public class PrintCanvas3D extends JFrame implements ActionListener {
 
-  
-  public static void print(BranchGroup b,int w,int h) {
-    if(null!=b) new PrintCanvas3D(b,w,h);
-    else Prolog3D.pp("error: nothing to print!!!");
+    /**
+     *
+     * @param b
+     * @param w
+     * @param h
+     */
+    public static void print(BranchGroup b,int w,int h) {
+    if(null!=b) {
+        new PrintCanvas3D(b,w,h);
+        } else {
+            pp("error: nothing to print!!!");
+        }
   }
   
   private JMenuItem snapshotItem;
@@ -89,7 +107,7 @@ public class PrintCanvas3D extends JFrame implements ActionListener {
  
     // Create Canvas3D
     GraphicsConfiguration config =
-      SimpleUniverse.getPreferredConfiguration();
+        getPreferredConfiguration();
 
     canvas3D = new Canvas3D(config);
     canvas3D.setSize(w, h);
@@ -131,7 +149,10 @@ public class PrintCanvas3D extends JFrame implements ActionListener {
     }
   }
 
-  public static int image_cnt=0;
+    /**
+     *
+     */
+    public static int image_cnt=0;
   
   public void actionPerformed (ActionEvent event) {
     Object target = event.getSource();
@@ -151,24 +172,33 @@ public class PrintCanvas3D extends JFrame implements ActionListener {
     }
   }
 
-  public void stop() {
-    Prolog3D.pp("stopping PrintCanvas");
+    /**
+     *
+     */
+    public void stop() {
+        pp("stopping PrintCanvas");
     u.removeAllLocales();
     dispose();
     //Prolog3D.stopWorld();
-    Prolog3D.pp("stopped PrintCanvas");
+        pp("stopped PrintCanvas");
   }
   
   static void image2file(BufferedImage bImage,String fname) {
     try {
-      ImageIO.write(bImage, "png", new File(fname));
+            write(bImage, "png", new File(fname));
       //buggy ImageIO.write(bImage, "JPEG", new File("image.jpg"));
     }
     catch(IOException e) {
     }  
   }
 
-  public static void canvas2file(Canvas3D c,OffScreenCanvas3D o,String fname) {
+    /**
+     *
+     * @param c
+     * @param o
+     * @param fname
+     */
+    public static void canvas2file(Canvas3D c,OffScreenCanvas3D o,String fname) {
     image2file(makeImage(c,o),fname);
   }
   
@@ -204,7 +234,7 @@ public class PrintCanvas3D extends JFrame implements ActionListener {
     this.setTitle("Canvas3D Printer");
 
     // Create and initialize menu bar
-    JPopupMenu.setDefaultLightWeightPopupEnabled(false);
+        setDefaultLightWeightPopupEnabled(false);
     this.setJMenuBar(createMenuBar());
 
     // Handle the close event
@@ -265,9 +295,9 @@ class ImagePrinter implements Printable, ImageObserver {
     //g2d.translate(pf.getImageableX(), pf.getImageableY());
     AffineTransform t2d = new AffineTransform();
     t2d.translate(pf.getImageableX(), pf.getImageableY());
-    double xscale  = pf.getImageableWidth() / (double)bImage.getWidth();
-    double yscale  = pf.getImageableHeight() / (double)bImage.getHeight();
-    double scale = Math.min(xscale, yscale);
+    double xscale  = pf.getImageableWidth() / bImage.getWidth();
+    double yscale  = pf.getImageableHeight() / bImage.getHeight();
+    double scale = min(xscale, yscale);
     t2d.scale(scale, scale);
     try {
       g2d.drawImage(bImage,t2d, this);
@@ -280,7 +310,7 @@ class ImagePrinter implements Printable, ImageObserver {
   }
 
   void print() {
-    PrinterJob printJob = PrinterJob.getPrinterJob();
+    PrinterJob printJob = getPrinterJob();
     PageFormat pageFormat = printJob.defaultPage();
     pageFormat.setOrientation(PageFormat.LANDSCAPE);
     pageFormat = printJob.validatePage(pageFormat);

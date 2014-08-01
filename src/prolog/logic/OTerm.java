@@ -5,10 +5,50 @@ package prolog.logic;
  * in particular, it allows interoperation with Kernel Prolog interpreter
  */
 public interface OTerm {
-  public Object putVar(int i) throws PrologException;
-  public Object putConst(String c);
-  public Object putInt(int i) ;
-  public Object putFun(String f,Object[] args);
-  public Object putFloat(double d);
-  public int getTerm(Object t,ITerm I) throws PrologException;
+
+    /**
+     *
+     * @param i
+     * @return
+     * @throws PrologException
+     */
+    public Object putVar(int i) throws PrologException;
+
+    /**
+     *
+     * @param c
+     * @return
+     */
+    public Object putConst(String c);
+
+    /**
+     *
+     * @param i
+     * @return
+     */
+    public Object putInt(int i);
+
+    /**
+     *
+     * @param f
+     * @param args
+     * @return
+     */
+    public Object putFun(String f,Object[] args);
+
+    /**
+     *
+     * @param d
+     * @return
+     */
+    public Object putFloat(double d);
+
+    /**
+     *
+     * @param t
+     * @param I
+     * @return
+     * @throws PrologException
+     */
+    public int getTerm(Object t,ITerm I) throws PrologException;
 }

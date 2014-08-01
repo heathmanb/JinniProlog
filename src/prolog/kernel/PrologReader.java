@@ -2,6 +2,13 @@ package prolog.kernel;
 
 import prolog.logic.*;
 import java.io.*;
+import static java.lang.Character.isWhitespace;
+import static prolog.kernel.JavaIO.getStdInput;
+import static prolog.kernel.JavaIO.println;
+import static prolog.kernel.JavaIO.println;
+import static prolog.kernel.Top.get_verbosity;
+import static prolog.logic.Defs.INPUT_INT;
+import static prolog.logic.Interact.warnmes;
 
 class GenericReader extends LineNumberReader {
 
@@ -15,23 +22,23 @@ class GenericReader extends LineNumberReader {
     }
 
     public GenericReader() {
-        super(JavaIO.getStdInput());
+        super(getStdInput());
     }
 
     private static InputStreamReader tryEncoding(InputStream inputStream, String encoding) {
         int min_verbosity = 5;
         try {
-            if (Top.get_verbosity() >= min_verbosity) {
-                JavaIO.println(
+            if (get_verbosity() >= min_verbosity) {
+                println(
                         "old default char encoding=" + new InputStreamReader(inputStream).getEncoding());
             }
             InputStreamReader reader = new InputStreamReader(inputStream, encoding);
-            if (Top.get_verbosity() >= min_verbosity) {
-                JavaIO.println("new default char encoding=" + reader.getEncoding());
+            if (get_verbosity() >= min_verbosity) {
+                println("new default char encoding=" + reader.getEncoding());
             }
             return reader;
         } catch (UnsupportedEncodingException e) { // use default if it fails
-            JavaIO.warnmes("unable to use character encoding: " + encoding);
+            warnmes("unable to use character encoding: " + encoding);
             return new InputStreamReader(inputStream);
         }
     }
@@ -43,13 +50,24 @@ class GenericReader extends LineNumberReader {
  */
 public class PrologReader extends GenericReader implements Stateful {
 
+    /**
+     *
+     */
     public static final int EOF = -1;
     private static final char NL = JavaIO.XNL;
 
+    /**
+     *
+     * @param inputStream
+     */
     public PrologReader(InputStream inputStream) {
         super(inputStream);
     }
 
+    /**
+     *
+     * @param reader
+     */
     public PrologReader(Reader reader) {
         super(reader);
     }
@@ -68,6 +86,10 @@ public class PrologReader extends GenericReader implements Stateful {
         }
     }
 
+    /**
+     *
+     * @return
+     */
     public final String readln() {
         try {
             return readLine();
@@ -79,21 +101,34 @@ public class PrologReader extends GenericReader implements Stateful {
         }
     }
 
+    /**
+     *
+     * @param M
+     * @return
+     * @throws PrologException
+     */
     public int get(Machine M) throws PrologException { // M not really used here
         int ires = read();
         if (EOF == ires) {
             atEOF();
             return 0;
         } else {
-            return Defs.INPUT_INT(ires);
+            return INPUT_INT(ires);
         }
     }
 
+    /**
+     *
+     * @param M
+     */
     public void stop(Machine M) {
         fclose();
         M.removeObject(this);
     }
 
+    /**
+     *
+     */
     public void fclose() {
         //if(this!=M.stdInput())
         try {
@@ -104,11 +139,19 @@ public class PrologReader extends GenericReader implements Stateful {
         }
     }
 
+    /**
+     *
+     * @return
+     */
     public String atEOF() {
         fclose();
         return null;
     }
 
+    /**
+     *
+     * @return
+     */
     public String nextClauseString() {
         int last = ' ';
         int next = read();
@@ -132,9 +175,9 @@ public class PrologReader extends GenericReader implements Stateful {
             } else if ('.' == last
                     && !inLineComment && !inBlocComment
                     && !inSingleQuoted && !inDoubleQuoted) {
-                if (Character.isWhitespace((char) next)) {
+                if (isWhitespace((char) next)) {
                     break;
-                } else if ('.' == (char) next) {
+                } else if ('.' == next) {
                     s.append((char) last);
                     s.append((char) next);
                     last = next;
@@ -184,7 +227,7 @@ public class PrologReader extends GenericReader implements Stateful {
             if (inBlocComment || inLineComment) {
                 continue;
             }
-            if (!Character.isWhitespace((char) last)) {
+            if (!isWhitespace((char) last)) {
                 hasContent = true;
             }
             s.append((char) last);
@@ -196,9 +239,14 @@ public class PrologReader extends GenericReader implements Stateful {
         return s.toString().trim();
     }
 
+    /**
+     *
+     * @param message
+     * @return
+     */
     public String readError(String message) {
         atEOF();
-        Interact.warnmes(message);
+        warnmes(message);
         return null;
     }
 }

@@ -1,5 +1,7 @@
 package jgp;
 
+import static java.lang.Math.max;
+import static java.lang.Thread.sleep;
 import prolog.core.Cat;
 import prolog.logic.Stateful;
 import prolog.logic.Fun;
@@ -9,7 +11,9 @@ import prolog.kernel.*;
 import prolog.core.*;
 import rli.RLIAdaptor;
 import java.math.*;
+import static java.math.BigInteger.valueOf;
 import java.util.Random;
+import static rli.RLIAdaptor.rli_call;
 
 /**
  * Top GP class: creates a world in which evolving individuals seek a minimal
@@ -21,6 +25,7 @@ public class SynWorld extends BigMath implements Runnable,Stateful {
 
   /**
    * Static constructor call with exception catching.
+     * @return 
    */
   public static SynWorld makeWorld() {
     try {
@@ -41,13 +46,19 @@ public class SynWorld extends BigMath implements Runnable,Stateful {
     this(ranbig(evaluator.getNvars()),evaluator);
   }
 
-  public SynWorld(BigInteger model,Eval evaluator){
+    /**
+     *
+     * @param model
+     * @param evaluator
+     */
+    public SynWorld(BigInteger model,Eval evaluator){
     this(model,evaluator,new HammingDist());
   }
 
   /**
    * Creates a new GPWorld. If needed, parmeters can be set after this but
    * should be set before calling run().
+     * @param distEval
    */
   public SynWorld(BigInteger model,Eval evaluator,DistEval distEval){
     this.model=model;
@@ -58,14 +69,26 @@ public class SynWorld extends BigMath implements Runnable,Stateful {
     this.maxsteps=(n<64)?(1L<<n):Long.MAX_VALUE;
   }
 
-  public static BigInteger ranbig(int nvars) {
+    /**
+     *
+     * @param nvars
+     * @return
+     */
+    public static BigInteger ranbig(int nvars) {
     return new BigInteger(1<<nvars,rand);
   }
 
   // public static Random rand = prolog.logic.Tools.getRandom();
-  public static Random rand=new Random();
 
-  public static int vtrace=2;
+    /**
+     *
+     */
+      public static Random rand=new Random();
+
+    /**
+     *
+     */
+    public static int vtrace=2;
 
   /**
    * number of "ur-elements" interpreted as independent variables
@@ -88,15 +111,19 @@ public class SynWorld extends BigMath implements Runnable,Stateful {
    */
   final protected BigInteger model;
 
-  final protected Eval evaluator;
+    /**
+     *
+     */
+    final protected Eval evaluator;
 
   /**
    * starts a GPWorld as a Thread
    */
   public static void run_bg() {
     Runnable R=makeWorld();
-    if(null==R)
-      return;
+    if(null==R) {
+        return;
+        }
     Thread T=new Thread(R,"GPThread");
     T.start();
   }
@@ -106,19 +133,22 @@ public class SynWorld extends BigMath implements Runnable,Stateful {
    */
   public static void run_fg() {
     Runnable R=makeWorld();
-    if(null!=R)
-      R.run();
+    if(null!=R) {
+        R.run();
+        }
   }
 
   /**
    * Implements an evolution cycle, starting by creating a few root individuals
    * and then applying randomly evolution steps to random individuals.
+     * @return 
    */
   public BigInteger evolve() {
     for(long steps=0;steps<maxsteps;steps++) {
-      BigInteger B=BigInteger.valueOf(steps);
-      if(model.equals(evaluator.eval(B)))
-        return B;
+      BigInteger B=valueOf(steps);
+      if(model.equals(evaluator.eval(B))) {
+          return B;
+            }
       showProgress(steps);
     }
 
@@ -135,55 +165,85 @@ public class SynWorld extends BigMath implements Runnable,Stateful {
     try {
       showParams();
       BigInteger B=evolve();
-      if(null!=B)
-        show(B);
-      else
-        System.out.println("SEARCH UNSUCCESSFUL AFTER steps="+maxsteps);
+      if(null!=B) {
+          show(B);
+            } else {
+          System.out.println("SEARCH UNSUCCESSFUL AFTER steps="+maxsteps);
+            }
     } catch(Exception e) {
       e.printStackTrace();
     }
   }
 
-  public void show(BigInteger B) {
+    /**
+     *
+     * @param B
+     */
+    public void show(BigInteger B) {
     System.out.println("\n! FOUND PERFECT at step="+B);
-    if(vtrace>1)
-      rshow(B);
+    if(vtrace>1) {
+        rshow(B);
+        }
   }
 
-  public void showParams() {
+    /**
+     *
+     */
+    public void showParams() {
     System.out.println("PARAMS:"+"nvars="+nvars+",npower="+npower+",maxsteps="
         +maxsteps+"\n");
     System.out.println("VARS:\n"+evaluator.showVars());
   }
 
-  public void showProgress(long steps) {
-    if(times(steps))
-      System.out.println("Steps:"+steps);
+    /**
+     *
+     * @param steps
+     */
+    public void showProgress(long steps) {
+    if(times(steps)) {
+        System.out.println("Steps:"+steps);
+        }
   }
 
   boolean times(long steps) {
-    long each=10000*(1<<Math.max(3,nvars));
+    long each=10000*(1<<max(3,nvars));
     return steps%each==0;
   }
 
-  public void rshow(BigInteger B) {
+    /**
+     *
+     * @param B
+     */
+    public void rshow(BigInteger B) {
     int ccount=2;
     System.out.println("!!!:"+B+"=>\n"+evaluator.toExpr(B));
     rshow(nvars+ccount,evaluator.getArity(),B);
   }
 
-  public static void rshow(int maxur,int arity,BigInteger B) {
+    /**
+     *
+     * @param maxur
+     * @param arity
+     * @param B
+     */
+    public static void rshow(int maxur,int arity,BigInteger B) {
     Cat C=bigint2cat(maxur,arity,B);
     rshow(C);
 
   }
 
-  public static void rshow(Cat C) {
-    if(null==C) return;
+    /**
+     *
+     * @param C
+     */
+    public static void rshow(Cat C) {
+    if(null==C) {
+        return;
+        }
     Fun G=new Fun("rshow",C);
-    RLIAdaptor.rli_call("localhost","renoir",G);
+        rli_call("localhost","renoir",G);
     try {
-      Thread.sleep(2000);
+            sleep(2000);
     } 
     catch(Exception e) {
     }

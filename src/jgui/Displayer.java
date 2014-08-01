@@ -8,17 +8,39 @@ import javax.swing.text.*;
 import javax.swing.text.html.*;
 import java.io.StringReader;
 import java.io.IOException;
+import static java.lang.Math.max;
+import static jgui.Start.invokeLater;
 
 import prolog.logic.Prolog;
 import prolog.kernel.TextSink;
 import prolog.kernel.Machine;
 
+/**
+ *
+ * @author Brad
+ */
 public class Displayer extends JScrollPane implements TextSink,ComponentListener {
-  public static final int minH=20;
-  public static final int minW=80;
-  public static int max_display=600;
+
+    /**
+     *
+     */
+    public static final int minH=20;
+
+    /**
+     *
+     */
+    public static final int minW=80;
+
+    /**
+     *
+     */
+    public static int max_display=600;
   
-  public static void set_max_display(int max) {
+    /**
+     *
+     * @param max
+     */
+    public static void set_max_display(int max) {
      max_display=3*max;
   }
   
@@ -45,7 +67,15 @@ public class Displayer extends JScrollPane implements TextSink,ComponentListener
     //#smartResize(paneScrollPane,textPane,0,0);
   }
   
-  public static Dimension smartResize(JComponent P,JComponent C,double dh,double dw) {
+    /**
+     *
+     * @param P
+     * @param C
+     * @param dh
+     * @param dw
+     * @return
+     */
+    public static Dimension smartResize(JComponent P,JComponent C,double dh,double dw) {
     Dimension D=P.getSize();
     Dimension MD=C.getMinimumSize();
     
@@ -55,8 +85,8 @@ public class Displayer extends JScrollPane implements TextSink,ComponentListener
     w-=(int)(w*dw);
     h-=(int)(h*dh);
     
-    h=Math.max(h,MD.height);
-    w=Math.max(w,MD.width);
+    h=  max(h,MD.height);
+    w=  max(w,MD.width);
     
     C.setMaximumSize(D);
     
@@ -71,56 +101,72 @@ public class Displayer extends JScrollPane implements TextSink,ComponentListener
     return D;
   }
 
-  public void setText(final String s) {
+    /**
+     *
+     * @param s
+     */
+    public void setText(final String s) {
     //System.err.println(this.hashCode()+"Displayer.setText:"+s);
     set_text(s);
   }
   
-  public String getText() {
+    /**
+     *
+     * @return
+     */
+    public String getText() {
     return get_text();
   }
   
-  private final void set_text0(final String s) {
+  private void set_text0(final String s) {
     this.textPane.setText(s);
   }
   
-  public void set_text(final String s) {
-    Start.invokeLater(new Runnable(){
-      public void run() {
-        set_text0(s);
-      }
-    });
+    /**
+     *
+     * @param s
+     */
+    public void set_text(final String s) {
+        invokeLater(() -> {
+            set_text0(s);
+        });
     
     scrollPaneToBottom();
   }
 
-  public String get_text() {
+    /**
+     *
+     * @return
+     */
+    public String get_text() {
     return textPane.getText();
   }
 
   ////  
   private int append_count=0;
   
-  public void append_text(final String s) {
+    /**
+     *
+     * @param s
+     */
+    public void append_text(final String s) {
    
-    Start.invokeLater(new Runnable(){
-      public void run() {
-        ++append_count;
-        if(append_count > max_display) {
-          append_count=0;
-          set_text0(s);
-        }
-        else {
-          append_text0(s);
-        }
-      }
-    });
+        invokeLater(() -> {
+            ++append_count;
+            if(append_count > max_display) {
+                append_count=0;
+                set_text0(s);
+            }
+            else {
+                append_text0(s);
+            }
+        });
     
     scrollPaneToBottom();
     
   }
   
-  private final void append_text0(String s) {
+  private void append_text0(String s) {
     try {
       if("text/plain".equals(textPane.getContentType())) {
         Document doc=textPane.getDocument();
@@ -128,45 +174,50 @@ public class Displayer extends JScrollPane implements TextSink,ComponentListener
       } else {
         appendHTML(textPane,s);
       }
-    } catch(BadLocationException e) {
-      e.printStackTrace();
-    } catch(IOException e) {
+    } catch(BadLocationException | IOException e) {
       e.printStackTrace();
     }
   }
 
-  private final void scroll0() {
+  private void scroll0() {
     getVerticalScrollBar().setValue(
         getVerticalScrollBar().getMaximum());
   }
   
   ////
   private void scrollPaneToBottom() {
-    Start.invokeLater(new Runnable(){
-      public void run() {
-        scroll0();
-      }
-    });
+        invokeLater(this::scroll0);
   }
 
-  public Displayer(final int width,final int height){
+    /**
+     *
+     * @param width
+     * @param height
+     */
+    public Displayer(final int width,final int height){
     this(width,height,"text/html");
   }
  
-  public Displayer(final int w,final int h,String contentType){
+    /**
+     *
+     * @param w
+     * @param h
+     * @param contentType
+     */
+    public Displayer(final int w,final int h,String contentType){
     super();
     this.textPane=makeTextPane(w,h,contentType);
     setViewportView(textPane);
-    int mw=Math.max(w,minW);
-    int mh=Math.max(h,minH);
+    int mw=max(w,minW);
+    int mh=max(h,minH);
     this.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
     this.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
     setDims(mw,mh);
   }
 
   private static JEditorPane makeTextPane(int w,int h,String contentType) {
-    int mw=Math.max(w,minW);
-    int mh=Math.max(h,minH);
+    int mw=max(w,minW);
+    int mh=max(h,minH);
     JEditorPane textPane=new JEditorPane();
     textPane.setMinimumSize(new Dimension(minW,minH));
     textPane.setPreferredSize(new Dimension(mw,mh));
@@ -176,7 +227,12 @@ public class Displayer extends JScrollPane implements TextSink,ComponentListener
     return textPane;
   }
   
-  public void setDims(int w,int h) {
+    /**
+     *
+     * @param w
+     * @param h
+     */
+    public void setDims(int w,int h) {
     setMinimumSize(new Dimension(10+minW,10+minH));
     Dimension D=new Dimension(w,h);
     setPreferredSize(D);
@@ -215,12 +271,22 @@ public class Displayer extends JScrollPane implements TextSink,ComponentListener
    * StyleConstants.setAlignment(s,StyleConstants.ALIGN_CENTER); }
    */
 
-  
-  public void test_text() {
+    /**
+     *
+     */
+    public void test_text() {
     set_text(sampleText);
   }
 
-  public static Displayer showText(final String title,final String initialText,
+    /**
+     *
+     * @param title
+     * @param initialText
+     * @param w
+     * @param h
+     * @return
+     */
+    public static Displayer showText(final String title,final String initialText,
       final int w,final int h) {
 
     JFrame frame=new JFrame(title);
@@ -241,22 +307,38 @@ public class Displayer extends JScrollPane implements TextSink,ComponentListener
     return displayer;
   }
 
-  public static Displayer showText(String initialText) {
+    /**
+     *
+     * @param initialText
+     * @return
+     */
+    public static Displayer showText(String initialText) {
     String title="Prolog Display Agent";
     return showText(title,initialText,640,400);
   }
 
-  public static Displayer showText() {
+    /**
+     *
+     * @return
+     */
+    public static Displayer showText() {
     return showText(sampleText);
   }
 
-  public static String sampleText="<html>\n"+"Color and font test:\n"+"<ul>\n"
+    /**
+     *
+     */
+    public static String sampleText="<html>\n"+"Color and font test:\n"+"<ul>\n"
       +"<li><font color=red>red</font>\n"+"<li><font color=blue>blue</font>\n"
       +"<li><font color=green>green</font>\n"
       +"<li><font size=-2>small</font>\n"+"<li><font size=+2>large</font>\n"
       +"<li><i>italic</i>\n"+"<li><b>bold</b>\n"+"</ul>\n"+"</html>\n";
 
-  public static void main(String[] args) {
+    /**
+     *
+     * @param args
+     */
+    public static void main(String[] args) {
     System.err.println("testing Displayer");
     showText();
   }

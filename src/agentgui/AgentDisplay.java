@@ -9,7 +9,15 @@ import prolog.kernel.*;
 import prolog.core.*;
 import jgui.*;
 
+/**
+ *
+ * @author Brad
+ */
 public class AgentDisplay extends PrologAdaptor {
+
+    /**
+     *
+     */
     public static int instance=0;
     
 	private VFrame vframe;
@@ -18,11 +26,24 @@ public class AgentDisplay extends PrologAdaptor {
 	private int x,y,dx,dy;
 	private int age;
 	
-	public AgentDisplay(VFrame vframe) {
+    /**
+     *
+     * @param vframe
+     */
+    public AgentDisplay(VFrame vframe) {
 	   this(vframe,"vDisplay"+ (++instance),600+10*instance,10*instance,400,400);
 	}
 	
-	public AgentDisplay(VFrame vframe,String port,int x,int y,int dx,int dy) {
+    /**
+     *
+     * @param vframe
+     * @param port
+     * @param x
+     * @param y
+     * @param dx
+     * @param dy
+     */
+    public AgentDisplay(VFrame vframe,String port,int x,int y,int dx,int dy) {
 		this.vframe=vframe;
 		this.port=port;
 		this.x=x;
@@ -33,7 +54,10 @@ public class AgentDisplay extends PrologAdaptor {
 		this.frame=null;
 	}
 
-	public void create() {
+    /**
+     *
+     */
+    public void create() {
       this.frame=new InnerFrame(port,x,y,dx,dy);
       vframe.addInnerFrame(frame);
       

@@ -20,6 +20,12 @@ import java.awt.event.*;
 
 import java.applet.*;
 import java.io.File;
+import static jgui.Start.invokeLater;
+import static jgui.Start.setLooks;
+import static prolog.kernel.Machine.sleep_ms;
+import static prolog.logic.Interact.errmes;
+import static prolog.logic.Interact.println;
+import static prolog.logic.Interact.warnmes;
 
 /**
   Provides builtins for GUI programs.
@@ -27,18 +33,34 @@ import java.io.File;
 */
 public class Start implements Stateful {
 
-  public static long thread_wait=10;
+    /**
+     *
+     */
+    public static long thread_wait=10;
   
-  public static void  set_thread_wait(long time) {
+    /**
+     *
+     * @param time
+     */
+    public static void  set_thread_wait(long time) {
     thread_wait=time;
   }
   
-  public static void main(String[] args) {
+    /**
+     *
+     * @param args
+     */
+    public static void main(String[] args) {
     System.out.println("start this from prolog");
   }
 
   //// ????
-  public static final void invokeLater(Runnable R) {
+
+    /**
+     *
+     * @param R
+     */
+      public static final void invokeLater(Runnable R) {
     //System.err.println("invoking from Thread:"+Thread.currentThread());
     //prolog.kernel.Machine.sleep_ms(10);
     //Hub.enter_critical();
@@ -47,47 +69,110 @@ public class Start implements Stateful {
       SwingUtilities.invokeLater(R);
     }
     catch(Exception e) {
-      Interact.errmes("error in invokeLater=>"+R,e);
+            errmes("error in invokeLater=>"+R,e);
     }
     //(new Thread(R,"LaterThread")).start();
     //Hub.exit_critical();
-    if(thread_wait>0) prolog.kernel.Machine.sleep_ms(thread_wait);
+    if(thread_wait>0) {
+            sleep_ms(thread_wait);
+        }
   }
   
-  public static int defX=480;
-  public static int defY=640;
-  public static int defRows=12;
-  public static int defCols=24;
-  public static int gapX=2;
-  public static int gapY=2;
+    /**
+     *
+     */
+    public static int defX=480;
+
+    /**
+     *
+     */
+    public static int defY=640;
+
+    /**
+     *
+     */
+    public static int defRows=12;
+
+    /**
+     *
+     */
+    public static int defCols=24;
+
+    /**
+     *
+     */
+    public static int gapX=2;
+
+    /**
+     *
+     */
+    public static int gapY=2;
   
-  public static String defaultFontName="Default";
-  public static int defaultFontSize=12;
-  public static int defaultFontStyle=Font.PLAIN;
-  public static Color defaultFgColor=null;
-  public static Color defaultBgColor=null;
+    /**
+     *
+     */
+    public static String defaultFontName="Default";
+
+    /**
+     *
+     */
+    public static int defaultFontSize=12;
+
+    /**
+     *
+     */
+    public static int defaultFontStyle=Font.PLAIN;
+
+    /**
+     *
+     */
+    public static Color defaultFgColor=null;
+
+    /**
+     *
+     */
+    public static Color defaultBgColor=null;
 
   private static Font defaultFont=
       new Font(defaultFontName,defaultFontSize,defaultFontSize);
   
-  public static void setColors(JComponent C) {
+    /**
+     *
+     * @param C
+     */
+    public static void setColors(JComponent C) {
     to_default_fg(C);
     to_default_bg(C);
   }
 
-  public static void setFonts(JComponent C) {
+    /**
+     *
+     * @param C
+     */
+    public static void setFonts(JComponent C) {
     to_default_font(C);
   }
 
-  public static void setLooks(JComponent C) {
+    /**
+     *
+     * @param C
+     */
+    public static void setLooks(JComponent C) {
     setFonts(C);
     setColors(C);
   }
 
-  public Start() {
+    /**
+     *
+     */
+    public Start() {
   }
   
-  public static void stopComponent(JComponent C) {
+    /**
+     *
+     * @param C
+     */
+    public static void stopComponent(JComponent C) {
     if(C instanceof JinniButton) {
       JinniButton B=(JinniButton)C;
       B.stop();
@@ -101,47 +186,88 @@ public class Start implements Stateful {
   }
   */
 
-  
-  public static void set_font_name(String name) {
+    /**
+     *
+     * @param name
+     */
+    public static void set_font_name(String name) {
     if(!name.equals(defaultFontName)) {
       defaultFontName=name;
       defaultFont=new Font(name,defaultFontStyle,defaultFontSize);
     }
   }
   
-  public static void set_font_size(int size) {
+    /**
+     *
+     * @param size
+     */
+    public static void set_font_size(int size) {
     defaultFontSize=size;
     defaultFont=new Font(defaultFontName,defaultFontStyle,size);
   }
   
-  public static void inc_font_size(int size) {
+    /**
+     *
+     * @param size
+     */
+    public static void inc_font_size(int size) {
     size+=defaultFontSize;
     set_font_size(size);
   }
   
-  public static void set_font_style(String s) {
+    /**
+     *
+     * @param s
+     */
+    public static void set_font_style(String s) {
     int style=defaultFontStyle;
-    if("plain".equals(s)) style=Font.PLAIN;
-    else if("bold".equals(s)) style=Font.BOLD;
-    else if("italic".equals(s)) style=Font.ITALIC;    
+    if( null != s) switch (s) {
+            case "plain":{
+                style=Font.PLAIN;    
+                }
+                break;
+            case "bold":{
+                style=Font.BOLD;
+                }
+                break;
+            case "italic":{
+                style=Font.ITALIC;
+                }
+                break;
+        }    
     if(defaultFontStyle!=style) {
       defaultFontStyle=style;
       defaultFont=new Font(defaultFontName,style,defaultFontSize);
     }
   }
   
-   
-  public static void to_default_font(JComponent C) {
+    /**
+     *
+     * @param C
+     */
+    public static void to_default_font(JComponent C) {
     C.setFont(defaultFont);
   }
     
-  public static void to_default_fg(JComponent C) {
-    if(null==defaultFgColor) return;
+    /**
+     *
+     * @param C
+     */
+    public static void to_default_fg(JComponent C) {
+    if(null==defaultFgColor) {
+        return;
+        }
     C.setForeground(defaultFgColor);
   }
 
-  public static void to_default_bg(JComponent C) {
-    if(null==defaultBgColor) return;
+    /**
+     *
+     * @param C
+     */
+    public static void to_default_bg(JComponent C) {
+    if(null==defaultBgColor) {
+        return;
+        }
     C.setBackground(defaultBgColor);
   }
 
@@ -155,40 +281,73 @@ public class Start implements Stateful {
   }
   */
 
+    /**
+     *
+     * @param r
+     * @param g
+     * @param b
+     */
+    
+
   public static void set_fg_color(double r,double g,double b) {
     defaultFgColor=new_color(r,g,b);
   }
 
-  public static void set_bg_color(double r,double g,double b) {
+    /**
+     *
+     * @param r
+     * @param g
+     * @param b
+     */
+    public static void set_bg_color(double r,double g,double b) {
     defaultBgColor=new_color(r,g,b);
   }
 
-  public static LayoutManager to_layout(String name,int x,int y) {
+    /**
+     *
+     * @param name
+     * @param x
+     * @param y
+     * @return
+     */
+    public static LayoutManager to_layout(String name,int x,int y) {
     LayoutManager M=null;
     
-    if(name.equals("grid")) {
-      M=new GridLayout(x,y,gapX,gapY);
-    }
-    else if(name.equals("border")) {
-      M=new BorderLayout();
-    }
-    else if(name.equals("card")) {
-      M=new CardLayout();
-    }
-    else if(name.equals("flow")) {
-      M=new FlowLayout();
-    }
-    else {
-      JavaIO.warnmes("unknown layout: "+name);
-      M=new FlowLayout();
-    }
+        switch (name) {
+            case "grid":
+                M=new GridLayout(x,y,gapX,gapY);
+                break;
+            case "border":
+                M=new BorderLayout();
+                break;
+            case "card":
+                M=new CardLayout();
+                break;
+            case "flow":
+                M=new FlowLayout();
+                break;
+            default:
+                warnmes("unknown layout: "+name);
+                M=new FlowLayout();
+                break;
+        }
     return M;
   }
   
   ////
-  synchronized public static JinniFrame new_frame(String title,String layout,
+
+    /**
+     *
+     * @param title
+     * @param layout
+     * @param x
+     * @param y
+     * @param kind
+     * @return
+     */
+      synchronized public static JinniFrame new_frame(String title,String layout,
                                      int x,int y,int kind) {
-    LayoutManager L=Start.to_layout(layout,x,y); // more work to decode grid - etc.
+    LayoutManager L=to_layout(layout,x,y); // more work to decode grid - etc.
     JinniFrame F=new JinniFrame(title,L,kind);
     return F;
   }
@@ -197,6 +356,7 @@ public class Start implements Stateful {
     new_button(JinniContainer,Name,Action,Button): 
     creates a Button with label Name
     and attaches to it an action Action
+     * @return 
   */
   synchronized public static JinniButton new_button(Container C,String name,Machine M) {
     JinniButton JB=new JinniButton(name,M);
@@ -208,6 +368,7 @@ public class Start implements Stateful {
   * new_label(JinniContainer,TextToBeDisplayed,Label): 
   * creates a label with centered text
   *
+     * @return 
   */
   
   synchronized public static JLabel new_label(Container C,String name) {
@@ -221,11 +382,24 @@ public class Start implements Stateful {
   set_label: directly through Reflection
 */
 
+    /**
+     *
+     * @param mode
+     * @return
+     */
+    
+
   public static String new_file_dialog(int mode) {
     return new_file_dialog(mode,"pl");
   }
  
-  synchronized public static String new_file_dialog(int mode,String filter) {
+    /**
+     *
+     * @param mode
+     * @param filter
+     * @return
+     */
+    synchronized public static String new_file_dialog(int mode,String filter) {
 	try {
     JinniFrame C=new JinniFrame("File Dialog");
     
@@ -240,15 +414,16 @@ public class Start implements Stateful {
     */
     D=new JinniFileDialog(C,"Load/Save",mode,filter);
     //Prolog.dump("here");
-    Start.setLooks(D);
+            setLooks(D);
     //D.show();
     //String fname=D.getSelectedFile().getName();
     String fname=D.getChoice();
-    if(null==fname) return null;
-    //String dname=fname; // $$ D.getSelectedDirectory();
-    //if(null==dname) return null;
-    //String result=dname+fname;
-    
+    if(null==fname) {
+        return null;
+        //String dname=fname; // $$ D.getSelectedDirectory();
+        //if(null==dname) return null;
+        //String result=dname+fname;
+            }    
     //D.dispose();
     C.dispose();
     return fname;
@@ -259,9 +434,16 @@ public class Start implements Stateful {
 	}
   }
 
-  
-  synchronized public static JinniPanel new_panel(Container C,String layout,int x,int y) {
-    LayoutManager L=Start.to_layout(layout,x,y);
+    /**
+     *
+     * @param C
+     * @param layout
+     * @param x
+     * @param y
+     * @return
+     */
+    synchronized public static JinniPanel new_panel(Container C,String layout,int x,int y) {
+    LayoutManager L=to_layout(layout,x,y);
     JinniPanel P=new JinniPanel(L);
     C.add(P);
     //$$C.addComponentListener(P);
@@ -276,6 +458,7 @@ public class Start implements Stateful {
     3=rows
     4=cols
     5=returned handles
+     * @return 
   */
   
   synchronized public static JinniText new_text(Container C,String oldText,int rows,int cols) {
@@ -303,11 +486,20 @@ public class Start implements Stateful {
   get_text
   clear_text
 */
+
+    /**
+     *
+     * @param r
+     * @param g
+     * @param b
+     * @return
+     */
+    
   
   public static Color new_color(double r,double g,double b) {
-    if(r>1||r<0) {Interact.warnmes("new_color arg 1 should be in 0..1->"+r);}
-    if(g>1||g<0) {Interact.warnmes("new_color arg 2 should be in 0..1->"+g);}
-    if(b>1||b<0) {Interact.warnmes("new_color arg 3 should be in 0..1->"+b);}
+    if(r>1||r<0) {warnmes("new_color arg 1 should be in 0..1->"+r);}
+    if(g>1||g<0) {warnmes("new_color arg 2 should be in 0..1->"+g);}
+    if(b>1||b<0) {warnmes("new_color arg 3 should be in 0..1->"+b);}
     int R=(int)(r*255.0);
     int G=(int)(g*255.0);
     int B=(int)(b*255.0);
@@ -318,50 +510,91 @@ public class Start implements Stateful {
   
   //  set_fg,set_bg,set_color : in Prolog 
   
+    /**
+     *
+     * @param C
+     * @param direction
+     */
+      
  
   public static void set_direction(Container C,String direction) {
-    if(C instanceof JinniFrame) 
-      ((JinniFrame)C).setDirection(direction);
-    else
-      ((JinniPanel)C).setDirection(direction);
+    if(C instanceof JinniFrame) {
+        ((JinniFrame)C).setDirection(direction);
+        } else {
+        ((JinniPanel)C).setDirection(direction);
+        }
   }
 
-  public static void destroy(JComponent C) {
+    /**
+     *
+     * @param C
+     */
+    public static void destroy(JComponent C) {
     //C.dispose();
-    if(C instanceof Container) ((Container)C).removeAll();
+    if(C instanceof Container) {
+        C.removeAll();
+        }
     C.removeNotify();
   }
 
-  public static void set_layout(Container C, String layoutName,int x,int y) {
+    /**
+     *
+     * @param C
+     * @param layoutName
+     * @param x
+     * @param y
+     */
+    public static void set_layout(Container C, String layoutName,int x,int y) {
     //C.removeAll();
     LayoutManager L=to_layout(layoutName,x,y);
     C.setLayout(L);
   }
 
-  synchronized public static void show(Container C) {
+    /**
+     *
+     * @param C
+     */
+    synchronized public static void show(Container C) {
     C.validate();
     C.setVisible(true);
     // do not do this
     //if(C instanceof JinniFrame) ((JinniFrame)C).pack();
    }
   
-  public static void resize(JComponent C,int h,int v) {
+    /**
+     *
+     * @param C
+     * @param h
+     * @param v
+     */
+    public static void resize(JComponent C,int h,int v) {
     C.setSize(h,v);
   }
 
-  public static void move(JComponent C,int hpos,int vpos) {
+    /**
+     *
+     * @param C
+     * @param hpos
+     * @param vpos
+     */
+    public static void move(JComponent C,int hpos,int vpos) {
     C.setLocation(hpos,vpos);
   }
   
   /**
     detects if applet and gets applet container
+     * @return 
   */
   
   public static Applet get_applet() {
-    return (Applet)PrologApplet.applet;
+    return PrologApplet.applet;
   }
  
-  public static String get_applet_host() {
+    /**
+     *
+     * @return
+     */
+    public static String get_applet_host() {
     return get_applet().getCodeBase().getHost();
   } 
   
@@ -373,10 +606,16 @@ public class Start implements Stateful {
     return P;
   }
   */
+
+    /**
+     *
+     * @param O
+     */
+    
   
   public static void destroy(Object O) {
 		// TODO
-		Interact.println("TODO: implement destroy()"+O);
+		println("TODO: implement destroy()"+O);
   }
 }
 
@@ -407,13 +646,12 @@ class JinniFrame extends JFrame {
 	 //Interact.println("JFrame event"+event);
      if(this.kind>0 && event.RESERVED_ID_MAX == Event.WINDOW_DESTROY) {
           JComponent Cs[]=(JComponent[]) getComponents();
-          for(int i=0;i<Cs.length;i++) {
-            JComponent C=Cs[i];
-            if(C instanceof JinniButton) {
-              JinniButton B=(JinniButton)C;
-              B.stop();
+            for (JComponent C : Cs) {
+                if(C instanceof JinniButton) {
+                    JinniButton B=(JinniButton)C;
+                    B.stop();
+                }
             }
-          }
           
           dispose();
           //removeNotify();
@@ -447,7 +685,7 @@ class PrologAction extends AbstractAction {
     ////
     public void actionPerformed(ActionEvent e) {
         //Prolog.dump("Action="+this.text);
-    	Start.invokeLater(M); //$$ M.run();
+    	invokeLater(M); //$$ M.run();
     }
 }
 
@@ -467,7 +705,7 @@ class JinniButton extends JButton implements Runnable
     super(name);
     this.name=name;
     this.M=M;
-    Start.setLooks(this);
+        setLooks(this);
     PrologAction action=new PrologAction(name,this);
     setAction(action);
   }
@@ -487,7 +725,9 @@ class JinniButton extends JButton implements Runnable
 	//Prolog.dump("here");
     int answer=0;
     try {
-      if (null!=M) answer=M.ask();
+      if (null!=M) {
+          answer=M.ask();
+            }
     }
     catch (PrologException e) {
       // ok
@@ -495,7 +735,9 @@ class JinniButton extends JButton implements Runnable
     catch (Exception e) {
       // ok - handled in ask
     }
-    if(0==answer) Interact.warnmes("the engine attached to a Prolog Button '"+name+"' died");
+    if(0==answer) {
+            warnmes("the engine attached to a Prolog Button '"+name+"' died");
+        }
   }
   
   synchronized public void stop() {
@@ -516,7 +758,7 @@ class JinniButton extends JButton implements Runnable
 class JinniPanel extends JPanel {//$$ implements ComponentListener {
   JinniPanel(LayoutManager L) {
     super();
-    Start.setLooks(this);
+        setLooks(this);
     setLayout(L);
   }
 

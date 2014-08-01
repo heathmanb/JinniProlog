@@ -4,6 +4,8 @@ import prolog.kernel.Top;
 import prolog.kernel.*;
 import java.util.*;
 import java.io.*;
+import static prolog.kernel.Top.new_machine;
+import static prolog.logic.Interact.halt;
 /**
  *  Shows examples of calls form Java to Prolog and back
  */
@@ -19,11 +21,12 @@ public class MyHello {
    * 
    *  Note that new_machine() with no parameter starts with a default
    *  engine.
+     * @param args
    */
   public static void main (String args[]) { 
-    Machine M=Top.new_machine("hello.jc");
+    Machine M=new_machine("hello.jc");
     M.run("println(type(go))");
     //Top.toplevel();
-    JavaIO.halt(0);
+        halt(0);
   }
 }

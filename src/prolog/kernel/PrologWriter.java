@@ -2,6 +2,8 @@ package prolog.kernel;
 
 import prolog.logic.*;
 import java.io.*;
+import static prolog.kernel.JavaIO.getStdOutput;
+import static prolog.logic.Interact.warnmes;
 
 class GenericWriter extends PrintWriter {
 
@@ -17,14 +19,14 @@ class GenericWriter extends PrintWriter {
     }
 
     public GenericWriter() {
-        super(JavaIO.getStdOutput(), true);
+        super(getStdOutput(), true);
     }
 
     private static OutputStreamWriter tryEncoding(OutputStream outputStream, String encoding) {
         try {
             return new OutputStreamWriter(outputStream, encoding);
         } catch (UnsupportedEncodingException e) { // use default if it fails
-            JavaIO.warnmes("failing to use character encoding: " + encoding);
+            warnmes("failing to use character encoding: " + encoding);
             return new OutputStreamWriter(outputStream);
         }
     }
@@ -45,27 +47,48 @@ public class PrologWriter extends GenericWriter implements Stateful {
 
     public TextSink textSink;
 
+    /**
+     *
+     * @param textSink
+     */
     public PrologWriter(TextSink textSink) {
         this.textSink = textSink;
     }
 
+    /**
+     *
+     * @return
+     */
     public TextSink getTextSink() {
         return this.textSink;
     }
 
+    /**
+     *
+     * @param f
+     */
     public PrologWriter(OutputStream f) {
         super(f);
     }
 
+    /**
+     *
+     * @param fileName
+     * @throws IOException
+     */
     public PrologWriter(String fileName) throws IOException {
         this(new FileOutputStream(fileName));
     }
 
+    /**
+     *
+     * @param c
+     */
     public final void super_write(int c) {
         if ('\n' == c) {
             super.flush();
         }
-        super.write((char) c);
+        super.write(c);
     }
 
     @Override
