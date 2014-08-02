@@ -1,4 +1,4 @@
-package rli;
+package rli.rli;
 
 import static java.lang.System.setProperty;
 import java.rmi.registry.Registry;

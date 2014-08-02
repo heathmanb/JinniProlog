@@ -1,4 +1,4 @@
-package rli;
+package rli.rli;
 
 import static java.lang.Thread.sleep;
 import java.rmi.registry.LocateRegistry;

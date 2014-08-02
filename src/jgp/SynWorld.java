@@ -9,11 +9,11 @@ import prolog.core.BigMath;
 import prolog.logic.*;
 import prolog.kernel.*;
 import prolog.core.*;
-import rli.RLIAdaptor;
+import rli.rli.RLIAdaptor;
 import java.math.*;
 import static java.math.BigInteger.valueOf;
 import java.util.Random;
-import static rli.RLIAdaptor.rli_call;
+import static rli.rli.RLIAdaptor.rli_call;
 
 /**
  * Top GP class: creates a world in which evolving individuals seek a minimal

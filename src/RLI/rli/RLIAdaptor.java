@@ -1,4 +1,4 @@
-package rli;
+package rli.rli;
 
 import static java.lang.System.exit;
 import prolog.logic.Fun;
@@ -11,8 +11,8 @@ import java.net.InetAddress;
 import static java.net.NetworkInterface.getNetworkInterfaces;
 import java.util.*;
 import static java.util.Collections.synchronizedMap;
-import static rli.RLIClient.clientPrologCall;
-import static rli.RLIClient.stopServer;
+import static rli.rli.RLIClient.clientPrologCall;
+import static rli.rli.RLIClient.stopServer;
 
 /**
  *
