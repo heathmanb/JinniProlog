@@ -2,7 +2,7 @@
  * Copyright Heathman Innovative Solutions Aug 1, 2014.
  */
 
-package prolog3d;
+package callProlog;
 
 import org.junit.Test;
 import static org.junit.Assert.*;
@@ -11,16 +11,14 @@ import static org.junit.Assert.*;
  *
  * @author Brad
  */
-public class LineTest {
+public class MyHelloTest {
     
-    public LineTest() {
+    public MyHelloTest() {
     }
-
-    /**
-     * Test of draw method, of class Line.
-     */
+    
     @Test
-    public void testDraw() {
+    public void helloTest() {
+        assertTrue(true);
     }
     
 }
